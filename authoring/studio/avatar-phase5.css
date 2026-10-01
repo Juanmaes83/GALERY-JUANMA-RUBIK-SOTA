@@ -1,0 +1,49 @@
+/* Museum Avatar Studio — Phase 5 Gate 1. Uses the existing Studio shell and canvas. */
+.st-avatar-domain .st-dom em{display:inline-block;margin-top:.22rem;font:600 .56rem/1.2 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;opacity:.55}
+.st-avatar-tree ol{list-style:none;margin:1rem 0 0;padding:0;border-top:1px solid var(--st-line,rgba(240,236,228,.13))}
+.st-avatar-tree li{display:grid;grid-template-columns:2.1rem 1fr;gap:.15rem .55rem;padding:.65rem .1rem;border-bottom:1px solid var(--st-line,rgba(240,236,228,.1));align-items:center}
+.st-avatar-tree li>b{grid-row:1/3;font:500 .62rem/1 system-ui,sans-serif;letter-spacing:.12em;opacity:.45}
+.st-avatar-tree li>span{font:600 .72rem/1.25 system-ui,sans-serif}
+.st-avatar-tree li>i{font:400 .62rem/1.3 system-ui,sans-serif;opacity:.56;font-style:normal}
+.st-avatar-tree li.is-later{opacity:.48}
+.st-avatar-ed{overflow:auto}
+.st-avatar-ed .st-group{border-top:1px solid var(--st-line,rgba(240,236,228,.13));padding:1.05rem 0}
+.st-avatar-ed .st-group:first-of-type{border-top:0}
+.st-avatar-ed .st-group>h3,.st-avatar-future>h3{margin:0 0 .75rem;font:600 .68rem/1.2 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.st-avatar-pick,.st-avatar-actions{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.st-avatar-upload{display:flex;align-items:center;justify-content:center;min-height:2.35rem;padding:.4rem .65rem;border:1px solid rgba(240,236,228,.2);cursor:pointer;font:600 .67rem/1.2 system-ui,sans-serif;text-align:center}
+.st-avatar-upload:hover{border-color:rgba(240,236,228,.48)}
+.st-avatar-upload input{position:absolute;inline-size:1px;block-size:1px;opacity:0;pointer-events:none}
+.st-avatar-facts{display:grid;grid-template-columns:minmax(5rem,.65fr) 1.35fr;gap:.35rem .7rem;margin:.9rem 0 0;padding:.75rem 0;border-top:1px solid rgba(240,236,228,.09);border-bottom:1px solid rgba(240,236,228,.09)}
+.st-avatar-facts dt{font:500 .62rem/1.35 system-ui,sans-serif;opacity:.48}
+.st-avatar-facts dd{margin:0;font:500 .68rem/1.35 system-ui,sans-serif;word-break:break-word}
+.st-avatar-state{letter-spacing:.08em}
+.st-avatar-note{margin-top:.75rem!important}
+.st-avatar-metric{display:flex;justify-content:space-between;gap:.75rem;align-items:center;padding:.7rem .75rem;border:1px solid rgba(240,236,228,.14);background:rgba(240,236,228,.025)}
+.st-avatar-metric strong{font:650 .68rem/1.2 system-ui,sans-serif;letter-spacing:.08em}
+.st-avatar-metric span{font:400 .62rem/1.3 system-ui,sans-serif;opacity:.58;text-align:right}
+.st-avatar-metric.is-ok{border-color:rgba(123,185,143,.38)}
+.st-avatar-metric.is-bad{border-color:rgba(214,113,99,.45)}
+.st-avatar-check{display:flex;gap:.55rem;align-items:center;margin-bottom:.65rem;font:500 .68rem/1.3 system-ui,sans-serif}
+.st-avatar-check input{accent-color:currentColor}
+.st-avatar-future{margin:1rem 0;padding:1rem;border:1px dashed rgba(240,236,228,.18);opacity:.64}
+.st-avatar-future p{margin:0;font:400 .66rem/1.55 system-ui,sans-serif}
+.st-avatar-film .st-filmhead{align-items:end}
+.st-avatar-strip{display:flex;flex-wrap:wrap;gap:.45rem;padding:.8rem 0 .15rem}
+.st-avatar-strip span{padding:.35rem .5rem;border:1px solid rgba(240,236,228,.14);font:600 .58rem/1 system-ui,sans-serif;letter-spacing:.09em}
+.st-avatar-approved-pipeline ol{list-style:none;margin:.75rem 0 0;padding:0;border:1px solid rgba(240,236,228,.12)}
+.st-avatar-approved-pipeline li{display:grid;grid-template-columns:5rem 4.5rem minmax(0,1fr);gap:.45rem;padding:.48rem .55rem;border-bottom:1px solid rgba(240,236,228,.08);align-items:start}
+.st-avatar-approved-pipeline li:last-child{border-bottom:0}
+.st-avatar-approved-pipeline li>b{font:650 .58rem/1.3 system-ui,sans-serif;letter-spacing:.08em}
+.st-avatar-approved-pipeline li>span{font:650 .58rem/1.3 system-ui,sans-serif;opacity:.8}
+.st-avatar-approved-pipeline li>i{font:400 .57rem/1.35 system-ui,sans-serif;opacity:.52;font-style:normal;overflow-wrap:anywhere}
+.st-avatar-approved-pipeline li.is-ok{background:rgba(123,185,143,.055)}
+.st-avatar-approved-pipeline li.is-bad{background:rgba(214,113,99,.075)}
+.st-avatar-motion-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem;margin:.7rem 0}
+.st-avatar-motion-summary>div{padding:.6rem;border:1px solid rgba(240,236,228,.12);background:rgba(240,236,228,.025)}
+.st-avatar-motion-summary span{display:block;margin-bottom:.28rem;font:500 .55rem/1.2 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:.46}
+.st-avatar-motion-summary strong{display:block;font:650 .64rem/1.25 system-ui,sans-serif;overflow-wrap:anywhere}
+.st-avatar-motion-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin:.7rem 0}
+.st-avatar-motion-actions .st-b.is-active{border-color:rgba(214,178,91,.7);background:rgba(214,178,91,.10)}
+html[data-avatar-studio-phase5="gate1-ready"] .st-avatar-domain .st-dom:not(.is-on){border-color:rgba(240,236,228,.08)}
+@media(max-width:900px){.st-avatar-pick,.st-avatar-actions,.st-avatar-motion-actions,.st-avatar-motion-summary{grid-template-columns:1fr}.st-avatar-metric{align-items:flex-start;flex-direction:column}.st-avatar-metric span{text-align:left}.st-avatar-approved-pipeline li{grid-template-columns:4.5rem 4rem minmax(0,1fr)}}

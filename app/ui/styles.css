@@ -1,0 +1,550 @@
+/*
+ * Immersive Worlds — Experience UI styles
+ *
+ * Art direction: institutional restraint. Warm neutrals, hairline rules, one
+ * serif for titles and one grotesque for controls. No glass, no blur stacks, no
+ * gradients, no accent colour — the only saturated colour on screen should be
+ * the art on the walls (Constitution §24).
+ */
+
+:root {
+  --iw-ink: #f0ece4;
+  --iw-ink-dim: #a49d92;
+  --iw-ground: #0c0b0a;
+  --iw-panel: rgba(16, 15, 14, 0.9);
+  --iw-line: rgba(240, 236, 228, 0.16);
+  --iw-line-strong: rgba(240, 236, 228, 0.34);
+  --iw-serif: Georgia, 'Times New Roman', serif;
+  --iw-sans: 'Helvetica Neue', Inter, system-ui, -apple-system, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+/* Panels below set their own display, which would otherwise beat the UA rule. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--iw-ground);
+  color: var(--iw-ink);
+  font-family: var(--iw-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#iw-stage { position: fixed; inset: 0; }
+#iw-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+#iw-canvas[data-pointer-locked="true"] { cursor: none; }
+
+#iw-ui { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+#iw-ui > * { pointer-events: auto; }
+
+kbd {
+  display: inline-block;
+  min-width: 1.5em;
+  padding: 0.15em 0.4em;
+  border: 1px solid var(--iw-line-strong);
+  border-radius: 3px;
+  font: 600 0.72rem/1.2 var(--iw-sans);
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--iw-ink-dim);
+}
+
+.iw-btn {
+  border: 1px solid var(--iw-line);
+  background: transparent;
+  color: var(--iw-ink);
+  border-radius: 2px;
+  padding: 0.55rem 0.85rem;
+  font: 500 0.74rem/1 var(--iw-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.iw-btn:hover { border-color: var(--iw-line-strong); }
+.iw-btn:focus-visible { outline: 2px solid #d9c9a5; outline-offset: 2px; }
+.iw-btn[aria-pressed="true"] { border-color: var(--iw-line-strong); color: #fff; }
+.iw-btn--primary {
+  border-color: var(--iw-line-strong);
+  background: rgba(240, 236, 228, 0.94);
+  color: #14120f;
+  padding: 0.75rem 1.4rem;
+}
+
+/* -- loading veil --------------------------------------------------------- */
+
+.iw-veil {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #0a0908;
+  z-index: 40;
+  transition: opacity 0.7s ease;
+}
+.iw-veil.is-gone { opacity: 0; pointer-events: none; }
+.iw-veil__inner { width: min(30rem, 88vw); text-align: left; }
+.iw-veil__mark {
+  margin: 0 0 2.4rem;
+  font: 400 0.7rem/1 var(--iw-sans);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--iw-ink-dim);
+}
+.iw-veil__title { margin: 0 0 1.4rem; font: 400 1.5rem/1.3 var(--iw-serif); }
+.iw-veil__bar { height: 1px; background: var(--iw-line); margin-bottom: 2rem; }
+.iw-veil__bar i { display: block; height: 100%; width: 0; background: var(--iw-ink); transition: width 0.4s ease; }
+.iw-veil__note { margin: 1.6rem 0 0; font-size: 0.72rem; line-height: 1.6; color: var(--iw-ink-dim); }
+
+/* -- top bar -------------------------------------------------------------- */
+
+.iw-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem 1.6rem 2.6rem;
+  /* A scrim, not a bar: the room keeps going behind the controls. */
+  background: linear-gradient(180deg, rgba(10, 9, 8, 0.72), rgba(10, 9, 8, 0));
+}
+.iw-topbar__mark b {
+  display: block;
+  font: 400 0.72rem/1 var(--iw-sans);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+.iw-topbar__mark span {
+  display: block;
+  margin-top: 0.5rem;
+  font: 400 1rem/1.2 var(--iw-serif);
+  color: var(--iw-ink-dim);
+}
+.iw-topbar__tools { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+
+/* -- proximity prompt ----------------------------------------------------- */
+
+.iw-prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 3.4rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--iw-line);
+  background: var(--iw-panel);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  max-width: min(90vw, 34rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* -- detail view ---------------------------------------------------------- */
+/*
+ * Focus is a temporary mise-en-scène, not a modal. The room darkens from the
+ * edges toward the work, a wall label sits low in the frame the way it does in
+ * a gallery, and the controls are hairlines rather than buttons. Nothing here
+ * is allowed to look like an application panel.
+ */
+
+.iw-detail { position: absolute; inset: 0; pointer-events: none; }
+.iw-detail > * { pointer-events: auto; }
+
+.iw-detail__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 54% 62% at 50% 44%, rgba(6, 5, 5, 0) 34%, rgba(6, 5, 5, 0.78) 100%);
+  animation: iw-fade 0.6s ease both;
+}
+@keyframes iw-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Step arrows: thin, quiet, at the edges where a hand would reach. */
+.iw-detail__step {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.2rem;
+  height: 5rem;
+  border: 0;
+  background: transparent;
+  color: var(--iw-ink);
+  font: 300 2.2rem/1 var(--iw-serif);
+  opacity: 0.42;
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+.iw-detail__step:hover { opacity: 1; }
+.iw-detail__step:focus-visible { outline: 1px solid var(--iw-line-strong); outline-offset: -6px; opacity: 1; }
+.iw-detail__step--prev { left: 0.6rem; }
+.iw-detail__step--next { right: 0.6rem; }
+
+/* The wall label. */
+.iw-label {
+  position: absolute;
+  left: 3.2rem;
+  bottom: 5.4rem;
+  width: min(20rem, 40vw);
+  margin: 0;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid rgba(240, 236, 228, 0.5);
+  animation: iw-label-in 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes iw-label-in { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: none; } }
+.iw-label figcaption { display: block; }
+.iw-label h2 { margin: 0 0 0.35rem; font: 400 1.32rem/1.25 var(--iw-serif); text-wrap: balance; }
+.iw-label__meta { margin: 0 0 0.5rem; font: italic 400 0.86rem/1.4 var(--iw-serif); color: #cfc8bc; }
+.iw-label__dims { margin: 0; font-size: 0.7rem; letter-spacing: 0.06em; color: var(--iw-ink-dim); }
+.iw-label__more { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--iw-line); }
+.iw-label__more p { margin: 0 0 0.6rem; font-size: 0.82rem; line-height: 1.7; color: #d5cfc4; }
+.iw-label__credit { font-size: 0.68rem !important; color: var(--iw-ink-dim) !important; }
+.iw-label__toggle {
+  margin-top: 0.8rem;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--iw-line-strong);
+  background: transparent;
+  color: var(--iw-ink-dim);
+  font: 400 0.7rem/1.6 var(--iw-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.iw-label__toggle:hover { color: var(--iw-ink); }
+
+/* One quiet line of controls along the bottom. */
+.iw-detail__foot {
+  position: absolute;
+  left: 3.2rem;
+  right: 3.2rem;
+  bottom: 1.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.4rem;
+}
+.iw-detail__count { font-size: 0.68rem; letter-spacing: 0.22em; color: var(--iw-ink-dim); }
+.iw-detail__zoom { display: flex; align-items: center; gap: 0.7rem; }
+.iw-detail__zoomBtn {
+  width: 1.6rem; height: 1.6rem;
+  border: 1px solid var(--iw-line);
+  background: transparent;
+  color: var(--iw-ink-dim);
+  font: 400 0.9rem/1 var(--iw-sans);
+  cursor: pointer;
+}
+.iw-detail__zoomBtn:hover:not(:disabled) { color: var(--iw-ink); border-color: var(--iw-line-strong); }
+.iw-detail__zoomBtn:disabled { opacity: 0.3; cursor: default; }
+.iw-detail__zoomBar { display: block; width: 5rem; height: 1px; background: var(--iw-line); overflow: hidden; }
+.iw-detail__zoomBar i { display: block; height: 100%; background: var(--iw-ink); transform: scaleX(0); transform-origin: left; transition: transform 0.25s ease; }
+.iw-detail__close {
+  border: 0;
+  border-bottom: 1px solid var(--iw-line-strong);
+  background: transparent;
+  color: var(--iw-ink);
+  padding: 0 0 0.2rem;
+  font: 400 0.7rem/1.6 var(--iw-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* While a guided route runs, the label is a caption and nothing else. */
+.iw-detail[data-guided="true"] .iw-detail__foot { justify-content: flex-start; }
+
+/*
+ * The chrome recedes while a work is being inspected. Room navigation is not
+ * what the visitor is doing, and leaving it lit competes with the artwork —
+ * the UI Disappearance test applied to Focus rather than to the room.
+ */
+body[data-focused="true"] .iw-topbar__tools { opacity: 0; pointer-events: none; }
+body[data-focused="true"] .iw-topbar__mark { opacity: 0.32; }
+.iw-topbar__tools, .iw-topbar__mark { transition: opacity 0.4s ease; }
+
+/* Count on the left, the two things you can do on the right, together. */
+.iw-detail__foot > .iw-detail__zoom { margin-left: auto; }
+.iw-detail__foot > .iw-detail__close { margin-left: 1.6rem; }
+
+/* -- guided transport ----------------------------------------------------- */
+
+.iw-transport {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 1.4rem 1.6rem 1.2rem;
+  background: linear-gradient(0deg, rgba(10, 9, 8, 0.95), rgba(10, 9, 8, 0));
+}
+.iw-transport__caption {
+  max-width: 46rem;
+  margin: 0 auto 1rem;
+  font: 400 1.02rem/1.6 var(--iw-serif);
+  text-align: center;
+  text-wrap: balance;
+}
+.iw-transport__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.iw-transport__step {
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--iw-ink-dim);
+  margin-right: 0.6rem;
+}
+.iw-transport__progress { height: 1px; background: var(--iw-line); margin-top: 1.1rem; }
+.iw-transport__progress i { display: block; height: 100%; background: var(--iw-ink); transition: width 0.3s linear; }
+
+/* -- overlays ------------------------------------------------------------- */
+
+.iw-map, .iw-a11y, .iw-visit {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 7, 6, 0.86);
+  z-index: 30;
+}
+.iw-map__panel, .iw-a11y__panel {
+  width: min(46rem, 92vw);
+  max-height: 84vh;
+  overflow: auto;
+  padding: 1.8rem;
+  border: 1px solid var(--iw-line);
+  background: #100f0e;
+}
+.iw-map__panel header, .iw-a11y__panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+.iw-map__panel h2, .iw-a11y__panel h2 { margin: 0; font: 400 1.2rem/1 var(--iw-serif); }
+.iw-map svg { width: 100%; height: auto; display: block; }
+.iw-map__edge { stroke: var(--iw-line-strong); stroke-width: 1; }
+.iw-map__edge.is-teleport { stroke-dasharray: 3 4; }
+.iw-map__node circle { fill: #100f0e; stroke: var(--iw-line-strong); stroke-width: 1; }
+.iw-map__node text { fill: var(--iw-ink-dim); font: 400 8px var(--iw-sans); letter-spacing: 0.08em; }
+.iw-map__node.is-visited circle { fill: #3a3630; }
+.iw-map__node.is-active circle { fill: var(--iw-ink); stroke: var(--iw-ink); }
+.iw-map__node.is-active text { fill: var(--iw-ink); }
+.iw-map__note { margin: 1.4rem 0 0; font-size: 0.74rem; color: var(--iw-ink-dim); line-height: 1.6; }
+
+.iw-a11y section { margin-bottom: 2rem; }
+.iw-a11y h3 { margin: 0 0 0.8rem; font: 400 1rem/1.3 var(--iw-serif); }
+.iw-a11y ul { list-style: none; margin: 0; padding: 0; }
+.iw-a11y li { padding: 0.9rem 0; border-top: 1px solid var(--iw-line); }
+.iw-a11y li strong { display: block; font-weight: 500; }
+.iw-a11y li span { display: block; margin: 0.2rem 0 0.5rem; font-size: 0.78rem; font-style: italic; color: var(--iw-ink-dim); }
+.iw-a11y li p { margin: 0; font-size: 0.82rem; line-height: 1.6; color: #cfc9be; }
+.iw-a11y__transcript { margin-top: 0.5rem !important; color: var(--iw-ink-dim) !important; }
+.iw-a11y__exits { margin: 0.8rem 0 0; font-size: 0.76rem; color: var(--iw-ink-dim); }
+.iw-a11y__keys { list-style: none; margin: 0; padding: 0; }
+.iw-a11y__keys li { display: flex; gap: 1rem; align-items: baseline; }
+.iw-a11y__keys em { font-style: normal; color: var(--iw-ink-dim); font-size: 0.82rem; }
+
+/* -- responsive ----------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .iw-topbar { padding: 1rem; flex-direction: column; align-items: stretch; }
+  .iw-topbar__tools { justify-content: flex-start; }
+  /* Phone: the work owns the upper frame, the label sits under it as a sheet.
+     A desktop sidebar collapsed to full width would bury the artwork. */
+  .iw-label {
+    left: 0; right: 0; bottom: 4.4rem;
+    width: auto;
+    max-height: 34vh;
+    overflow-y: auto;
+    padding: 1rem 1.2rem 0.4rem;
+    border-top: 1px solid rgba(240, 236, 228, 0.42);
+    background: linear-gradient(180deg, rgba(10, 9, 8, 0) 0%, rgba(10, 9, 8, 0.9) 22%);
+  }
+  .iw-label h2 { font-size: 1.18rem; }
+  .iw-detail__scrim { background: radial-gradient(ellipse 78% 46% at 50% 34%, rgba(6,5,5,0) 38%, rgba(6,5,5,0.78) 100%); }
+  .iw-detail__foot { left: 1.2rem; right: 1.2rem; bottom: 1.1rem; gap: 0.8rem; }
+  .iw-detail__step { width: 2.6rem; height: 4rem; opacity: 0.7; }
+  .iw-detail__step--prev { left: 0; }
+  .iw-detail__step--next { right: 0; }
+  .iw-detail__zoomBar { width: 3rem; }
+  .iw-prompt { bottom: 1.2rem; font-size: 0.76rem; }
+  .iw-transport__caption { font-size: 0.9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iw-veil, .iw-veil__bar i, .iw-transport__progress i, .iw-btn { transition: none; }
+}
+
+
+/* == the institution's own information, for the visitor ==================== */
+
+/*
+ * Three questions, in the order a visitor asks them: can I go, what is on, and
+ * what should I know before I set off. The previous layout answered all nine
+ * fields in one column of identical label-and-paragraph rows and let the
+ * primary action fall wherever the text ended — 460 px below the fold on a
+ * phone. Nothing has been removed; the hierarchy is what changed.
+ *
+ * The panel is a flex column of head / scroller / action bar, so the title and
+ * the primary action are pinned and only the content between them moves.
+ */
+.iw-visit__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(64rem, 94vw);
+  max-height: 88vh;
+  border: 1px solid var(--iw-line);
+  background: #100f0e;
+  overflow: hidden;                     /* the scroller inside owns scrolling */
+}
+
+.iw-visit__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 1.8rem 1.2rem;
+  border-bottom: 1px solid var(--iw-line);
+}
+.iw-visit__eyebrow {
+  margin: 0 0 .35rem;
+  font: 400 .62rem/1 var(--iw-sans);
+  letter-spacing: .2em; text-transform: uppercase; color: var(--iw-ink-dim);
+}
+/* The visit title was the one panel heading left out of the serif rule, so it
+   fell back to the browser's bold sans — the only heading in the product not
+   speaking in the house voice. */
+.iw-visit__panel h2 {
+  margin: 0;
+  font: 400 1.35rem/1.2 var(--iw-serif);
+  letter-spacing: .01em;
+}
+.iw-visit__head .iw-btn { flex: none; }
+
+.iw-visit__scroll { overflow: auto; padding: 1.6rem 1.8rem 1.8rem; }
+
+/* -- can I go: the three that may never be scrolled for ------------------- */
+.iw-visit__key {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.6rem 2.4rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--iw-line);
+}
+.iw-visit__fact h3 {
+  margin: 0 0 .35rem;
+  font: 400 .64rem/1.3 var(--iw-sans);
+  letter-spacing: .18em; text-transform: uppercase; color: var(--iw-ink-dim);
+}
+.iw-visit__fact p { margin: 0; line-height: 1.55; }
+/* Opening hours are the single most-asked fact in the panel and are set to
+   read as an answer rather than as a row in a record. */
+.iw-visit__key .iw-visit__fact:first-child p {
+  font: 400 1.05rem/1.45 var(--iw-serif);
+}
+
+/* -- what is on, and what to know ---------------------------------------- */
+.iw-visit__cols {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2.6rem;
+  padding-top: 1.5rem;
+}
+.iw-visit__col > h3 {
+  margin: 0 0 1rem;
+  font: 400 1rem/1.3 var(--iw-serif);
+  letter-spacing: .01em;
+}
+.iw-visit__col--plan {
+  padding-left: 2.6rem;
+  border-left: 1px solid var(--iw-line);
+}
+.iw-visit__col--plan .iw-visit__fact + .iw-visit__fact { margin-top: 1.1rem; }
+.iw-visit__col--plan .iw-visit__fact p { font-size: .88rem; color: #cfc9be; }
+
+.iw-visit__prog { list-style: none; margin: 0; padding: 0; }
+.iw-visit__prog li { padding: 1rem 0; border-top: 1px solid var(--iw-line); }
+.iw-visit__prog li:first-child { border-top: 0; padding-top: 0; }
+.iw-visit__prog b { display: block; font: 400 1.02rem/1.35 var(--iw-serif); }
+.iw-visit__prog span {
+  display: block; margin-top: .2rem;
+  font-size: .76rem; letter-spacing: .04em; color: var(--iw-ink-dim);
+}
+.iw-visit__prog p { margin: .45rem 0 0; font-size: .88rem; line-height: 1.6; color: #cfc9be; }
+/* This link rendered in the browser's default blue — the one saturated colour
+   on screen that was not a painting (Constitution §24). */
+.iw-visit__link {
+  display: inline-block; margin-top: .55rem;
+  font-size: .74rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--iw-ink); text-decoration: none;
+  border-bottom: 1px solid var(--iw-line-strong); padding-bottom: .15rem;
+}
+.iw-visit__link:hover { border-bottom-color: var(--iw-ink); }
+
+/* -- the action bar, pinned ---------------------------------------------- */
+.iw-visit__foot {
+  display: flex; flex-wrap: wrap; gap: .6rem;
+  padding: 1.1rem 1.8rem;
+  border-top: 1px solid var(--iw-line);
+  background: #100f0e;
+}
+.iw-visit__foot .iw-btn { text-decoration: none; }
+
+/*
+ * Phone: a sheet, not the desktop dialog made narrow.
+ *
+ * The overlay filled the width at 92vw and kept every desktop decision — the
+ * centred card, the 1.8rem padding, the 1.35rem title over five lines, and
+ * 460 px of scroll below the fold. A visitor holding a phone in a gallery gets
+ * a full-height sheet instead: title pinned at the top, action pinned at the
+ * bottom, one column of content between them.
+ */
+@media (max-width: 780px) {
+  .iw-visit { place-items: stretch; }
+  .iw-visit__panel {
+    width: 100%; max-height: none; height: 100%;
+    border: 0; border-top: 1px solid var(--iw-line);
+  }
+  .iw-visit__head { padding: 1.1rem 1.1rem .9rem; gap: .9rem; }
+  .iw-visit__panel h2 { font-size: 1.1rem; }
+  .iw-visit__scroll { padding: 1.2rem 1.1rem 1.6rem; }
+  .iw-visit__key { grid-template-columns: 1fr; gap: 1.2rem; }
+  .iw-visit__key .iw-visit__fact:first-child p { font-size: 1rem; }
+  .iw-visit__cols { grid-template-columns: 1fr; gap: 1.8rem; }
+  .iw-visit__col--plan { padding-left: 0; border-left: 0; padding-top: 1.5rem; border-top: 1px solid var(--iw-line); }
+  .iw-visit__foot { padding: .85rem 1.1rem; }
+  /* One action per row beats two half-width targets on a 360 px screen. */
+  .iw-visit__foot .iw-btn { flex: 1 1 100%; justify-content: center; }
+  /* Room to scroll past the last field. Without it the final line stops dead
+     level with the action bar, so the last thing a visitor reads — usually the
+     contact address — sits jammed against a button. A fade here would have hidden
+     that same line once scrolled to the end, which is worse than the gap it fixed. */
+  .iw-visit__scroll { padding-bottom: 2.4rem; }
+}
+
+/* Laptop: the plan column is too narrow to be worth its rule at this width. */
+@media (min-width: 781px) and (max-width: 1120px) {
+  .iw-visit__cols { grid-template-columns: 1fr; gap: 1.8rem; }
+  .iw-visit__col--plan {
+    padding-left: 0; border-left: 0;
+    padding-top: 1.5rem; border-top: 1px solid var(--iw-line);
+  }
+  .iw-visit__col--plan > div { display: inline-block; width: calc(50% - .8rem); vertical-align: top; }
+  .iw-visit__col--plan .iw-visit__fact + .iw-visit__fact { margin-top: 0; margin-bottom: 1.1rem; }
+}
