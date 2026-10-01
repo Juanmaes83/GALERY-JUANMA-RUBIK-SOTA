@@ -11,7 +11,7 @@
  *   - recorrido por las seis salas a través de los portales del WorldGraph;
  *   - Sala Breeze sin Breeze Studio PRO: aviso explícito y salida a Galería B;
  *   - Marble Bust 01 cargado como GLB local y su fallback forzado;
- *   - `?authoring=1` no monta ningún editor en esta edición.
+ *   - Studio (`?authoring=1`): montaje, áreas, guardado y recarga.
  * El avatar (Character 2027) depende de un host externo y se informa aparte.
  */
 import { chromium } from 'playwright';
@@ -114,19 +114,32 @@ try {
       exit: Boolean(document.querySelector('[data-breeze-museum-exit]'))
     }));
     check('BREEZE-NOTICE', 'Sala Breeze muestra el aviso de producto no incluido', breeze.notice && !breeze.iframe);
+
+    // Keyboard exit: the room's own return hotspot (E) crosses back to Gallery B.
+    await page.waitForTimeout(1200);
+    const prompt = await page.evaluate(() => {
+      const el = window.__IW.hud.el.prompt;
+      return el.hidden ? null : el.textContent.trim();
+    });
+    check('BREEZE-PROMPT', 'El aviso de proximidad de la Sala Breeze ofrece volver a Galería B', /Galería B/.test(prompt || ''), prompt);
+    await page.keyboard.press('KeyE');
+    const keyExit = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-b', null, { timeout: 30000 })
+      .then(() => true).catch(() => false);
+    check('BREEZE-KEY-E', 'La tecla E sale de la Sala Breeze a Galería B', keyExit);
+    const reentered = await travel(page, 'portal.gallery-b-breeze');
+    check('BREEZE-REENTER', 'Se vuelve a entrar en la Sala Breeze', reentered === 'space.breeze', reentered);
+    await page.waitForSelector('[data-breeze-unavailable="true"]', { timeout: 30000 }).catch(() => null);
     await page.waitForSelector('[data-breeze-museum-exit]', { timeout: 30000 }).catch(() => null);
-    // Inherited from escaparates-pro@382e566 (reproduced there with Breeze PRO):
-    // the HUD top bar sits above the exit bridge button, so a pointer cannot
-    // reach it. Reported, not hidden, and not counted: this edition does not
-    // change the source's nested-room layout.
-    const bridgeCovered = await page.evaluate(() => {
+    // The exit bridge must be reachable by a pointer (it was covered by the
+    // HUD top bar in escaparates-pro@382e566).
+    const bridgeTop = await page.evaluate(() => {
       const button = document.querySelector('[data-breeze-museum-exit]');
-      if (!button) return null;
+      if (!button) return 'sin botón';
       const r = button.getBoundingClientRect();
       const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
-      return top !== button && !button.contains(top) ? (top?.className || top?.tagName) : false;
+      return top === button || button.contains(top) ? 'ok' : String(top?.className || top?.tagName);
     });
-    if (bridgeCovered) console.log(`  known BREEZE-BRIDGE-COVERED        Defecto heredado del origen: «${bridgeCovered}» tapa el botón-puente de salida`);
+    check('BREEZE-BRIDGE-REACHABLE', 'El botón-puente de salida no queda tapado por el HUD', bridgeTop === 'ok', bridgeTop);
 
     // Real pointer click on the notice's own exit, which forwards to the bridge.
     const exitClicked = await page.locator('[data-breeze-unavailable-exit]').click({ timeout: 10000 })
@@ -160,18 +173,42 @@ try {
     await page.close();
   }
 
-  /* 3. No editor in the public visitor edition ------------------------------ */
+  /* 3. Studio (Museum authoring panel): mount, domains, save, reload ------- */
   {
-    const { page, consoleErrors } = await openMuseum('?authoring=1');
-    const studio = await page.evaluate(() => ({
-      studio: Boolean(window.__IW_STUDIO),
-      panel: Boolean(window.__IW_PANEL),
-      dom: Boolean(document.querySelector('#st, #au, #au-open')),
-      ready: window.__IW.ready === true
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await context.newPage();
+    const consoleErrors = [];
+    page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+    page.on('pageerror', (error) => consoleErrors.push(String(error)));
+    const ready = () => page.waitForFunction(() => window.__IW?.ready === true && window.__IW_STUDIO, null, { timeout: 120000 });
+    await page.goto(`${BASE}/index.html?authoring=1`);
+    await ready();
+    const mount = await page.evaluate(() => ({
+      studio: document.body.dataset.studio === 'on' && Boolean(document.querySelector('#st')),
+      domains: [...document.querySelectorAll('[data-domain]')].map((el) => el.dataset.domain),
+      avatar: document.documentElement.dataset.avatarStudioPhase5 || null
     }));
-    check('NO-AUTHORING', '?authoring=1 no monta Studio ni editor', studio.ready && !studio.studio && !studio.panel && !studio.dom);
-    check('NO-AUTHORING CONSOLE', 'Sin errores de consola', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
-    await page.close();
+    const expected = ['build', 'content', 'experience', 'visitor', 'publish', 'avatar'];
+    check('STUDIO-MOUNT', 'index.html?authoring=1 monta el Studio', mount.studio);
+    check('STUDIO-DOMAINS', 'Áreas Construir, Contenido, Experiencia, Visitante, Publicar y Avatar',
+      expected.every((d) => mount.domains.includes(d)), [...new Set(mount.domains)].join(', '));
+    check('STUDIO-AVATAR', 'Avatar Studio (fase 5) montado', mount.avatar === 'gate1-ready', mount.avatar);
+
+    const claim = `Claim de prueba ${Date.now()}`;
+    const field = page.locator('[data-bind="institution.claim"]').first();
+    await field.fill(claim);
+    await field.dispatchEvent('change');
+    await page.locator('[data-act="save"]').first().click();
+    const saved = await page.waitForFunction((value) => (localStorage.getItem('iw.museum.authoring.v1') || '').includes(value), claim, { timeout: 15000 })
+      .then(() => true).catch(() => false);
+    check('STUDIO-SAVE', 'Guardar persiste la configuración (localStorage)', saved);
+
+    await page.reload();
+    await ready();
+    const restored = await page.locator('[data-bind="institution.claim"]').first().inputValue().catch(() => null);
+    check('STUDIO-RELOAD', 'La edición sobrevive a la recarga', restored === claim, restored);
+    check('STUDIO-CONSOLE', 'Sin errores de consola en el Studio', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
+    await context.close();
   }
 
   /* 4. Avatar: informative only, depends on an external host ---------------- */

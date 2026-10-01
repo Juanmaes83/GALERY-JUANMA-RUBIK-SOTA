@@ -1,0 +1,50 @@
+/* Museum authoring — a creative tool that belongs to the same institution as the
+   room behind it: the Museum's warm neutrals and letterspaced institutional
+   caps, not a generic admin panel bolted onto a 3D view. */
+#au{position:fixed;top:0;right:0;bottom:0;width:min(400px,92vw);z-index:99998;overflow-y:auto;
+  background:rgba(18,17,15,.965);border-left:1px solid rgba(190,180,165,.22);
+  backdrop-filter:blur(14px);color:#e6e0d5;
+  font:400 14px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;
+  padding:0 0 40px;box-shadow:-24px 0 60px rgba(0,0,0,.45)}
+#au.au--hidden{transform:translateX(100%);pointer-events:none}
+#au{transition:transform .32s cubic-bezier(.4,0,.2,1)}
+@media (prefers-reduced-motion:reduce){#au{transition:none}}
+.au-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:22px 24px 18px;border-bottom:1px solid rgba(190,180,165,.16);position:sticky;top:0;
+  background:rgba(18,17,15,.98);z-index:2}
+.au-eyebrow{margin:0 0 5px;font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:#8d867c}
+.au-title{margin:0;font:400 19px/1.25 Georgia,'Times New Roman',serif;color:#f0ebe1}
+.au-x{background:none;border:0;color:#8d867c;font-size:24px;line-height:1;cursor:pointer;padding:0 2px}
+.au-x:hover,.au-x:focus-visible{color:#e8e2d6}
+.au-s{padding:20px 24px;border-bottom:1px solid rgba(190,180,165,.11)}
+.au-s h2{margin:0 0 4px;font:400 12px/1.3 'Helvetica Neue',sans-serif;letter-spacing:.2em;
+  text-transform:uppercase;color:#c9bfa8}
+.au-note{margin:0 0 14px;font-size:12px;line-height:1.5;color:#8d867c;max-width:44ch}
+.au-f{display:block;margin:0 0 13px}
+.au-l{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a49d92;margin-bottom:5px}
+.au-h{display:block;font-size:11px;color:#756f66;margin:-3px 0 5px}
+#au input[type=text],#au input:not([type]),#au textarea,#au select{width:100%;box-sizing:border-box;
+  background:rgba(255,252,246,.05);border:1px solid rgba(190,180,165,.24);border-radius:3px;
+  color:#f0ebe1;padding:9px 11px;font:inherit;font-size:13.5px}
+#au textarea{resize:vertical;line-height:1.5}
+#au input:focus,#au textarea:focus,#au select:focus{outline:none;border-color:#c9bfa8;
+  background:rgba(255,252,246,.08)}
+#au input[type=file]{width:100%;font-size:12px;color:#a49d92;padding:7px 0}
+#au input[type=file]::file-selector-button{background:rgba(232,226,214,.9);color:#17150f;border:0;
+  border-radius:999px;padding:6px 14px;margin-right:11px;font:inherit;font-size:11.5px;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.au-state{margin:2px 0 0;font-size:12px;color:#8d867c;min-height:1.4em}
+.au-state--ok{color:#8fbf95}.au-state--bad{color:#e08a80}.au-state--busy{color:#e0c05c}
+.au-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:9px}
+.au-b{flex:1 1 auto;background:transparent;border:1px solid rgba(190,180,165,.32);border-radius:999px;
+  color:#e6e0d5;padding:9px 15px;font:inherit;font-size:11.5px;letter-spacing:.11em;
+  text-transform:uppercase;cursor:pointer;transition:background .18s,border-color .18s}
+.au-b:hover,.au-b:focus-visible{background:rgba(232,226,214,.1);border-color:#c9bfa8;outline:none}
+.au-b--go{background:#e8e2d6;color:#17150f;border-color:#e8e2d6;font-weight:600}
+.au-b--go:hover{background:#fff;border-color:#fff}
+.au-b--quiet{opacity:.68}
+#au-open{position:fixed;top:14px;right:14px;z-index:99997;background:rgba(18,17,15,.86);
+  border:1px solid rgba(190,180,165,.3);border-radius:999px;color:#e6e0d5;cursor:pointer;
+  padding:9px 17px;font:400 11px/1 'Helvetica Neue',sans-serif;letter-spacing:.16em;
+  text-transform:uppercase;backdrop-filter:blur(8px)}
+#au-open:hover,#au-open:focus-visible{border-color:#c9bfa8;outline:none}

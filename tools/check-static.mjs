@@ -26,12 +26,8 @@ const SKIP_DIRS = new Set(['.git', 'node_modules', 'test-results']);
  * Cada una tiene que seguir sin existir; si alguien la añade, la lista se revisa.
  */
 const INERT_REFERENCES = {
-  'authoring/authoring-panel.js': 'Editor VS01: solo con authoringOn, fijado a false (app/experience-app.js).',
-  'authoring/authoring.css': 'Estilos del editor VS01: misma condición.',
-  'authoring/studio/studio.css': 'Estilos del Studio VS02: misma condición.',
-  'authoring/museum-b.config.json': 'Institución de demostración del Studio: solo desde acciones del Studio.',
   '/labs/website-modules-source/breeze-studio-pro/index.html':
-    'Breeze Studio PRO V4.1, producto independiente no incluido; la sala comprueba su presencia y muestra un aviso.'
+    'Breeze Studio PRO V4.1, producto independiente aún no migrado; la sala comprueba su presencia y muestra un aviso.'
 };
 
 const failures = [];

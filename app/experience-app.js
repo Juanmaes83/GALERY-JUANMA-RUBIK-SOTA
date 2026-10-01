@@ -54,11 +54,7 @@ export async function boot() {
   // the config is applied to the world record here, before anything is
   // constructed — which is why a second institution needs no engine change:
   // every representation already derives from these records.
-  //
-  // GALERY-JUANMA-RUBIK-SOTA: edición pública de visita. El Studio de autoría
-  // (VS01/VS02) no forma parte de este repositorio, así que `?authoring=1` no
-  // monta ningún editor. Origen: `params.get('authoring') === '1'`.
-  const authoringOn = false;
+  const authoringOn = params.get('authoring') === '1';
   const vault = window.__IW_VAULT || (window.__IW_VAULT = new MediaVault());
   const world = await fetch(WORLD_URL, { cache: 'no-store' }).then((response) => {
     if (!response.ok) throw new Error(`No se pudo cargar el mundo (${response.status})`);
