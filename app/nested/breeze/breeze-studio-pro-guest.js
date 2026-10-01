@@ -15,6 +15,7 @@ const MUSEUM_PASS_THROUGH_SELECTORS = ['.iw-prompt'];
 export class BreezeStudioProGuest {
   constructor() {
     this.iframe = null;
+    this.notice = null;
     this.canvas = null;
     this.lastPose = null;
     this.loaded = false;
@@ -76,11 +77,59 @@ export class BreezeStudioProGuest {
     delete document.body.dataset.breezeInputOwner;
   }
 
+  /**
+   * GALERY-JUANMA-RUBIK-SOTA: Breeze Studio PRO V4.1 is a separate product and is
+   * not part of this repository. Probe it before mounting so a missing build
+   * becomes an explicit, observable room notice instead of a 404 inside the
+   * iframe. When the build is served at BREEZE_STUDIO_PRO_V41_URL the original
+   * path below runs unchanged.
+   */
+  async _isAvailable() {
+    try {
+      const response = await fetch(BREEZE_STUDIO_PRO_V41_URL, { method: 'HEAD', cache: 'no-store' });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  _mountUnavailableNotice(stage) {
+    const notice = document.createElement('div');
+    notice.dataset.nestedRoomStudio = 'room.breeze';
+    notice.dataset.breezeUnavailable = 'true';
+    notice.setAttribute('role', 'status');
+    Object.assign(notice.style, {
+      position: 'absolute', inset: '0', zIndex: '12', display: 'grid', placeItems: 'center',
+      padding: '2rem', background: '#0a0908', color: '#cfc9be'
+    });
+    notice.innerHTML = `<div style="max-width:34rem">
+      <p style="font:400 .7rem/1 'Helvetica Neue',sans-serif;letter-spacing:.4em;text-transform:uppercase;color:#a49d92">Sala Breeze — Viento sobre mármol</p>
+      <h2 style="font:400 1.4rem/1.3 Georgia,serif;margin:1.4rem 0;color:#f0ece4">Sala no disponible en esta edición</h2>
+      <p style="font:400 .86rem/1.7 'Helvetica Neue',sans-serif">Esta sala se ejecuta con Breeze Studio PRO, un producto independiente que no se incluye en este repositorio. El resto del museo sigue disponible: vuelve a Galería B para continuar la visita.</p>
+      <button type="button" data-breeze-unavailable-exit="true" style="margin-top:1.6rem;padding:.8rem 1.2rem;border:1px solid rgba(240,236,228,.34);background:transparent;color:#f0ece4;font:600 .8rem/1 'Helvetica Neue',sans-serif;letter-spacing:.08em;cursor:pointer">← Volver a Galería B</button>
+    </div>`;
+    // Same canonical exit as the Museum's own exit bridge (a WorldGraph portal
+    // crossing, see NestedRoomController._installExitBridge); this button only
+    // forwards to it, so there is still one exit path.
+    notice.querySelector('[data-breeze-unavailable-exit]').addEventListener('click', () => {
+      document.querySelector('[data-breeze-museum-exit]')?.click();
+    });
+    stage.appendChild(notice);
+    this.notice = notice;
+  }
+
   async prepare({ canvas }) {
     this.canvas = canvas;
     const stage = canvas?.parentElement;
     if (!stage) throw new Error('Breeze Studio PRO guest requires a Museum stage');
     canvas.style.display = 'none';
+
+    if (!(await this._isAvailable())) {
+      this._mountUnavailableNotice(stage);
+      this.loaded = false;
+      this.error = 'Breeze Studio PRO V4.1 no está incluido en este repositorio';
+      return;
+    }
 
     const iframe = document.createElement('iframe');
     iframe.dataset.nestedRoomStudio = 'room.breeze';
@@ -173,6 +222,7 @@ export class BreezeStudioProGuest {
         width: Math.round(iframeRect.width), height: Math.round(iframeRect.height)
       } : null,
       hasIframe: Boolean(this.iframe?.isConnected),
+      unavailable: Boolean(this.notice?.isConnected),
       hasMuseumPose: Boolean(this.lastPose)
     };
   }
@@ -181,6 +231,8 @@ export class BreezeStudioProGuest {
     this._restoreStudioInput();
     if (this.iframe?.parentNode) this.iframe.parentNode.removeChild(this.iframe);
     this.iframe = null;
+    if (this.notice?.parentNode) this.notice.parentNode.removeChild(this.notice);
+    this.notice = null;
     if (this.canvas) this.canvas.style.display = '';
     this.canvas = null;
     this.loaded = false;
