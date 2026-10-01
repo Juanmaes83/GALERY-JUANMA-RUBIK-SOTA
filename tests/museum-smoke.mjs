@@ -248,6 +248,114 @@ try {
     check('AVATAR CONSOLE', 'Sin errores de consola con avatar', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
     await page.close();
   }
+  /* 5. Phone (390×844, touch): layout, doors, map, label framing, avatar --- */
+  {
+    const phone = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 };
+    const openPhone = async (query) => {
+      const context = await browser.newContext(phone);
+      const page = await context.newPage();
+      const errors = [];
+      page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+      page.on('pageerror', (error) => errors.push(String(error)));
+      await page.goto(`${BASE}/index.html${query}`, { waitUntil: 'load' });
+      await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 180000 });
+      const cdp = await context.newCDPSession(page);
+      // A thumb on the left half of the screen: the walking joystick.
+      const walk = async (ms) => {
+        const touch = (type, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x: 90, y, id: 1 }] });
+        await touch('touchStart', 640);
+        for (let y = 630; y >= 560; y -= 14) { await touch('touchMove', y); await page.waitForTimeout(50); }
+        const end = Date.now() + ms;
+        while (Date.now() < end) { await touch('touchMove', 560); await page.waitForTimeout(150); }
+        await touch('touchEnd', 560);
+      };
+      return { context, page, errors, walk };
+    };
+
+    // POV visit.
+    {
+      const { context, page, errors, walk } = await openPhone('');
+      await page.locator('[data-el="enter"]').tap();
+      await page.waitForTimeout(1000);
+      const layout = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        topbar: Math.round(document.querySelector('.iw-topbar').getBoundingClientRect().height)
+      }));
+      check('MOBILE-LAYOUT', 'Sin desbordamiento horizontal y barra superior compacta', layout.overflow <= 1 && layout.topbar <= 130, JSON.stringify(layout));
+
+      let prompt = null;
+      for (let i = 0; i < 6 && !prompt; i += 1) {
+        await walk(1400);
+        prompt = await page.evaluate(() => { const el = window.__IW.hud.el.prompt; return el.hidden ? null : { tag: el.tagName, text: el.textContent.trim() }; });
+      }
+      let crossed = false;
+      if (prompt) {
+        await page.locator('[data-el="prompt"]').tap();
+        crossed = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-a', null, { timeout: 30000 }).then(() => true).catch(() => false);
+      }
+      check('MOBILE-DOOR-TAP', 'Se camina con el pulgar y se cruza la puerta tocando el aviso', prompt?.tag === 'BUTTON' && crossed, JSON.stringify(prompt));
+
+      await page.locator('[data-el="mapBtn"]').tap();
+      await page.waitForTimeout(800);
+      const clashes = await page.evaluate(() => {
+        const texts = [...document.querySelectorAll('[data-el="mapSvg"] text')].map((t) => ({ label: t.textContent, b: t.getBBox() }));
+        const circles = [...document.querySelectorAll('[data-el="mapSvg"] circle')].map((c) => ({ x: +c.getAttribute('cx') - 7, y: +c.getAttribute('cy') - 7, width: 14, height: 14 }));
+        const hit = (a, b) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+        const out = [];
+        texts.forEach((t, i) => {
+          texts.slice(i + 1).forEach((u) => { if (hit(t.b, u.b)) out.push(`${t.label} × ${u.label}`); });
+          circles.forEach((c) => { if (hit(t.b, c)) out.push(`${t.label} × sala`); });
+          if (t.b.x < 0 || t.b.y < 0 || t.b.x + t.b.width > 320 || t.b.y + t.b.height > 240) out.push(`${t.label} fuera`);
+        });
+        return { count: texts.length, out };
+      });
+      check('MAP-LABELS', 'Los nombres de sala del mapa no se pisan ni se salen', clashes.count >= 6 && clashes.out.length === 0, clashes.out.join(', ') || `${clashes.count} etiquetas`);
+      await page.locator('[data-el="mapClose"]').tap();
+
+      await page.evaluate(() => window.__IW.runtime.focusEntity('entity.artwork.horizonte-interrumpido'));
+      await page.waitForTimeout(4000);
+      const framing = await page.evaluate(() => {
+        const rt = window.__IW.runtime;
+        const camera = window.__IW.renderHost.camera;
+        const record = rt.store.require('entity.artwork.horizonte-interrumpido');
+        const anchor = rt.store.require(record.anchorId);
+        const toScreen = (dy) => { const v = camera.position.clone().set(anchor.position[0], anchor.position[1] + dy, anchor.position[2]).project(camera); return Math.round((1 - v.y) / 2 * innerHeight); };
+        return { centre: toScreen(0), bottom: toScreen(-record.size[1] / 2), label: Math.round(document.querySelector('.iw-detail .iw-label').getBoundingClientRect().top) };
+      });
+      check('MOBILE-DETAIL-FRAMING', 'La obra enfocada queda por encima de la cartela', framing.bottom < framing.label, JSON.stringify(framing));
+      check('MOBILE-POV CONSOLE', 'Sin errores de consola (móvil, POV)', errors.length === 0, errors.slice(0, 3).join(' | '));
+      await context.close();
+    }
+
+    // Avatar visit.
+    {
+      const { context, page, errors, walk } = await openPhone('?character=1&mobility=1&continuity=1&gatea=1');
+      const mounted = await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000, polling: 1000 })
+        .then(() => true).catch(() => false);
+      if (mounted) {
+        await page.locator('[data-el="enter"]').tap();
+        await page.waitForTimeout(1200);
+        const where = () => page.evaluate(() => window.__IW_CHARACTER_PHASE4B.root.position.toArray());
+        const before = await where();
+        await walk(2500);
+        await page.waitForTimeout(400);
+        const after = await where();
+        const moved = Math.hypot(after[0] - before[0], after[2] - before[2]);
+        check('MOBILE-AVATAR-TOUCH', 'El pulgar mueve al avatar', moved > 0.3, `${moved.toFixed(2)} m`);
+        const frame = await page.evaluate(() => {
+          const camera = window.__IW.renderHost.camera;
+          const root = window.__IW_CHARACTER_PHASE4B.root;
+          const at = (h) => { const v = root.position.clone(); v.y += h; v.project(camera); return +((1 - v.y) / 2).toFixed(2); };
+          return { body: at(0.9), head: at(1.6) };
+        });
+        check('MOBILE-AVATAR-FRAMING', 'En vertical, el avatar ocupa la mitad inferior y deja ver la sala', frame.body >= 0.55, JSON.stringify(frame));
+      } else {
+        check('MOBILE-AVATAR-TOUCH', 'El avatar se monta en móvil', false);
+      }
+      check('MOBILE-AVATAR CONSOLE', 'Sin errores de consola (móvil, avatar)', errors.length === 0, errors.slice(0, 3).join(' | '));
+      await context.close();
+    }
+  }
 } finally {
   await browser.close();
   server.close();

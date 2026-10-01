@@ -176,6 +176,8 @@ export async function boot() {
       return Boolean(runtime.focusNeighbour(delta));
     }
   });
+  // The proximity prompt is a button too (touch has no E key): same action.
+  hud.onActivate = () => input.callbacks.onActivate?.();
 
   // Input belongs to the visitor only while the visitor owns the camera.
   runtime.bus.on(EVENTS.CAMERA_AUTHORITY_CHANGED, ({ to }) => {

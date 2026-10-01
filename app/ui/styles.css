@@ -36,6 +36,12 @@ html, body {
 #iw-stage { position: fixed; inset: 0; }
 #iw-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 #iw-canvas[data-pointer-locked="true"] { cursor: none; }
+/* The 3D view takes focus so the keyboard can walk. A tap on it must not frame
+   the whole screen in the browser's orange ring; keyboard users get the
+   museum's own ring, drawn inside the edge so it is not clipped. */
+#iw-canvas:focus { outline: none; }
+#iw-canvas:focus-visible { outline: 2px solid #d9c9a5; outline-offset: -2px; }
+@media (hover: none) and (pointer: coarse) { #iw-canvas:focus-visible { outline: none; } }
 
 #iw-ui { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
 #iw-ui > * { pointer-events: auto; }
@@ -155,6 +161,18 @@ kbd {
   max-width: min(90vw, 34rem);
   overflow: hidden;
   text-overflow: ellipsis;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+.iw-prompt:focus-visible { outline: 2px solid #d9c9a5; outline-offset: 2px; }
+@media (hover: none) and (pointer: coarse) {
+  .iw-prompt { min-height: 2.75rem; padding: 0.7rem 1.1rem; }
+  .iw-prompt kbd { display: none; }
+  .iw-detail__close kbd { display: none; }
+  /* Hairline controls stay hairlines, but a thumb needs ~44 px to land on them. */
+  .iw-detail__close, .iw-label__toggle { position: relative; }
+  .iw-detail__close::after, .iw-label__toggle::after { content: ''; position: absolute; inset: -0.8rem -0.4rem; }
 }
 
 /* -- detail view ---------------------------------------------------------- */
@@ -370,8 +388,16 @@ body[data-focused="true"] .iw-topbar__mark { opacity: 0.32; }
 /* -- responsive ----------------------------------------------------------- */
 
 @media (max-width: 900px) {
-  .iw-topbar { padding: 1rem; flex-direction: column; align-items: stretch; }
-  .iw-topbar__tools { justify-content: flex-start; }
+  .iw-topbar { padding: 1rem 1rem 1.6rem; flex-direction: column; align-items: stretch; gap: 0.6rem; }
+  /* Phone: one scrollable row of tools instead of three wrapped rows that took
+     a quarter of the screen; keyboard hints mean nothing without a keyboard. */
+  .iw-topbar__tools {
+    justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto;
+    margin: 0 -1rem; padding: 0 1rem; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .iw-topbar__tools::-webkit-scrollbar { display: none; }
+  .iw-topbar__tools .iw-btn { flex: none; white-space: nowrap; padding: 0.5rem 0.7rem; font-size: 0.64rem; }
+  .iw-topbar__tools kbd { display: none; }
   /* Phone: the work owns the upper frame, the label sits under it as a sheet.
      A desktop sidebar collapsed to full width would bury the artwork. */
   .iw-label {
@@ -386,6 +412,10 @@ body[data-focused="true"] .iw-topbar__mark { opacity: 0.32; }
   .iw-label h2 { font-size: 1.18rem; }
   .iw-detail__scrim { background: radial-gradient(ellipse 78% 46% at 50% 34%, rgba(6,5,5,0) 38%, rgba(6,5,5,0.78) 100%); }
   .iw-detail__foot { left: 1.2rem; right: 1.2rem; bottom: 1.1rem; gap: 0.8rem; }
+  /* «1 / 6» and «Volver a la sala» broke onto two lines at 390 px. */
+  .iw-detail__count, .iw-detail__close { white-space: nowrap; }
+  .iw-detail__close { letter-spacing: 0.1em; }
+  .iw-detail__foot > .iw-detail__close { margin-left: 0.8rem; }
   .iw-detail__step { width: 2.6rem; height: 4rem; opacity: 0.7; }
   .iw-detail__step--prev { left: 0; }
   .iw-detail__step--next { right: 0; }

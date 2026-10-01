@@ -8,7 +8,7 @@
     "institution": "Fundación Arenas (institución ficticia)",
     "contentRights": "CONTROLLED / FICTITIOUS / OWNED — see README §Content and rights",
     "language": "es",
-    "note": "Todas las obras, autores y textos de esta colección son ficticios y se generan en tiempo de ejecución. No se referencia ninguna obra, colección ni institución real."
+    "note": "Las obras de la colección permanente, sus autores y sus textos son ficticios y se generan en tiempo de ejecución. No se referencia ninguna colección ni institución real. Dos piezas tienen autoría real acreditada: Marble Bust 01 (Rico Cilliers, Poly Haven) y la instalación de la Sala Breeze (Niklas Niehus). Ver THIRD_PARTY_NOTICES.md."
   },
   "spaces": [
     {
@@ -1380,7 +1380,7 @@
       },
       "accessibility": {
         "label": "Panel de bienvenida de la colección permanente",
-        "description": "Texto introductorio de la Fundación Arenas: once obras distribuidas en cuatro salas, producidas entre 1958 y 1994."
+        "description": "Texto introductorio de la Fundación Arenas: nueve obras distribuidas en cuatro salas, producidas entre 1958 y 1994."
       }
     },
     {
@@ -1425,7 +1425,7 @@
       },
       "accessibility": {
         "label": "Horizonte interrumpido, Amalia Serrat, 1971",
-        "description": "Óleo de 220 por 150 centímetros. Cuatro franjas horizontales de tierras y ocres; la inferior, casi negra, ocupa un tercio del lienzo."
+        "description": "Óleo de 260 por 178 centímetros. Cuatro franjas horizontales de tierras y ocres; la inferior, casi negra, ocupa un tercio del lienzo."
       }
     },
     {
@@ -1470,7 +1470,7 @@
       },
       "accessibility": {
         "label": "Campo de ceniza, Amalia Serrat, 1974",
-        "description": "Lienzo vertical de 160 por 195 centímetros. Un campo gris azulado con un rectángulo interior de bordes difusos."
+        "description": "Lienzo vertical de 175 por 215 centímetros. Un campo gris azulado con un rectángulo interior de bordes difusos."
       }
     },
     {
@@ -1515,7 +1515,7 @@
       },
       "accessibility": {
         "label": "División tercera, Bruno Ferrán, 1968",
-        "description": "Tabla horizontal de 195 por 140 centímetros con tres bandas verticales rojizas de distinta anchura sobre fondo hueso."
+        "description": "Tabla horizontal de 210 por 150 centímetros con tres bandas verticales rojizas de distinta anchura sobre fondo hueso."
       }
     },
     {
@@ -1560,7 +1560,7 @@
       },
       "accessibility": {
         "label": "Estudio de figura IV, Bruno Ferrán, 1963",
-        "description": "Dibujo a grafito de 92 por 118 centímetros, enmarcado con paspartú. Una masa central construida por acumulación de trazos cortos."
+        "description": "Dibujo a grafito de 95 por 122 centímetros, enmarcado con paspartú. Una masa central construida por acumulación de trazos cortos."
       }
     },
     {
@@ -1677,7 +1677,7 @@
       },
       "accessibility": {
         "label": "Noche de invierno, Jonás Vilar, 1959",
-        "description": "Fotograbado de 180 por 122 centímetros. Una masa oscura ocupa el tercio inferior sobre un fondo de grano azulado."
+        "description": "Fotograbado de 200 por 136 centímetros. Una masa oscura ocupa el tercio inferior sobre un fondo de grano azulado."
       }
     },
     {

@@ -16,8 +16,8 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 
 > **Respuesta corta a «¿está terminado?»: no.** El museo es un prototipo avanzado. Su núcleo (motor, cinco salas operativas, Studio y avatar) funciona y está probado. Para ser un producto vendible le falta, sobre todo:
 > - persistencia y publicación reales;
-> - la Sala Breeze;
-> - el avatar alojado de forma controlada;
+> - validar la Sala Breeze en una GPU real (ya está integrada en `import/breeze-studio-pro`);
+> - optimizar el avatar (ya está alojado en el repositorio, pero pesa 30 MB);
 > - cerrar las puertas humanas heredadas.
 
 ---
@@ -30,7 +30,7 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 | Bloque 1: Galería A completa (gramáticas de obra y de escultura, foco, navegación por la colección, retorno exacto) | ✅ aprobado |
 | Bloque 2A: lenguaje de transición dentro de la sala (T1–T5) | ✅ KEEP |
 | Bloque 2B: cruce entre salas | 👁 implementado; puerta humana pendiente |
-| Bloque 3: salas nuevas (Galería B con proyección, Archivo sonoro, Itinerante Wet Paint, Breeze) | 🟡 4 de 5 operativas; Breeze sin migrar |
+| Bloque 3: salas nuevas (Galería B con proyección, Archivo sonoro, Itinerante Wet Paint, Breeze) | 🟡 4 de 5 operativas; Breeze integrada en `import/breeze-studio-pro`, sin validar en GPU real |
 | Bloque 6: Studio, fases 1 y 2 (Construir, Contenido, Experiencia, Visitante, Publicar) | 👁 auditoría visual humana de la fase 2 pendiente |
 | Personaje: fases 3, 4A y 4B, Avatar Studio (fase 5) y fase 6 (Gate A, puente con el recorrido, cámara cinematográfica) | ✅ fusionado en la línea canónica |
 | Marble Bust 01 (GLB CC0) | 👁 KEEP o ADJUST pendiente |
@@ -46,7 +46,7 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 | 0.3 | Salida de la Sala Breeze con ratón y teclado; aviso de proximidad correcto | ✅ |
 | 0.4 | Suite propia: `npm run check` y `npm test` | ✅ |
 | 0.5 | Documentación completa en `docs/` y este roadmap | ✅ |
-| 0.6 | CI en GitHub Actions con `npm test` en cada PR | 🟡 añadido en la PR #1, pendiente de primera ejecución verde |
+| 0.6 | CI en GitHub Actions con `npm test` en cada PR | ✅ primera ejecución verde en la PR #1 |
 | 0.7 | Fusionar la PR #1 y poner `main` como rama por defecto | ⏳ Juanma |
 | 0.8 | Licencia del código propio | ⏳ Juanma |
 | 0.9 | Preview en Vercel (proyecto conectado al repo, sin build, salida `.`) y comprobar si se abre sin iniciar sesión | ⏳ autorización para crear el proyecto |
@@ -61,8 +61,9 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 | 1.3 | Portar la PR #83: elección «POV» o «Con mi avatar» al entrar y reinstalación del avatar y de Wet Paint tras reconstruir Studio | ✅ en `import/breeze-studio-pro` |
 | 1.4 | **Migrar Breeze Studio PRO**: analítica eliminada, texturas propias, ruta relativa, aviso sin WebGPU y vigilancia de pérdida del dispositivo | ✅ en `import/breeze-studio-pro`. Licencias de Venus, Poly Haven y Fabric Lace **pendientes** |
 | 1.5 | Puerta visual WebGPU de Breeze en navegador gráfico | ○ tras 1.4 |
-| 1.6 | Avatar: alojado en el repositorio ✅; continuidad en las 6 salas ✅ (pruebas automáticas, 👁 validación humana pendiente); registrar el nombre exacto de la licencia ⏳; optimizarlo (≤ 5 MB) ○ |
+| 1.6 | Avatar: alojado en el repositorio ✅; continuidad en las 6 salas ✅ (pruebas automáticas, 👁 validación humana pendiente); en móvil, control con el pulgar y encuadre vertical ✅ (A-20, A-27); registrar el nombre exacto de la licencia ⏳; optimizarlo (≤ 5 MB) ○ |
 | 1.7 | Bloque 2B: puerta humana del cruce entre salas | ⏳ Juanma |
+| 1.8 | **Auditoría E2E en escritorio y móvil** ([docs/10](docs/10-AUDITORIA.md)): 30 hallazgos, cada uno con su causa y su corrección, verificados con pruebas. El móvil se ha recorrido con gestos táctiles reales y queda vigilado en `npm test` | 🟡 en curso: falta la personalización completa desde el Studio y 👁 la prueba en un teléfono real |
 
 ## Fase 2 — Producto vendible: del Studio a la publicación
 

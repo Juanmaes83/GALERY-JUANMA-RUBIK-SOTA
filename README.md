@@ -45,13 +45,13 @@ CI: `.github/workflows/test.yml` ejecuta `npm test` en cada PR.
 
 | Acción | Teclado / ratón | Móvil |
 |---|---|---|
-| Moverse | `W A S D` / flechas | Mitad izquierda de la pantalla |
-| Mirar | Ratón (o `←` `→`) | Mitad derecha de la pantalla |
-| Activar lo cercano (obra o puerta) | `E` o `Enter` | — |
-| Salir del detalle o del recorrido | `Esc` | — |
-| Mapa | `M` | Botón «Mapa» |
+| Moverse (también con avatar) | `W A S D` / flechas | Pulgar en la mitad izquierda de la pantalla |
+| Mirar o girar | Ratón (o `←` `→`) | Arrastrar en la mitad derecha |
+| Activar lo cercano (obra o puerta) | `E` o `Enter` | Tocar el aviso «Entrar en…» / «Observar de cerca…» |
+| Salir del detalle o del recorrido | `Esc` | «Volver a la sala» |
+| Mapa | `M` | Botón «Mapa» (la barra de botones se desliza en horizontal) |
 | Recorrido comentado | `G` | Botón «Recorrido comentado» |
-| En detalle: obra anterior o siguiente / acercar | `←` `→` / rueda | — |
+| En detalle: obra anterior o siguiente / acercar | `←` `→` / rueda | Flechas laterales / `−` `+` |
 
 ## Salas
 

@@ -20,6 +20,11 @@
 const DEFAULT_DISTANCE = 3.25;
 const DEFAULT_HEIGHT = 2.05;
 const DEFAULT_TARGET_HEIGHT = 1.02;
+// A portrait phone sees ~30° horizontally. Aimed at hip height, the Character
+// fills the middle of that keyhole and hides the way ahead. Aiming at chest
+// height from the same camera position drops the body into the lower half and
+// opens the room above it; the 3D distance stays inside the envelope (≈3.29 m).
+const PORTRAIT_TARGET_HEIGHT = 1.55;
 const DEFAULT_FOV = 52;
 const CAMERA_MARGIN = 0.28;
 const CAMERA_CLEARANCE = 0.24;
@@ -46,10 +51,11 @@ const LATERALS = Object.freeze([0, 0.72, -0.72, 1.05, -1.05, 1.35, -1.35]);
 const HEIGHTS = Object.freeze([2.05, 2.22, 1.92]);
 
 export class ThirdPersonExploreController {
-  constructor({ distance = DEFAULT_DISTANCE, height = DEFAULT_HEIGHT, targetHeight = DEFAULT_TARGET_HEIGHT, fov = DEFAULT_FOV } = {}) {
+  constructor({ distance = DEFAULT_DISTANCE, height = DEFAULT_HEIGHT, targetHeight = DEFAULT_TARGET_HEIGHT, fov = DEFAULT_FOV, viewport = null } = {}) {
     this.distance = clamp(distance, CAMERA_MIN_DISTANCE, CAMERA_MAX_DISTANCE);
     this.height = height;
     this.targetHeight = targetHeight;
+    this._viewport = typeof viewport === 'function' ? viewport : null;
     this.fov = fov;
     this._currentFov = fov;
     this._provider = null;
@@ -135,7 +141,10 @@ export class ThirdPersonExploreController {
     const yaw = Number(target.yaw) || 0;
     const forward = [Math.sin(yaw), 0, Math.cos(yaw)];
     const right = [forward[2], 0, -forward[0]];
-    const desiredTarget = [human[0], human[1] + this.targetHeight, human[2]];
+    const portrait = (Number(this._viewport?.()?.aspect) || 1.6) < 1;
+    const targetHeight = portrait ? Math.max(this.targetHeight, PORTRAIT_TARGET_HEIGHT) : this.targetHeight;
+    const desiredTarget = [human[0], human[1] + targetHeight, human[2]];
+    this._diag.portrait = portrait;
 
     this._expireStaleLastSafe(human, yaw);
     const chosen = this._chooseCameraPosition(human, desiredTarget, forward, right, yaw);

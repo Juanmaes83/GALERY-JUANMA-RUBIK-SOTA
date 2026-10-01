@@ -2191,8 +2191,11 @@ function offsetForInset(pose, normal, viewport) {
   // Lateral direction on the horizontal plane, relative to the wall normal.
   const lateral = [normal[2], 0, -normal[0]];
   const dx = halfWidth * right;
-  // Raising the camera pushes the subject up the frame, clearing the label.
-  const dy = halfHeight * bottom;
+  // The label covers the bottom `bottom` fraction of the frame, so the visible
+  // area is centred at NDC y = +bottom. Translating the camera DOWN by
+  // halfHeight·bottom puts the subject exactly there. (Raising it, as before,
+  // pushed the work down behind the label — on a phone, mostly hidden.)
+  const dy = -halfHeight * bottom;
 
   return {
     ...pose,

@@ -79,7 +79,7 @@ export class ExperienceHUD {
         </div>
       </header>
 
-      <div class="iw-prompt" data-el="prompt" hidden></div>
+      <button type="button" class="iw-prompt" data-el="prompt" hidden></button>
 
       <section class="iw-detail" data-el="detail" hidden aria-live="polite">
         <div class="iw-detail__scrim"></div>
@@ -354,6 +354,16 @@ export class ExperienceHUD {
     if (nearest && !guided && !state.focusedEntityId) {
       this.el.prompt.hidden = false;
       this.el.prompt.innerHTML = `<kbd>E</kbd><span>${nearest.accessibilityLabel}</span>`;
+      // Touch has no E key: the prompt itself is the action (same as E/Enter).
+      if (!this._promptBound) {
+        this._promptBound = true;
+        this.el.prompt.addEventListener('click', () => this.onActivate?.());
+        // Enter/Space on the focused button already produce that click; letting
+        // the keydown reach the window's E/Enter handler as well would activate twice.
+        this.el.prompt.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') event.stopPropagation();
+        });
+      }
     } else {
       this.el.prompt.hidden = true;
     }
@@ -516,14 +526,25 @@ export class ExperienceHUD {
       })
       .join('');
 
+    // Each name goes where it collides with nothing: above its room by default,
+    // else below, right or left. Rooms hung under their galleries (Vestíbulo,
+    // Itinerante) used to print their names over each other and across the
+    // corridor line between them.
+    const points = store.spaces.map((space) => project(positions.get(space.id)));
+    const segments = graph.edges.map((edge) => [project(positions.get(edge.from)), project(positions.get(edge.to))]);
+    const placed = [];
     const nodes = store.spaces
-      .map((space) => {
-        const p = project(positions.get(space.id));
+      .map((space, index) => {
+        const p = points[index];
         const cls = space.id === active ? 'is-active' : visited.has(space.id) ? 'is-visited' : '';
+        const lines = wrapMapLabel(space.title.replace(/ —.*$/, ''));
+        const label = placeMapLabel(p, lines, points, segments, placed);
+        placed.push(label.box);
+        const tspans = lines.map((line, i) => `<tspan x="${label.x}" dy="${i ? MAP_LINE : 0}">${escapeHtml(line)}</tspan>`).join('');
         return `
           <g class="iw-map__node ${cls}">
             <circle cx="${p.x}" cy="${p.y}" r="7" />
-            <text x="${p.x}" y="${p.y - 13}" text-anchor="middle">${space.title.replace(/ —.*$/, '')}</text>
+            <text x="${label.x}" y="${label.y}" text-anchor="${label.anchor}">${tspans}</text>
           </g>`;
       })
       .join('');
@@ -701,6 +722,69 @@ const KIND_LABEL = {
   TEXT: 'Texto de sala',
   OBJECT_3D: 'Objeto'
 };
+
+/* -- map labels ----------------------------------------------------------- */
+
+const MAP_VIEW = [0, 0, 320, 240];
+const MAP_CHAR = 4.9;   // average advance of the 8 px label face, letter-spacing included
+const MAP_LINE = 9.5;
+const MAP_ASCENT = 6.5;
+
+/** Two lines at most, broken at the last space that fits. */
+function wrapMapLabel(text, max = 18) {
+  if (text.length <= max) return [text];
+  const cut = text.lastIndexOf(' ', max);
+  return cut > 0 ? [text.slice(0, cut), text.slice(cut + 1)] : [text];
+}
+
+function placeMapLabel(p, lines, points, segments, placed) {
+  const w = Math.max(...lines.map((line) => line.length)) * MAP_CHAR;
+  const h = (lines.length - 1) * MAP_LINE + MAP_ASCENT + 2;
+  const side = p.y - h / 2 + MAP_ASCENT;
+  const options = [
+    { anchor: 'middle', x: p.x, y: p.y - 13 - (lines.length - 1) * MAP_LINE, left: p.x - w / 2 },
+    { anchor: 'middle', x: p.x, y: p.y + 19, left: p.x - w / 2 },
+    { anchor: 'start', x: p.x + 11, y: side, left: p.x + 11 },
+    { anchor: 'end', x: p.x - 11, y: side, left: p.x - 11 - w }
+  ].map((o) => ({ ...o, box: [o.left, o.y - MAP_ASCENT, w, h] }));
+  let best = options[0];
+  let bestCost = Infinity;
+  options.forEach((option, order) => {
+    const cost = mapLabelCost(option.box, points, segments, placed) + order * 0.01;
+    if (cost < bestCost) { best = option; bestCost = cost; }
+  });
+  return best;
+}
+
+function mapLabelCost(box, points, segments, placed) {
+  let cost = 0;
+  for (const other of placed) cost += overlapArea(box, other);
+  for (const q of points) cost += overlapArea(box, [q.x - 8, q.y - 8, 16, 16]) * 4;
+  for (const [a, b] of segments) if (segmentHitsBox(a, b, box)) cost += 200;
+  const [vx, vy, vw, vh] = MAP_VIEW;
+  cost += (box[2] * box[3] - overlapArea(box, [vx, vy, vw, vh])) * 2;
+  return cost;
+}
+
+function overlapArea([ax, ay, aw, ah], [bx, by, bw, bh]) {
+  const w = Math.min(ax + aw, bx + bw) - Math.max(ax, bx);
+  const h = Math.min(ay + ah, by + bh) - Math.max(ay, by);
+  return w > 0 && h > 0 ? w * h : 0;
+}
+
+function segmentHitsBox(a, b, [x, y, w, h]) {
+  // Liang–Barsky clip of the segment against the box.
+  let t0 = 0;
+  let t1 = 1;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  for (const [pk, qk] of [[-dx, a.x - x], [dx, x + w - a.x], [-dy, a.y - y], [dy, y + h - a.y]]) {
+    if (pk === 0) { if (qk < 0) return false; continue; }
+    const r = qk / pk;
+    if (pk < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; }
+  }
+  return t0 <= t1;
+}
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({

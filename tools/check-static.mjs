@@ -11,6 +11,7 @@
  *    declaradas en INERT_REFERENCES, con su motivo.
  * 4. Cada `content.media.src` del World existe.
  * 5. El GLB de Marble Bust 01 coincide con el SHA-256 de su registro de procedencia.
+ * 6. La versión en texto da las mismas medidas que la cartela (calculada desde `size`).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -155,11 +156,26 @@ if (glbSha !== provenance.runtimeSha256) fail(`GLB SHA-256 ${glbSha} ≠ ${prove
 if (glb.length !== provenance.runtimeBytes) fail(`GLB bytes ${glb.length} ≠ ${provenance.runtimeBytes}`);
 if (provenance.license !== 'CC0 1.0') fail(`GLB licencia inesperada: ${provenance.license}`);
 
+// 6. Text version = wall label. The label prints the measurements from `size`;
+// the text version is written by hand. Five works once disagreed (220 × 150 in
+// the text, 260 × 178 on the wall), so a screen-reader visit got other numbers.
+let parityChecked = 0;
+for (const entity of world.entities || []) {
+  const m = /(\d+) por (\d+) cent/.exec(entity.accessibility?.description || '');
+  if (!m || !entity.size) continue;
+  const wall = [Math.round(entity.size[0] * 100), Math.round(entity.size[1] * 100)];
+  if (Number(m[1]) !== wall[0] || Number(m[2]) !== wall[1]) {
+    fail(`TEXTO ≠ CARTELA ${entity.id}: «${m[1]} por ${m[2]}» frente a ${wall[0]} × ${wall[1]} cm`);
+  }
+  parityChecked += 1;
+}
+
 console.log(`sintaxis: ${syntaxChecked} archivos JS`);
 console.log(`json: ${jsonChecked} archivos`);
 console.log(`grafo desde index.html: ${seen.size} archivos alcanzados, ${missing.size} referencias inertes declaradas`);
 console.log(`media del World: ${mediaChecked} rutas`);
 console.log(`Marble Bust 01: ${glb.length} bytes, sha256 ${glbSha}`);
+console.log(`texto = cartela: ${parityChecked} medidas`);
 if (failures.length) {
   console.error(`\n${failures.length} fallo(s):\n- ${failures.join('\n- ')}`);
   process.exit(1);

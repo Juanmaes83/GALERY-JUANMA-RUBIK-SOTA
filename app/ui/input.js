@@ -73,6 +73,9 @@ export class InputSystem {
     this._on(this.element, 'touchstart', (event) => this._onTouchStart(event), { passive: true });
     this._on(this.element, 'touchmove', (event) => this._onTouchMove(event), { passive: false });
     this._on(this.element, 'touchend', (event) => this._onTouchEnd(event), { passive: true });
+    // A cancelled touch (system gesture, incoming call, notification) never
+    // sends touchend; without this the visitor would keep walking.
+    this._on(this.element, 'touchcancel', (event) => this._onTouchEnd(event), { passive: true });
   }
 
   _onKey(event, down) {
@@ -148,6 +151,8 @@ export class InputSystem {
     this.explore.input.run = false;
     this._turn = 0;
     this._movementSink?.setInput?.({ forward: 0, turn: 0, run: false });
+    this._sinkTouch = null;
+    this._sinkLookTurn = 0;
     this._movementSink = sink || null;
     this._movementSink?.setInput?.({ forward: 0, turn: 0, run: false });
     if (document.pointerLockElement === this.element && this._movementSink) document.exitPointerLock?.();
@@ -156,7 +161,7 @@ export class InputSystem {
   get movementSink() { return this._movementSink; }
 
   _onTouchStart(event) {
-    if (!this.enabled || !this.movementEnabled || this._movementSink) return;
+    if (!this.enabled || !this.movementEnabled) return;
     const rect = this.element.getBoundingClientRect();
     for (const touch of event.changedTouches) {
       const left = touch.clientX - rect.left < rect.width / 2;
@@ -164,12 +169,40 @@ export class InputSystem {
         this._touch.id = touch.identifier; this._touch.originX = touch.clientX; this._touch.originY = touch.clientY;
       } else if (!left && this._touch.lookId === null) {
         this._touch.lookId = touch.identifier; this._touch.lastX = touch.clientX; this._touch.lastY = touch.clientY;
+        this._touch.lookOriginX = touch.clientX;
       }
     }
   }
 
+  /**
+   * Third-person Character (movement sink): the same two thumbs drive it.
+   * Left half is a joystick (up/down walks, left/right turns); a drag on the
+   * right half turns as well. Without this, a phone could not move the avatar.
+   */
+  _pushTouchToSink() {
+    const stick = this._sinkTouch || { forward: 0, turn: 0 };
+    const turn = stick.turn || this._sinkLookTurn || 0;
+    this._movementSink?.setInput?.({ forward: stick.forward, turn, run: false });
+  }
+
   _onTouchMove(event) {
-    if (!this.enabled || !this.movementEnabled || this._movementSink) return;
+    if (!this.enabled || !this.movementEnabled) return;
+    if (this._movementSink) {
+      for (const touch of event.changedTouches) {
+        if (touch.identifier === this._touch.id) {
+          event.preventDefault();
+          this._sinkTouch = {
+            forward: clampUnit(-(touch.clientY - this._touch.originY) / 60),
+            turn: clampUnit((touch.clientX - this._touch.originX) / 60)
+          };
+        } else if (touch.identifier === this._touch.lookId) {
+          event.preventDefault();
+          this._sinkLookTurn = clampUnit((touch.clientX - this._touch.lookOriginX) / 60);
+        }
+      }
+      this._pushTouchToSink();
+      return;
+    }
     for (const touch of event.changedTouches) {
       if (touch.identifier === this._touch.id) {
         event.preventDefault();
@@ -187,9 +220,13 @@ export class InputSystem {
 
   _onTouchEnd(event) {
     for (const touch of event.changedTouches) {
-      if (touch.identifier === this._touch.id) { this._touch.id = null; this.explore.input.forward = 0; this.explore.input.right = 0; }
-      if (touch.identifier === this._touch.lookId) this._touch.lookId = null;
+      if (touch.identifier === this._touch.id) {
+        this._touch.id = null; this.explore.input.forward = 0; this.explore.input.right = 0;
+        this._sinkTouch = null;
+      }
+      if (touch.identifier === this._touch.lookId) { this._touch.lookId = null; this._sinkLookTurn = 0; }
     }
+    if (this._movementSink) this._pushTouchToSink();
   }
 
   setEnabled(enabled) {

@@ -46,8 +46,50 @@ Estados:
 | A-17 | Breeze | El panel del producto mezcla inglés y español | 📋 |
 | A-18 | Breeze | El botón-puente «← Galería B» tapa la barra «info» del panel de Breeze (abajo a la izquierda) | ✅ elevado 48 px; alcanzable (`BREEZE-BRIDGE-REACHABLE`) |
 | A-19 | Breeze | Licencias: Venus (Sketchfab), HDRI de Poly Haven y Fabric Lace sin confirmar | ⛔ **pendiente** de verificación documental |
+| A-20 | Móvil · Avatar | El pulgar no movía al avatar: el gesto táctil solo movía la cámara en primera persona | ✅ `MOBILE-AVATAR-TOUCH` (≈1 m en 2,5 s) |
+| A-21 | Móvil | Sin `touchcancel`: si el sistema interrumpía el gesto (una notificación, una llamada), el visitante seguía caminando solo | ✅ `touchcancel` termina el gesto |
+| A-22 | Móvil · Puertas | El aviso «E · Entrar en…» no se podía tocar: en un móvil no había forma de cruzar una puerta | ✅ el aviso es un botón (44 px en táctil, sin la tecla) · `MOBILE-DOOR-TAP` |
+| A-23 | Móvil · UI | La barra superior ocupaba 209 px de 844 (una cuarta parte de la pantalla) en tres filas | ✅ una sola fila desplazable: 118 px · `MOBILE-LAYOUT` |
+| A-24 | Ficha | El encuadre que reserva sitio para la cartela desplazaba la obra hacia **abajo** (signo invertido). En móvil, la obra quedaba debajo de la cartela | ✅ `MOBILE-DETAIL-FRAMING` |
+| A-25 | Móvil · Ficha | «1 / 6» y «Volver a la sala» partidos en dos líneas, tecla «Esc» en una pantalla táctil y controles de 20 px | ✅ una línea, sin tecla en táctil y área táctil de ≈44 px |
+| A-26 | Mapa | Nombres superpuestos («Vestíbulo» sobre «Sala de Exposición Itinerante») y títulos de sala insertados sin escapar, aunque son editables desde el Studio | ✅ colocación sin choques y escape · `MAP-LABELS` |
+| A-27 | Móvil · Avatar | En vertical, el avatar tapaba el centro de la pantalla: el campo horizontal es de solo ~30° | ✅ en vertical la cámara mira a la altura del pecho; el cuerpo queda al 67 % de la altura · `MOBILE-AVATAR-FRAMING` · 👁 validación humana |
+| A-28 | Accesibilidad | Tras tocar la escena, el anillo de foco naranja del navegador enmarcaba toda la pantalla | ✅ anillo propio solo con teclado; ninguno en pantallas táctiles |
+| A-29 | Contenido | La versión en texto no coincidía con la cartela: «once obras» frente a «Nueve obras», y cinco obras con otras medidas (220 × 150 frente a 260 × 178) | ✅ corregido y vigilado por `npm run check` (texto = cartela) |
+| A-30 | Derechos | La nota del World afirmaba que todo era ficticio, pero Marble Bust 01 (Rico Cilliers, Poly Haven) y Breeze (Niklas Niehus) tienen autoría real | ✅ nota corregida, sin declarar licencias nuevas |
 
 ## Detalle
+
+### Auditoría móvil (390 × 844, táctil): A-20 a A-28
+- **Método:** `audit/mobile.mjs`, grabado en vídeo. Usa gestos táctiles reales (CDP `Input.dispatchTouchEvent`): pulgar izquierdo para caminar, arrastre a la derecha para mirar, toques en botones. Recorre la visita en primera persona, una puerta, una ficha, el mapa, el contenido en texto, el avatar y el Studio.
+- **Primera pasada:**
+  - el visitante camina y mira, pero **no puede cruzar ninguna puerta** porque el aviso no se puede tocar (A-22);
+  - con avatar, el pulgar no lo mueve (A-20);
+  - la barra superior ocupa una cuarta parte de la pantalla (A-23);
+  - la obra enfocada queda bajo la cartela (A-24).
+- **Última pasada:** 0 hallazgos y 0 errores de consola. Las comprobaciones esenciales quedan en `npm test` (sección «Phone»), para que no vuelvan a romperse.
+
+### A-24 · El encuadre con cartela tenía el signo invertido
+- **Cálculo:** la cartela cubre la fracción `f` inferior del encuadre, así que la zona visible está centrada en NDC y = +f. Para que la obra quede ahí, la cámara y su objetivo deben **bajar** `halfHeight · f`. El código los subía, y la obra aparecía desplazada hacia abajo, detrás de la cartela.
+- **Medido tras corregirlo:** en 390 × 844, el borde inferior de la obra queda por encima de la cartela (`MOBILE-DETAIL-FRAMING`). En 1280 × 720, la obra queda centrada en la zona libre.
+
+### A-26 · Mapa de salas
+- **Colocación:** cada nombre se coloca donde no choca con nada:
+  - por defecto, encima de su sala; si no cabe, debajo, a la derecha o a la izquierda;
+  - se evitan las otras etiquetas, los nodos y las líneas de paso;
+  - los nombres largos se parten en dos líneas.
+- **Escape:** los títulos se escapan antes de insertarse en el SVG.
+- **Verificación:** `MAP-LABELS`, 0 choques en 390 y 1280 px.
+
+### A-27 · Avatar en vertical
+- **Medida:** con 52°–59° de campo vertical y una relación de aspecto de 0,46, el campo horizontal es de ~30°. A 3,25 m, el avatar ocupaba el 40 % del ancho y el centro de la imagen.
+- **Corrección:** en vertical, el `ThirdPersonExploreController` apunta a 1,55 m en lugar de 1,02 m, desde la misma posición de cámara. La distancia 3D (≈3,29 m) sigue dentro de la envolvente 2,75–3,72 m, y el plano horizontal no cambia.
+- **Resultado:** el cuerpo queda al 67 % de la altura y la cabeza al 48 %, y la sala se ve por encima del avatar.
+
+### A-29 y A-30 · Contenido y derechos
+- **Medidas:** la cartela calcula las medidas desde `size`, que es lo que se ve en la sala; la versión en texto estaba escrita a mano con medidas antiguas. Una visita con lector de pantalla recibía otros números.
+- **Recuento:** «Nueve obras» es correcto para la colección permanente sin el piloto Marble Bust 01: 5 piezas en la Galería A, 3 en la Galería B y 1 en el Archivo. Marble Bust 01 queda fuera del recuento mientras su veredicto visual siga **pendiente**.
+- **Nota de derechos:** ahora nombra las dos piezas con autoría real y remite a `THIRD_PARTY_NOTICES.md`. No declara ninguna licencia nueva.
 
 ### A-04 · El avatar solo era navegable entre Galería A y B
 - **Reproducción:** `?character=1&mobility=1&continuity=1&gatea=1`, tercera persona en Galería A, cruce al Vestíbulo y vuelta. Al cruzar, la cámara pasaba a `EXPLORE`. De vuelta en A, el avatar estaba inmóvil donde se quedó y en B la cámara estaba dentro de su cabeza.

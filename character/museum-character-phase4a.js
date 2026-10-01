@@ -139,7 +139,7 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
   root.updateMatrixWorld(true);
 
   const motion = createCharacterMotionV2(root);
-  const cameraController = new ThirdPersonExploreController();
+  const cameraController = new ThirdPersonExploreController({ viewport: () => runtime.viewport?.() });
   cameraController.setNavigationVolume(volume);
   cameraController.setTargetProvider(() => ({ position: root.position.toArray(), yaw: root.rotation.y }));
   runtime.camera.register(CAMERA_AUTHORITY.THIRD_PERSON_EXPLORE, cameraController);
