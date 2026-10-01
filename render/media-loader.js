@@ -63,7 +63,7 @@ export class MediaLoader {
       return { texture: null, aspect: media?.aspect ?? null, kind: 'GENERATED', fallback: false };
     }
 
-    const url = this._resolve(media.src);
+    const url = this._resolve(this._pickSource(media));
     const cached = this._cache.get(url);
     if (cached) {
       cached.refs += 1;
@@ -105,6 +105,20 @@ export class MediaLoader {
 
     this._inflight.set(url, promise);
     return promise;
+  }
+
+  /**
+   * A video may name alternates (`media.alternates: [{ src, type }]`). The main
+   * `src` (typed by `media.type`) goes first, and the first candidate this
+   * browser says it can play wins. A WebM alone sent browsers without VP9, such
+   * as older iPhones, to the generated fallback instead of the work.
+   */
+  _pickSource(media) {
+    if (media.kind !== 'VIDEO' || !Array.isArray(media.alternates) || !media.alternates.length) return media.src;
+    const probe = document.createElement('video');
+    const candidates = [{ src: media.src, type: media.type }, ...media.alternates];
+    const playable = candidates.find((candidate) => candidate?.src && candidate.type && probe.canPlayType(candidate.type) !== '');
+    return (playable || candidates[0]).src;
   }
 
   _loadImage(url) {

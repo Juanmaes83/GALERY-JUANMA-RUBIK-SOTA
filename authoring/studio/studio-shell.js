@@ -1556,6 +1556,8 @@ export class StudioShell {
   }
 
   async _takeFile(slot, file) {
+    // An empty change (a cancelled picker) is not a decision to remove the file.
+    if (!file) return;
     const { kind, field } = SLOT_MEDIA[slot];
     const holder = slot === MEDIA_SLOT.INSTITUTION_LOGO
       ? this.config.institution
@@ -1565,6 +1567,11 @@ export class StudioShell {
     // Replacing releases the previous asset: an object URL that is dropped
     // rather than revoked is a leak that never announces itself.
     const previous = target.get();
+    // Stop describing the old file before its asset goes: releasing redraws, and
+    // a record pointing at a released asset read as «En el proyecto», in green,
+    // for the seconds a new video took to decode, even when the old file had
+    // failed. A save in that window wrote a dead reference.
+    target.set(null);
     if (previous?.assetId) this.vault.release(previous.assetId);
 
     // A piece shows one representation. Choosing a video for a work that already
@@ -1579,7 +1586,14 @@ export class StudioShell {
       holder[spec.field] = null;
     }
 
-    const asset = await this.vault.accept(file, { kind });
+    const asset = await this.vault.accept(file, {
+      kind,
+      // Follow the new file from its first state: Seleccionado → … → Listo.
+      onStart: (fresh) => target.set({
+        kind, src: fresh.reference, assetId: fresh.id, name: fresh.name,
+        mimeType: fresh.mimeType, bytes: fresh.bytes, width: 0, height: 0, durationMs: 0
+      })
+    });
     if (asset.state === 'ERROR') {
       // The reference is kept so the author sees which file failed and why, and
       // the slot offers the way out instead of going quiet.

@@ -1745,6 +1745,13 @@
         "media": {
           "kind": "VIDEO",
           "src": "../assets/collection/cuaderno-de-luz.webm",
+          "type": "video/webm; codecs=\"vp9\"",
+          "alternates": [
+            {
+              "src": "../assets/collection/cuaderno-de-luz.mp4",
+              "type": "video/mp4; codecs=\"avc1.42E01E\""
+            }
+          ],
           "aspect": 1.7777777777777777,
           "loop": true,
           "muted": true,

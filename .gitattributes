@@ -9,3 +9,4 @@ docs/MUSEUM_VISUAL_STONE_VASIJA_PREMIUM_V1_2026-09-02.md -whitespace
 *.obj -diff
 *.webp binary
 *.webm binary
+*.mp4 binary

@@ -305,8 +305,14 @@ export function baseConfigFromWorld(world) {
 const WORLD_MEDIA_KIND = { image:'IMAGE', video:'VIDEO' };
 function mediaForWorld(authored, previous, config, resolveMedia) {
   const live = resolveMedia(authored.src) || authored.src;
+  // The authored file replaces the encoding, not only the URL. The previous
+  // file's type, alternates and poster describe a video that is no longer there:
+  // kept, a browser without VP9 would play the old MP4 alternate instead of the
+  // author's file, and the old poster would show before it.
+  const kept = { ...(previous || {}) };
+  delete kept.type; delete kept.alternates; delete kept.poster;
   return {
-    ...(previous || {}), src: live, kind: WORLD_MEDIA_KIND[authored.kind] || 'IMAGE',
+    ...kept, src: live, kind: WORLD_MEDIA_KIND[authored.kind] || 'IMAGE',
     aspect: authored.width && authored.height ? authored.width / authored.height : previous?.aspect,
     credit: `${config.institution.name || 'La institución autora'} — medio aportado en la configuración`,
     rights: 'Medio aportado por la institución que firma esta configuración.'

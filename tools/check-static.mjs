@@ -141,11 +141,16 @@ const WORLD = 'worlds/museum-v1.world.json';
 const world = JSON.parse(fs.readFileSync(path.join(ROOT, WORLD), 'utf8'));
 let mediaChecked = 0;
 for (const entity of world.entities || []) {
-  const src = entity.content?.media?.src;
-  if (!src) continue;
-  const rel = path.posix.normalize(path.posix.join(path.posix.dirname(WORLD), src));
-  if (!exists(rel)) fail(`MEDIA ${entity.id}: ${src} no existe`);
-  mediaChecked += 1;
+  const media = entity.content?.media;
+  if (!media?.src) continue;
+  for (const src of [media.src, ...(media.alternates || []).map((alternate) => alternate.src)]) {
+    const rel = path.posix.normalize(path.posix.join(path.posix.dirname(WORLD), src));
+    if (!exists(rel)) fail(`MEDIA ${entity.id}: ${src} no existe`);
+    mediaChecked += 1;
+  }
+  for (const alternate of media.alternates || []) {
+    if (!alternate.type) fail(`MEDIA ${entity.id}: la alternativa ${alternate.src} no declara su tipo`);
+  }
 }
 
 // 5. Marble Bust 01 provenance

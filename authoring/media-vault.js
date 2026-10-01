@@ -143,6 +143,27 @@ export function describeAsset(asset, media = null) {
   };
 }
 
+/**
+ * Why a video would not decode, in terms the author can act on. The old sentence
+ * recommended «un MP4 (H.264) o un WebM» even to the author who had just uploaded
+ * an H.264 MP4 into a browser without that codec, which reads as a contradiction.
+ */
+function undecodableVideoMessage(file) {
+  const probe = document.createElement('video');
+  const type = String(file?.type || '');
+  const name = String(file?.name || '');
+  const isMp4 = /mp4|quicktime|m4v/i.test(type) || /\.(mp4|m4v|mov)$/i.test(name);
+  const isWebm = /webm/i.test(type) || /\.webm$/i.test(name);
+  const h264 = probe.canPlayType('video/mp4; codecs="avc1.42E01E"') !== '';
+  const vp9 = probe.canPlayType('video/webm; codecs="vp9"') !== '';
+  if (isMp4 && !h264) {
+    return 'Este navegador no reproduce vídeo MP4 (H.264). Usa un WebM (VP9) o abre el Studio en Chrome, Edge o Safari. '
+      + 'Los visitantes con este mismo navegador tampoco verían un MP4.';
+  }
+  if (isWebm && !vp9) return 'Este navegador no reproduce vídeo WebM (VP9). Usa un MP4 (H.264).';
+  return `El vídeo no se pudo decodificar: puede estar dañado o usar un códec poco común (por ejemplo, HEVC). Expórtalo como ${h264 ? 'MP4 (H.264)' : 'WebM (VP9)'} y vuelve a subirlo.`;
+}
+
 export class MediaVault {
   constructor({ onChange } = {}) {
     /** @type {Map<string, object>} */
@@ -166,7 +187,7 @@ export class MediaVault {
    * Rejects unsupported media loudly: silently accepting a `.mov` and rendering
    * nothing is the failure mode this exists to prevent.
    */
-  async accept(file, { kind = 'image' } = {}) {
+  async accept(file, { kind = 'image', onStart = null } = {}) {
     const id = `a${(this._n += 1)}_${Date.now().toString(36)}`;
     const asset = {
       id,
@@ -184,6 +205,9 @@ export class MediaVault {
       thumb: null
     };
     this.assets.set(id, asset);
+    // Lets a caller point its record at the new asset before the first redraw,
+    // so a slot shows this file's chain from «Seleccionado» onwards.
+    onStart?.(asset);
     this.onChange(asset);
 
     if (!file) return this._fail(asset, 'No se ha seleccionado ningún archivo.');
@@ -203,7 +227,7 @@ export class MediaVault {
         const meta = await this._probeVideo(url, () => {
           asset.state = 'DECODED';
           this.onChange(asset);
-        });
+        }, file);
         asset.width = meta.width; asset.height = meta.height; asset.duration = meta.duration;
         asset.thumb = meta.thumb || null;
       } else {
@@ -232,7 +256,7 @@ export class MediaVault {
     });
   }
 
-  _probeVideo(url, onDecoded = () => {}) {
+  _probeVideo(url, onDecoded = () => {}, file = null) {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
       video.preload = 'auto';
@@ -289,7 +313,7 @@ export class MediaVault {
         if (settled) return;
         settled = true;
         teardown();
-        reject(new Error('El vídeo no se pudo decodificar. Prueba con un MP4 (H.264) o un WebM.'));
+        reject(new Error(undecodableVideoMessage(file)));
       };
       video.src = url;
     });

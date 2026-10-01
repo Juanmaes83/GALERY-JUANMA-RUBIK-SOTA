@@ -228,6 +228,9 @@ export const MEDIA_KIND = Object.freeze({
  * @property {keyof MEDIA_KIND} kind
  * @property {string} [src]        URL relative to the world file, or absolute
  * @property {string} [poster]     still frame for VIDEO, shown before playback
+ * @property {string} [type]       MIME type with codecs of `src`, e.g. 'video/webm; codecs="vp9"'
+ * @property {{src:string, type:string}[]} [alternates]  other encodings of the same VIDEO;
+ *           the loader plays the first one the browser can (`canPlayType`), `src` first
  * @property {number} [aspect]     width / height, used before the file has loaded
  * @property {boolean} [loop]
  * @property {boolean} [muted]

@@ -57,6 +57,9 @@ Estados:
 | A-28 | Accesibilidad | Tras tocar la escena, el anillo de foco naranja del navegador enmarcaba toda la pantalla | ✅ anillo propio solo con teclado; ninguno en pantallas táctiles |
 | A-29 | Contenido | La versión en texto no coincidía con la cartela: «once obras» frente a «Nueve obras», y cinco obras con otras medidas (220 × 150 frente a 260 × 178) | ✅ corregido y vigilado por `npm run check` (texto = cartela) |
 | A-30 | Derechos | La nota del World afirmaba que todo era ficticio, pero Marble Bust 01 (Rico Cilliers, Poly Haven) y Breeze (Niklas Niehus) tienen autoría real | ✅ nota corregida, sin declarar licencias nuevas |
+| A-31 | Studio · Medios | Al sustituir un archivo, mientras el nuevo cargaba, la ranura mostraba «En el proyecto» en verde con el nombre del archivo **anterior**, aunque ese archivo hubiera fallado. Guardar en ese intervalo escribía una referencia muerta | ✅ la ranura sigue al archivo nuevo desde «Seleccionado»; un selector cancelado no borra nada · `STUDIO-MEDIA-REPLACE` |
+| A-32 | Studio · Vídeo | MP4 H.264 rechazado en Chromium sin códecs propietarios con el mensaje «Prueba con un MP4 (H.264) o un WebM»: recomendaba el mismo formato que acababa de fallar | ✅ el mensaje consulta `canPlayType` y da el consejo que corresponde · `STUDIO-VIDEO-ADVICE` |
+| A-33 | Medios · Compatibilidad | La proyección «Cuaderno de luz» solo existía en WebM (VP9): en navegadores sin VP9 (iPhone antiguos) la pared mostraba el sustituto generado | ✅ `media.alternates` con MP4 H.264 (28 kB); el cargador elige la primera variante que el navegador puede reproducir. Un medio subido desde el Studio sustituye también las variantes. `npm run check` comprueba que existen |
 
 ## Detalle
 

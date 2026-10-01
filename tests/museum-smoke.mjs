@@ -215,6 +215,45 @@ try {
     await ready();
     const restored = await page.locator('[data-bind="institution.claim"]').first().inputValue().catch(() => null);
     check('STUDIO-RELOAD', 'La edición sobrevive a la recarga', restored === claim, restored);
+
+    // Replacing a file: while the new one loads, the slot must already describe
+    // it, never the previous record (whose asset has just been released).
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+    await page.locator('#st .st-nodebtn[data-node="entity.artwork.horizonte-interrumpido"]').first().click();
+    const slot = () => page.evaluate(() => {
+      const el = document.querySelector('#st .st-slot[data-slot="ARTWORK_IMAGE"]');
+      return { file: el?.querySelector('.st-filename')?.textContent.trim(), state: el?.querySelector('.st-slotstate')?.textContent.replace(/\s+/g, ' ').trim() };
+    });
+    await page.locator('#st [data-media="ARTWORK_IMAGE"]').setInputFiles({ name: 'primera.png', mimeType: 'image/png', buffer: png });
+    await page.waitForFunction(() => /Lista/.test(document.querySelector('#st .st-slot[data-slot="ARTWORK_IMAGE"] .st-slotstate')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});
+    await page.evaluate(() => {
+      const vault = window.__IW_STUDIO.vault;
+      const accept = vault.accept.bind(vault);
+      vault.accept = (file, options) => accept(file, options).then((asset) => new Promise((resolve) => { window.__releaseAccept = () => resolve(asset); }));
+    });
+    await page.locator('#st [data-media="ARTWORK_IMAGE"]').setInputFiles({ name: 'segunda.png', mimeType: 'image/png', buffer: png });
+    await page.waitForFunction(() => typeof window.__releaseAccept === 'function', null, { timeout: 15000 }).catch(() => {});
+    const during = await slot();
+    await page.evaluate(() => window.__releaseAccept?.());
+    await page.waitForTimeout(300);
+    const after = await slot();
+    check('STUDIO-MEDIA-REPLACE', 'Al sustituir un archivo, la ranura muestra el nuevo desde el primer momento',
+      during.file === 'segunda.png' && !/En el proyecto/.test(during.state || '') && after.file === 'segunda.png' && /Lista/.test(after.state || ''),
+      `durante: ${JSON.stringify(during)} · después: ${JSON.stringify(after)}`);
+
+    // An undecodable video gets advice that does not repeat the format that failed.
+    await page.locator('#st .st-nodebtn[data-node="entity.artwork.division-tercera"]').first().click();
+    await page.evaluate(() => { delete window.__releaseAccept; });
+    await page.locator('#st [data-media="ARTWORK_VIDEO"]').setInputFiles({ name: 'roto.mp4', mimeType: 'video/mp4', buffer: png });
+    await page.waitForFunction(() => typeof window.__releaseAccept === 'function', null, { timeout: 30000 }).catch(() => {});
+    await page.evaluate(() => window.__releaseAccept?.());
+    const advice = await page.waitForFunction(() => {
+      const t = document.querySelector('#st .st-slot[data-slot="ARTWORK_VIDEO"] .st-slotstate')?.textContent || '';
+      return /No se pudo usar/.test(t) ? t.replace(/\s+/g, ' ').trim() : null;
+    }, null, { timeout: 30000 }).then((h) => h.jsonValue()).catch(() => '');
+    const h264 = await page.evaluate(() => document.createElement('video').canPlayType('video/mp4; codecs="avc1.42E01E"') !== '');
+    check('STUDIO-VIDEO-ADVICE', 'Un vídeo que no se puede decodificar recibe un consejo coherente con el navegador',
+      Boolean(advice) && !advice.includes('Prueba con un MP4 (H.264) o un WebM') && (h264 || advice.includes('WebM')), advice);
     check('STUDIO-CONSOLE', 'Sin errores de consola en el Studio', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
     await context.close();
   }
