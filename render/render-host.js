@@ -19,6 +19,9 @@
 
 import * as THREE from '../vendor/three/three.module.min.js';
 
+/** Upper bound for one warmup; software renderers can be slow, so it is generous. */
+const WARM_TIMEOUT_MS = 15000;
+
 export class RenderHost {
   /**
    * @param {{canvas:HTMLCanvasElement, quality:import('../engine/core/device-tier.js').QualityPolicy}} options
@@ -105,10 +108,41 @@ export class RenderHost {
    * stalling on shader compilation (pattern reference IW-REF-002).
    */
   async warm(scene) {
-    if (typeof this.renderer.compileAsync === 'function') {
-      await this.renderer.compileAsync(scene, this.camera);
-    } else {
+    if (typeof this.renderer.compileAsync !== 'function') {
       this.renderer.compile(scene, this.camera);
+      return;
+    }
+    // three's compileAsync polls, on a timer, the programs of every material it
+    // compiled. If one of those materials is disposed meanwhile (a neighbouring
+    // Space cooling down), the poller reads a program that no longer exists,
+    // throws inside the timer and the promise never settles — leaving that Space
+    // WARMING for good. Disposal therefore waits for `whenIdle()`, and a bounded
+    // timeout guarantees a warmup can never stall the lifecycle on its own.
+    this._warming = (this._warming || 0) + 1;
+    let timer = null;
+    try {
+      await Promise.race([
+        this.renderer.compileAsync(scene, this.camera),
+        new Promise((resolve) => { timer = setTimeout(resolve, WARM_TIMEOUT_MS); })
+      ]);
+    } finally {
+      clearTimeout(timer);
+      this._warming -= 1;
+      if (this._warming === 0) this._flushIdle();
+    }
+  }
+
+  /** Run `fn` now, or as soon as no warmup is compiling. */
+  whenIdle(fn) {
+    if (!this._warming) { fn(); return; }
+    (this._idleQueue ||= []).push(fn);
+  }
+
+  _flushIdle() {
+    const queue = this._idleQueue || [];
+    this._idleQueue = [];
+    for (const fn of queue) {
+      try { fn(); } catch (error) { console.warn('[RenderHost] deferred task failed', error); }
     }
   }
 

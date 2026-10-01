@@ -469,7 +469,11 @@ export class MuseumSceneKit extends SceneKit {
 
   disposeSpace(handle) {
     this.scene.remove(handle.group);
-    disposeObject(handle.group);
+    // Out of the scene now; its GPU resources go once no warmup is still
+    // compiling them (see RenderHost.warm).
+    const group = handle.group;
+    if (typeof this.renderHost?.whenIdle === 'function') this.renderHost.whenIdle(() => disposeObject(group));
+    else disposeObject(group);
     // Media is reference-counted: a file hanging in two Spaces survives the
     // disposal of one of them.
     for (const entityId of handle.entities.keys()) {
