@@ -18,6 +18,7 @@ import { createExperienceBridge, STATUS } from './experience-bridge.js';
 import { StudioShell } from '../authoring/studio/studio-shell.js';
 import { SCENE_TITLES_ES } from './wet-paint-museum-skin.js';
 import { WetPaintStore } from './wet-paint-store.js';
+import { EVENTS } from '../engine/core/event-bus.js';
 
 const EXPERIENCE_ID = 'wet-paint-flow';
 const STANDALONE_URL = './experiences/wet-paint-flow/index.html';
@@ -33,6 +34,8 @@ const ARTWORK_IDS = [
     'entity.itinerant.original', 'entity.itinerant.painterly', 'entity.itinerant.living',
     'entity.itinerant.combined', 'entity.itinerant.experimental',
 ];
+
+const ITINERANT_SPACE_ID = 'space.itinerant-wet-paint';
 
 // ── Donor mapping (drive the donor's real controls; zero donor edits) ───────
 
@@ -405,6 +408,16 @@ export function installWetPaint(runtime) {
         notify('ready', {});
     });
 
+    // The room is built when the visitor approaches it and disposed when they
+    // leave. Restoring only once, at boot, left every visit that starts in the
+    // Vestíbulo, and every return to the room, with the authored plates instead
+    // of the saved transformations. The stored results need no engine, so they
+    // go back on as soon as the room is ready.
+    const offSpaceReady = runtime.bus?.on?.(EVENTS.SPACE_READY, ({ spaceId } = {}) => {
+        if (bridge !== installedBridge || spaceId !== ITINERANT_SPACE_ID) return;
+        engine.restoreAll().catch((error) => console.warn('[WetPaint] restore on room ready', error));
+    });
+
     if (!StudioShell.prototype.__wetPaintTakeFilePatched) {
         Object.defineProperty(StudioShell.prototype, '__wetPaintTakeFilePatched', { value: true });
         const originalTakeFile = StudioShell.prototype._takeFile;
@@ -425,6 +438,7 @@ export function installWetPaint(runtime) {
         engine,
         bridge: installedBridge,
         dispose() {
+            offSpaceReady?.();
             if (bridge === installedBridge) bridge = null;
             installedBridge.dispose?.();
         }

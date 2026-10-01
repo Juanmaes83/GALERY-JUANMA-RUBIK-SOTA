@@ -60,6 +60,9 @@ Estados:
 | A-31 | Studio · Medios | Al sustituir un archivo, mientras el nuevo cargaba, la ranura mostraba «En el proyecto» en verde con el nombre del archivo **anterior**, aunque ese archivo hubiera fallado. Guardar en ese intervalo escribía una referencia muerta | ✅ la ranura sigue al archivo nuevo desde «Seleccionado»; un selector cancelado no borra nada · `STUDIO-MEDIA-REPLACE` |
 | A-32 | Studio · Vídeo | MP4 H.264 rechazado en Chromium sin códecs propietarios con el mensaje «Prueba con un MP4 (H.264) o un WebM»: recomendaba el mismo formato que acababa de fallar | ✅ el mensaje consulta `canPlayType` y da el consejo que corresponde · `STUDIO-VIDEO-ADVICE` |
 | A-33 | Medios · Compatibilidad | La proyección «Cuaderno de luz» solo existía en WebM (VP9): en navegadores sin VP9 (iPhone antiguos) la pared mostraba el sustituto generado | ✅ `media.alternates` con MP4 H.264 (28 kB); el cargador elige la primera variante que el navegador puede reproducir. Un medio subido desde el Studio sustituye también las variantes. `npm run check` comprueba que existen |
+| A-34 | **Wet Paint · Visitante** | Las transformaciones Wet Paint guardadas solo se aplicaban al arrancar el puente del motor. Una visita que empieza en el Vestíbulo (todas) o que vuelve a la Itinerante encontraba los cuadros originales: **el visitante nunca veía el trabajo del autor** | ✅ se restauran en cada `SPACE_READY` de la Itinerante · `WETPAINT-RESTORE` (falla sin la corrección: «original · original») |
+| A-35 | Studio | «Guardar» daba la vista previa por aplicada (el mismo indicador servía para las dos cosas). «Empezar experiencia» se saltaba la reconstrucción y mostraba la sala tal como se aplicó por última vez | ✅ `previewStale` separado de «sin guardar» · `STUDIO-SAVED-NOT-APPLIED` |
+| A-36 | Studio · Medios | Al recargar, las referencias `authored:` de otra sesión se pasaban al cargador como URL: un error CORS por obra y un sustituto generado en la pared. El Studio, además, las mostraba como «En el proyecto» | ✅ la sala conserva el original; la ranura dice «Archivo no disponible» y Validar lo avisa sin bloquear · `STALE-UPLOAD`. La persistencia real de medios sigue pendiente (ROADMAP 2.2) |
 
 ## Detalle
 
@@ -88,6 +91,17 @@ Estados:
 - **Medida:** con 52°–59° de campo vertical y una relación de aspecto de 0,46, el campo horizontal es de ~30°. A 3,25 m, el avatar ocupaba el 40 % del ancho y el centro de la imagen.
 - **Corrección:** en vertical, el `ThirdPersonExploreController` apunta a 1,55 m en lugar de 1,02 m, desde la misma posición de cámara. La distancia 3D (≈3,29 m) sigue dentro de la envolvente 2,75–3,72 m, y el plano horizontal no cambia.
 - **Resultado:** el cuerpo queda al 67 % de la altura y la cabeza al 48 %, y la sala se ve por encima del avatar.
+
+### Personalización completa desde el Studio (A-31 a A-36)
+- **Método:** `audit/personalize.mjs`, grabado en vídeo. Cubre:
+  - logotipo de la institución;
+  - 7 piezas de las Galerías A y B y la proyección, con cuadros de Van Gogh (dominio público) y vídeos WebM propios;
+  - un MP4 H.264 como prueba de códec;
+  - las 5 obras de la Itinerante con Wet Paint a partir de cuadros antiguos;
+  - guardar, «Empezar experiencia», recorrido con foco en cada obra y recarga.
+- **Resultado:** 12/12 medios aceptados y visibles en las Galerías A y B. Wet Paint aplica las 5 transiciones en el Studio, en unos 14 s cada una.
+- **Hallazgos:** el visitante no veía Wet Paint (A-34); guardar no es aplicar (A-35); los archivos de otra sesión rompían las obras (A-36). Los tres quedan corregidos y vigilados por `npm test`.
+- **Límite conocido (no es un defecto):** los medios subidos viven solo mientras el Studio está abierto. Los textos y las transformaciones Wet Paint persisten en el navegador del autor. La publicación real requiere backend (ROADMAP fase 2).
 
 ### A-29 y A-30 · Contenido y derechos
 - **Medidas:** la cartela calcula las medidas desde `size`, que es lo que se ve en la sala; la versión en texto estaba escrita a mano con medidas antiguas. Una visita con lector de pantalla recibía otros números.

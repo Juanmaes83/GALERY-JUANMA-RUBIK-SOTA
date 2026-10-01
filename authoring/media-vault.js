@@ -117,6 +117,16 @@ export function describeAsset(asset, media = null) {
   // asset — it is a path the world already resolves. Reporting "Sin archivo"
   // beside its own filename, under a button reading "Cambiar archivo", was three
   // signals giving two different answers in one card.
+  if (!asset && String(media?.src || '').startsWith('authored:')) {
+    // Uploaded in an earlier session and not part of the project: the file is
+    // not there any more. Saying «En el proyecto» in green promised a picture
+    // the visitor would never see.
+    return {
+      state: 'ERROR', label: 'Archivo no disponible', name: media.name,
+      detail: 'Los archivos subidos solo duran mientras el Studio está abierto. Vuelve a elegirlo; la sala muestra el original.',
+      chain: [], index: -1
+    };
+  }
   if (!asset && media?.src) {
     const chain = ASSET_CHAIN[media.kind] || ASSET_CHAIN.image;
     const facts = [];

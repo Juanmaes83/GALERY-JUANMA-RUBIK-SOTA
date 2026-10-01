@@ -91,6 +91,11 @@ export function evaluateReadiness(world, config, assetState = () => null) {
       if (chosen && state?.state === 'ERROR') {
         need(`${entity.id}.media`, `El archivo de «${resolved('title')}» no se pudo usar`, false,
           { where: entity.id, detail: state.error || 'Error de medio' });
+      } else if (chosen && !state && String(chosen.src || '').startsWith('authored:')) {
+        // Uploaded in an earlier session: the file is gone and the room shows
+        // the original. Not a reason to block the visit, but not «tiene medio».
+        need(`${entity.id}.media`, `El archivo de «${resolved('title')}» ya no está disponible`, false,
+          { where: entity.id, severity: SEVERITY.WARNING, detail: 'Se subió en otra sesión; vuelve a elegirlo. La sala muestra el original.' });
       } else if (chosen && state && state.state !== 'READY') {
         need(`${entity.id}.media`, `El archivo de «${resolved('title')}» está cargando`, false,
           { where: entity.id, detail: 'Cargando…' });

@@ -305,6 +305,11 @@ export function baseConfigFromWorld(world) {
 const WORLD_MEDIA_KIND = { image:'IMAGE', video:'VIDEO' };
 function mediaForWorld(authored, previous, config, resolveMedia) {
   const live = resolveMedia(authored.src) || authored.src;
+  // A file uploaded in an earlier session is gone: its `authored:` reference
+  // only resolves while that page is open. Handing it to the loader as a URL
+  // failed with a CORS error per work and swapped the work for a generated
+  // plate. The authored text still applies; the picture stays the original.
+  if (String(live).startsWith('authored:')) return previous || null;
   // The authored file replaces the encoding, not only the URL. The previous
   // file's type, alternates and poster describe a video that is no longer there:
   // kept, a browser without VP9 would play the old MP4 alternate instead of the

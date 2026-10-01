@@ -166,6 +166,37 @@ try {
     await page.close();
   }
 
+  /* 1b. Wet Paint: a saved transformation is on the wall whenever the room is built */
+  {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(String(error)));
+    // A 2×2 red PNG stands in for a saved Wet Paint result.
+    const red = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGUExURf8AAP///0EdNBEAAAABYktHRAH/Ai3eAAAAB3RJTUUH6goBFQ0pZPZqOgAAAAxJREFUCNdjYGBgAAAABAABJzQnCgAAAABJRU5ErkJggg==';
+    await page.addInitScript((url) => {
+      localStorage.setItem('iw.wetpaint.personalization.v1', JSON.stringify({ 'entity.itinerant.painterly': { resultDataUrl: url, savedAt: 1 } }));
+    }, red);
+    await page.goto(`${BASE}/index.html`, { waitUntil: 'load' });
+    await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 120000 });
+    const plateSrc = () => page.waitForFunction(() => {
+      const root = window.__IW.runtime.sceneKit._entityIndex?.get('entity.itinerant.painterly')?.object;
+      let best = null; let area = 0;
+      root?.traverse?.((n) => { if (n.isMesh && n.geometry?.type === 'PlaneGeometry') { const p = n.geometry.parameters; if (p.width * p.height > area) { area = p.width * p.height; best = n; } } });
+      const src = best?.material?.map?.image?.src || '';
+      return src.startsWith('data:image/png') ? 'wetpaint' : null;
+    }, null, { timeout: 30000 }).then(() => 'wetpaint').catch(() => 'original');
+    const visits = [];
+    for (const id of ['portal.lobby-gallery-a', 'portal.gallery-a-gallery-b', 'portal.gallery-b-itinerant']) await travel(page, id);
+    visits.push(await plateSrc());
+    // Leave far enough for the room to be disposed, then come back.
+    for (const id of ['portal.itinerant-gallery-b', 'portal.gallery-b-gallery-a', 'portal.gallery-a-lobby', 'portal.lobby-gallery-a', 'portal.gallery-a-gallery-b', 'portal.gallery-b-itinerant']) await travel(page, id);
+    visits.push(await plateSrc());
+    check('WETPAINT-RESTORE', 'Una transformación Wet Paint guardada está en el cuadro al entrar y al volver a la Itinerante',
+      visits.every((v) => v === 'wetpaint'), visits.join(' · '));
+    check('WETPAINT-RESTORE CONSOLE', 'Sin errores de página', errors.length === 0, errors.slice(0, 2).join(' | '));
+    await page.close();
+  }
+
   /* 2. Marble Bust 01: GLB and forced fallback ------------------------------ */
   for (const [query, expected] of [['?state=museum:marble-bust-detail', 'GLB'], ['?state=museum:marble-bust-detail&glbStone=fallback', 'FALLBACK']]) {
     const { page, consoleErrors } = await openMuseum(query);
@@ -254,6 +285,25 @@ try {
     const h264 = await page.evaluate(() => document.createElement('video').canPlayType('video/mp4; codecs="avc1.42E01E"') !== '');
     check('STUDIO-VIDEO-ADVICE', 'Un vídeo que no se puede decodificar recibe un consejo coherente con el navegador',
       Boolean(advice) && !advice.includes('Prueba con un MP4 (H.264) o un WebM') && (h264 || advice.includes('WebM')), advice);
+
+    // Saved is not applied: after a save, the preview still says it is stale,
+    // and «Empezar» rebuilds instead of showing the room as last applied.
+    await page.evaluate(() => { window.__releaseAccept?.(); });
+    await page.locator('#st [data-act="save"]').first().click();
+    await page.waitForTimeout(400);
+    const stale = await page.evaluate(() => ({ flag: window.__IW_STUDIO.previewStale, label: document.querySelector('#st .st-live')?.textContent.replace(/\s+/g, ' ').trim() }));
+    check('STUDIO-SAVED-NOT-APPLIED', 'Guardar no da la vista previa por aplicada', stale.flag === true && /desactualizada/.test(stale.label || ''), JSON.stringify(stale));
+
+    // A file uploaded in this session does not exist in the next one. The
+    // visitor keeps the work's original picture, with no failed requests.
+    const before = consoleErrors.length;
+    await page.goto(`${BASE}/index.html`);
+    await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 120000 });
+    await page.waitForTimeout(1500);
+    const kept = await page.evaluate(() => String(window.__IW.runtime.store.get('entity.artwork.horizonte-interrumpido')?.content?.media?.src || ''));
+    const authoredErrors = consoleErrors.slice(before).filter((e) => /authored:/.test(e));
+    check('STALE-UPLOAD', 'Tras recargar, un archivo de otra sesión no rompe la obra: se ve el original', /horizonte-interrumpido\.jpg$/.test(kept) && authoredErrors.length === 0,
+      `${kept}${authoredErrors.length ? ` · ${authoredErrors[0]}` : ''}`);
     check('STUDIO-CONSOLE', 'Sin errores de consola en el Studio', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
     await context.close();
   }

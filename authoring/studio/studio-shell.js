@@ -261,6 +261,11 @@ export class StudioShell {
     this.opened = new Set();
     this.selectedId = 'institution';
     this.dirty = false;
+    // Saved and applied are different facts. «Guardar» writes the project to the
+    // browser; only «Vista previa» (a rebuild) puts it in the room. One flag for
+    // both made a save after an edit announce «Vista previa aplicada» and let
+    // «Empezar» skip the rebuild, so the visit showed the room as last applied.
+    this.previewStale = false;
     this.savedAt = null;
     this.busy = null;
     this.message = null;
@@ -343,8 +348,8 @@ export class StudioShell {
         ${this._rail()}
         ${this._secondColumn()}
         <div class="st-stage" id="st-stage-slot">
-          <span class="st-live ${this.dirty ? 'is-stale' : ''}">${
-  this.dirty ? 'Vista previa desactualizada' : 'Vista previa aplicada'} <b>${esc(this.currentRoom() || '')}</b></span>
+          <span class="st-live ${this.previewStale ? 'is-stale' : ''}">${
+  this.previewStale ? 'Vista previa desactualizada' : 'Vista previa aplicada'} <b>${esc(this.currentRoom() || '')}</b></span>
         </div>
         ${this._editor()}
         ${this._readiness(r)}
@@ -1427,8 +1432,8 @@ export class StudioShell {
     const r = this.readiness;
     const live = this.root.querySelector('.st-live');
     if (live) {
-      live.innerHTML = `${this.dirty ? 'Vista previa desactualizada' : 'Vista previa aplicada'} <b>${esc(this.currentRoom() || '')}</b>`;
-      live.classList.toggle('is-stale', this.dirty);
+      live.innerHTML = `${this.previewStale ? 'Vista previa desactualizada' : 'Vista previa aplicada'} <b>${esc(this.currentRoom() || '')}</b>`;
+      live.classList.toggle('is-stale', this.previewStale);
     }
     const saved = this.root.querySelector('[data-role=saved]');
     if (saved) {
@@ -1648,7 +1653,7 @@ export class StudioShell {
     }
   }
 
-  _markDirty() { this.dirty = true; }
+  _markDirty() { this.dirty = true; this.previewStale = true; }
 
   _say(message, bad = false) {
     this.message = message;
@@ -1667,6 +1672,7 @@ export class StudioShell {
     this.busy = 'apply';
     this.render();
     await this.onApply(this.config);
+    this.previewStale = false;
     this.busy = null;
     // A rebuild puts the visitor back at the entrance. The badge kept naming the
     // room the preview had been in before the rebuild, which is the kind of small
@@ -1680,7 +1686,7 @@ export class StudioShell {
     if (!r.canStart) { this._say('Faltan elementos necesarios para empezar.', true); return; }
     // START is not another Apply: it applies if there is anything unapplied, and
     // then leaves the authoring context entirely.
-    if (this.dirty) await this.onApply(this.config);
+    if (this.dirty || this.previewStale) await this.onApply(this.config);
     await this.onStart(this.config);
   }
 
