@@ -20,10 +20,19 @@ Se han copiado 18 de los 20 archivos del módulo. Todos son copia exacta, salvo 
 
 Consecuencias:
 
-- Los modos de experiencia «Sakura Petals» y «Autumn Leaves» se quedan sin su textura hasta que se sustituyan por texturas propias con el mismo nombre y tamaño. El resto de modos y funciones no dependen de ellas.
+- Los dos archivos originales **siguen excluidos**. En su lugar, el commit de integración añade **texturas propias** con el mismo nombre y tamaño, que son los que el bundle referencia (ver la tabla siguiente). Así, los modos «Sakura Petals» y «Autumn Leaves» funcionan sin material de terceros.
 - La analítica no aparece en ningún otro archivo del módulo. Se conservan las menciones de **crédito** al autor original:
   - el título y los metadatos `og:` de `index.html`;
   - el panel de créditos del bundle, con el enlace al código fuente `github.com/holtsetio/breeze`.
+
+### Texturas propias de sustitución
+
+| Archivo (nombre que espera el bundle) | Tamaño | SHA-256 | Origen |
+|---|---|---|---|
+| `assets/sakuraPetal-uQV6aq54.png` | 512×504 RGBA, 74 992 B | `efa6d84fd39c4c58e4fe3d33900007e92ee48dc1d6049e39fa19c98f1c4feff7` | Generada para este repositorio con ImageMagick 6.9: gradiente radial rosa, máscara de pétalo vectorial y venas trazadas. No contiene material de terceros |
+| `assets/mapleleaf--cxqDFQb.png` | 512×512 RGBA, 93 121 B | `c12db5589fd78e6d2bb9d3157b318cd1ae3467e9194ff6d3944b0ca826f3fbe2` | Generada para este repositorio con ImageMagick 6.9: gradiente radial ámbar, polígono de hoja de arce y venas trazadas. No contiene material de terceros |
+
+Las imágenes **no** reproducen las fotografías originales. Son representaciones estilizadas con la misma función: textura de partícula con transparencia. Quedan bajo la misma decisión de licencia que el resto del contenido propio del repositorio (pendiente del titular).
 
 ## Licencias
 
@@ -42,11 +51,15 @@ Esta nota no declara ninguna licencia que no figure en ellos.
 | Fabric Lace 038 (3dtextures.me) | Acredita la fuente. No indica la licencia | Pendiente de verificación documental |
 | Corset, BoomBox y Lantern (Khronos glTF Sample Assets) | Declara **CC0 1.0** | Según `CREDITS.md` |
 
-## Integración pendiente (fuera de esta rama)
+## Integración en el museo
 
-- El invitado de la Sala Breeze (`app/nested/breeze/breeze-studio-pro-guest.js`) sigue apuntando a `/labs/website-modules-source/breeze-studio-pro/index.html`. Al integrar hay que apuntarlo a `./experiences/breeze-studio-pro/index.html`.
-- Sustituir las dos texturas excluidas por texturas propias.
-- El producto requiere WebGPU. Falta una alternativa para navegadores sin WebGPU.
+Hecho en esta rama (commit de integración posterior a la importación):
+
+- **Ruta:** el invitado de la Sala Breeze (`app/nested/breeze/breeze-studio-pro-guest.js`) carga `./experiences/breeze-studio-pro/index.html`.
+- **Navegador sin WebGPU:** antes de montar el producto se comprueba que hay un adaptador WebGPU. Si no lo hay, la sala muestra un aviso del museo en español con salida a Galería B, en lugar del error en inglés del producto.
+- **Pérdida del dispositivo:** si el producto empieza a lanzar errores en bucle (pérdida del dispositivo WebGPU), la sala muestra «La instalación se ha detenido», con «Reintentar» y «Volver a Galería B».
+
+**Pendiente:** la validación visual de la tela y el viento en un navegador con GPU real. En el entorno de pruebas (WebGPU emulado por CPU con SwiftShader), el dispositivo WebGPU se pierde a los pocos segundos, también con Breeze funcionando solo. **Breeze no está validado.**
 
 ## Verificación de identidad con el origen
 

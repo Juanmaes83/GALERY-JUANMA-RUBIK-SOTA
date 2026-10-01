@@ -100,10 +100,12 @@ export class NestedRoomController {
     // above the HUD. At the top the HUD bar covered it and swallowed the click;
     // the bottom-left corner is free of HUD furniture on desktop, phone and in
     // the Studio's docked preview (tests/museum-smoke.mjs checks it).
+    // Raised 48 px so it clears the guest's own footer (Breeze's «info» bar sits
+    // along the bottom-left edge of the room).
     Object.assign(button.style, {
       position: 'absolute',
       left: '18px',
-      bottom: '18px',
+      bottom: '48px',
       zIndex: '60',
       padding: '10px 14px',
       border: '1px solid rgba(255,255,255,.34)',

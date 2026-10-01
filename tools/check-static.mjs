@@ -25,10 +25,7 @@ const SKIP_DIRS = new Set(['.git', 'node_modules', 'test-results']);
  * Referencias presentes en el código pero inalcanzables en esta edición.
  * Cada una tiene que seguir sin existir; si alguien la añade, la lista se revisa.
  */
-const INERT_REFERENCES = {
-  '/labs/website-modules-source/breeze-studio-pro/index.html':
-    'Breeze Studio PRO V4.1, producto independiente aún no migrado; la sala comprueba su presencia y muestra un aviso.'
-};
+const INERT_REFERENCES = {};
 
 const failures = [];
 const fail = (msg) => failures.push(msg);
@@ -74,10 +71,11 @@ const PATTERNS = [
   /(?:href|src)\s*=\s*['"]([^'"#?]+)/g,
   /fetch\(\s*['"`]([^'"`$]+)['"`]/g,
   /['"`]((?:\.{1,2})?\/[^'"`$\s]+\.(?:js|mjs|css|json|glb|jpg|png|webm|webp|html|svg))['"`]/g,
-  /url\(\s*['"]?([^'")]+)['"]?\s*\)/g
+  /url\(\s*['"]?([^'")]+)['"]?\s*\)/g,
+  /['"`]((?:assets|scenes)\/[^'"`$\s]+\.(?:png|jpe?g|webp|glb|gltf|obj|hdr|json|js|css|mp4|webm|svg))['"`]/g
 ];
 // Documentation strings inside vendored code, not references.
-const NESTED_DOCUMENT = 'experiences/wet-paint-flow/';
+const NESTED_DOCUMENTS = ['experiences/wet-paint-flow/', 'experiences/breeze-studio-pro/'];
 const IGNORE = new Set(['vendor/three/addons/textures/texture.png']);
 
 const seen = new Set();
@@ -95,12 +93,25 @@ while (queue.length) {
       if (/^(https?:|data:|blob:|mailto:|\/\/)/.test(ref)) continue;
       let target;
       if (IMPORT_MAP[ref]) target = IMPORT_MAP[ref];
-      else if (ref.startsWith('/')) target = ref;
+      else if (ref.startsWith('/')) {
+        // Absolute URLs that do not name a file (regex literals and the like in
+        // minified bundles) are not references.
+        if (!/\.[a-z0-9]{2,5}$/i.test(ref)) continue;
+        target = ref;
+      } else if (/^[\w.-]+\.(?:png|jpe?g|webp|glb|gltf|obj|hdr|mp4|webm|svg)$/i.test(ref)
+        && NESTED_DOCUMENTS.some((base) => file.startsWith(base))) {
+        // Vite emits module-relative bare names: new URL("name-hash.png", import.meta.url).
+        target = path.posix.normalize(path.posix.join(path.posix.dirname(file), ref));
+      } else if (/^(assets|scenes)\//.test(ref)) {
+        const docBase = NESTED_DOCUMENTS.find((base) => file.startsWith(base));
+        if (!docBase) continue;
+        target = path.posix.normalize(path.posix.join(docBase, ref));
+      }
       else if (ref.startsWith('.')) {
         // Module specifiers resolve against the file; DOM-assigned URLs resolve
         // against the document. Accept whichever exists.
         // Wet Paint Flow runs as its own document inside an iframe.
-        const docBase = file.startsWith(NESTED_DOCUMENT) ? NESTED_DOCUMENT : '';
+        const docBase = NESTED_DOCUMENTS.find((base) => file.startsWith(base)) || '';
         const fromFile = path.posix.normalize(path.posix.join(path.posix.dirname(file), ref));
         const fromDoc = path.posix.normalize(path.posix.join(docBase, ref));
         target = exists(fromFile) ? fromFile : exists(fromDoc) ? fromDoc

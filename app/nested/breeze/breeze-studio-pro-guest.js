@@ -6,8 +6,11 @@
  * it is active; Museum furniture remains available around it.
  */
 
+// Served from this repository (imported from escaparates-pro@382e566, see
+// experiences/breeze-studio-pro/IMPORT_NOTES.md). Document-relative, so the
+// Museum works at any base path.
 export const BREEZE_STUDIO_PRO_V41_URL =
-  '/labs/website-modules-source/breeze-studio-pro/index.html';
+  './experiences/breeze-studio-pro/index.html';
 
 const STUDIO_INTERACTIVE_SELECTORS = ['.st-rail', '.st-tree', '.st-ed', '.st-val'];
 const MUSEUM_PASS_THROUGH_SELECTORS = ['.iw-prompt'];
@@ -78,35 +81,45 @@ export class BreezeStudioProGuest {
   }
 
   /**
-   * GALERY-JUANMA-RUBIK-SOTA: Breeze Studio PRO V4.1 is a separate product and is
-   * not part of this repository. Probe it before mounting so a missing build
-   * becomes an explicit, observable room notice instead of a 404 inside the
-   * iframe. When the build is served at BREEZE_STUDIO_PRO_V41_URL the original
-   * path below runs unchanged.
+   * GALERY-JUANMA-RUBIK-SOTA: before mounting, check that the build is served and
+   * that this browser can run it (Breeze simulates its cloth with WebGPU). Either
+   * failure becomes an explicit Museum notice with a way out, never a 404 or the
+   * product's raw English error inside the room.
+   * @returns {Promise<'ok'|'missing'|'no-webgpu'>}
    */
-  async _isAvailable() {
+  async _availability() {
     try {
       const response = await fetch(BREEZE_STUDIO_PRO_V41_URL, { method: 'HEAD', cache: 'no-store' });
-      return response.ok;
+      if (!response.ok) return 'missing';
     } catch {
-      return false;
+      return 'missing';
+    }
+    try {
+      if (!navigator.gpu) return 'no-webgpu';
+      const adapter = await navigator.gpu.requestAdapter();
+      return adapter ? 'ok' : 'no-webgpu';
+    } catch {
+      return 'no-webgpu';
     }
   }
 
-  _mountUnavailableNotice(stage) {
+  _mountNotice(stage, { kind, title, body, retry = false }) {
+    this.notice?.remove();
     const notice = document.createElement('div');
     notice.dataset.nestedRoomStudio = 'room.breeze';
-    notice.dataset.breezeUnavailable = 'true';
+    notice.dataset.breezeUnavailable = kind;
     notice.setAttribute('role', 'status');
     Object.assign(notice.style, {
-      position: 'absolute', inset: '0', zIndex: '12', display: 'grid', placeItems: 'center',
+      position: 'absolute', inset: '0', zIndex: '13', display: 'grid', placeItems: 'center',
       padding: '2rem', background: '#0a0908', color: '#cfc9be'
     });
+    const button = 'margin:1.6rem .6rem 0 0;padding:.8rem 1.2rem;border:1px solid rgba(240,236,228,.34);background:transparent;color:#f0ece4;font:600 .8rem/1 \'Helvetica Neue\',sans-serif;letter-spacing:.08em;cursor:pointer';
     notice.innerHTML = `<div style="max-width:34rem">
       <p style="font:400 .7rem/1 'Helvetica Neue',sans-serif;letter-spacing:.4em;text-transform:uppercase;color:#a49d92">Sala Breeze — Viento sobre mármol</p>
-      <h2 style="font:400 1.4rem/1.3 Georgia,serif;margin:1.4rem 0;color:#f0ece4">Sala no disponible en esta edición</h2>
-      <p style="font:400 .86rem/1.7 'Helvetica Neue',sans-serif">Esta sala se ejecuta con Breeze Studio PRO, un producto independiente que no se incluye en este repositorio. El resto del museo sigue disponible: vuelve a Galería B para continuar la visita.</p>
-      <button type="button" data-breeze-unavailable-exit="true" style="margin-top:1.6rem;padding:.8rem 1.2rem;border:1px solid rgba(240,236,228,.34);background:transparent;color:#f0ece4;font:600 .8rem/1 'Helvetica Neue',sans-serif;letter-spacing:.08em;cursor:pointer">← Volver a Galería B</button>
+      <h2 style="font:400 1.4rem/1.3 Georgia,serif;margin:1.4rem 0;color:#f0ece4">${title}</h2>
+      <p style="font:400 .86rem/1.7 'Helvetica Neue',sans-serif">${body}</p>
+      ${retry ? `<button type="button" data-breeze-retry="true" style="${button}">Reintentar</button>` : ''}
+      <button type="button" data-breeze-unavailable-exit="true" style="${button}">← Volver a Galería B</button>
     </div>`;
     // Same canonical exit as the Museum's own exit bridge (a WorldGraph portal
     // crossing, see NestedRoomController._installExitBridge); this button only
@@ -114,8 +127,47 @@ export class BreezeStudioProGuest {
     notice.querySelector('[data-breeze-unavailable-exit]').addEventListener('click', () => {
       document.querySelector('[data-breeze-museum-exit]')?.click();
     });
+    notice.querySelector('[data-breeze-retry]')?.addEventListener('click', () => {
+      notice.remove();
+      this.notice = null;
+      this._guestErrors = [];
+      if (this.iframe) this.iframe.src = BREEZE_STUDIO_PRO_V41_URL;
+    });
     stage.appendChild(notice);
     this.notice = notice;
+  }
+
+  /**
+   * Breeze does not recover from a lost GPU device: its frame loop keeps
+   * throwing. Watch the guest's uncaught errors and, if they repeat, stand the
+   * room down with a notice instead of leaving a frozen black stage.
+   */
+  _watchGuestHealth(iframe, stage) {
+    this._guestErrors = [];
+    const onError = () => {
+      const now = performance.now();
+      this._guestErrors = this._guestErrors.filter((t) => now - t < 5000);
+      this._guestErrors.push(now);
+      if (this._guestErrors.length >= 3 && !this.notice) {
+        this.error = 'Breeze Studio PRO se detuvo (errores repetidos; posible pérdida del dispositivo WebGPU)';
+        this._mountNotice(stage, {
+          kind: 'stalled',
+          title: 'La instalación se ha detenido',
+          body: 'La simulación de Breeze se interrumpió en este dispositivo (la tarjeta gráfica la detuvo). Puedes reintentarlo o seguir la visita en Galería B.',
+          retry: true
+        });
+      }
+    };
+    // Breeze's frame loop is async: after a device loss its failures surface as
+    // unhandled promise rejections, not only as error events.
+    const attach = () => {
+      try {
+        iframe.contentWindow?.addEventListener('error', onError);
+        iframe.contentWindow?.addEventListener('unhandledrejection', onError);
+      } catch { /* cross-origin: not ours to watch */ }
+    };
+    iframe.addEventListener('load', attach);
+    attach();
   }
 
   async prepare({ canvas }) {
@@ -124,10 +176,24 @@ export class BreezeStudioProGuest {
     if (!stage) throw new Error('Breeze Studio PRO guest requires a Museum stage');
     canvas.style.display = 'none';
 
-    if (!(await this._isAvailable())) {
-      this._mountUnavailableNotice(stage);
+    const availability = await this._availability();
+    if (availability !== 'ok') {
       this.loaded = false;
-      this.error = 'Breeze Studio PRO V4.1 no está incluido en este repositorio';
+      if (availability === 'missing') {
+        this.error = 'Breeze Studio PRO V4.1 no está disponible en este despliegue';
+        this._mountNotice(stage, {
+          kind: 'missing',
+          title: 'Sala no disponible en esta edición',
+          body: 'Esta sala se ejecuta con Breeze Studio PRO y no está disponible en este despliegue. El resto del museo sigue abierto: vuelve a Galería B para continuar la visita.'
+        });
+      } else {
+        this.error = 'WebGPU no disponible en este navegador';
+        this._mountNotice(stage, {
+          kind: 'no-webgpu',
+          title: 'Esta sala necesita WebGPU',
+          body: 'La tela y el viento de esta instalación se simulan en la tarjeta gráfica con WebGPU, y este navegador no lo ofrece. Ábrela con un navegador compatible (por ejemplo, Chrome o Edge actualizados) o continúa la visita en Galería B.'
+        });
+      }
       return;
     }
 
@@ -152,6 +218,7 @@ export class BreezeStudioProGuest {
 
     stage.appendChild(iframe);
     this.iframe = iframe;
+    this._watchGuestHealth(iframe, stage);
     this._releaseStudioCenterInput();
 
     await new Promise((resolve) => {
@@ -223,6 +290,7 @@ export class BreezeStudioProGuest {
       } : null,
       hasIframe: Boolean(this.iframe?.isConnected),
       unavailable: Boolean(this.notice?.isConnected),
+      notice: this.notice?.isConnected ? this.notice.dataset.breezeUnavailable : null,
       hasMuseumPose: Boolean(this.lastPose)
     };
   }
