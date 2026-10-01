@@ -35,8 +35,7 @@ Este repositorio redistribuye los siguientes componentes de terceros. Cada uno c
 
 - **Avatar `Avatar_1.glb`** (Character 2027).
   - No se incluye en este repositorio: se descarga en tiempo de ejecución desde `pub-0f344e596c324724a0b7300e3bc1d129.r2.dev` y se verifica por SHA-256.
-  - El origen lo describe como «VECINIA S3-A1R approved Character 2027 asset», pero **no documenta su licencia**.
-  - Ver `docs/EXTRACTION_AUDIT.md`.
+  - **Titular:** Juanma, confirmado el 2026-10-01. Licencia libre según el titular; **falta registrar el nombre exacto de la licencia**.
 
 ## Contenido propio
 

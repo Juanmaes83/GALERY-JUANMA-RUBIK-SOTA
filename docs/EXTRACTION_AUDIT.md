@@ -120,6 +120,21 @@ El commit `import:` contiene el snapshot **sin modificar**: 132 archivos idénti
 
 Ver el resultado en la PR. Comandos: `npm install` (instalación limpia), `npm run check`, `npm test` y `git diff --check`. No hay paso de build: el museo es estático (módulos ES y `importmap`).
 
+## 8 bis. Cambios posteriores a la extracción (2026-10-01)
+
+Tras la extracción, Juanma decidió que este repositorio es el canónico (GJR-001) y que el Studio se reactiva (GJR-003). En consecuencia:
+
+- **Revertido:** la adaptación `authoringOn = false` (§7, punto 1). El Studio vuelve a montarse con `?authoring=1`.
+- **Incorporados**, byte a byte desde `382e566`, los archivos que el §6 excluía por ser del editor:
+  - `authoring/studio/studio.css`;
+  - `authoring/authoring-panel.js` y `authoring/authoring.css`;
+  - `authoring/museum-b.config.json`;
+  - `assets/institutions/bruma-logo.png` y `assets/institutions/bruma-marea-septiembre.jpg`.
+- **Corregidos** los tres defectos heredados del §5 (GJR-005).
+- **Breeze Studio PRO:** sigue sin migrar (GJR-004).
+
+El inventario del §9 refleja el snapshot inicial. Los archivos añadidos después aparecen en el historial de commits.
+
 ## 9. Inventario de archivos importados
 
 Cada archivo tiene una justificación. «Referenciado por» indica el primer archivo, en el grafo de dependencias desde `index.html`, que lo importa, enlaza o carga. Los archivos propios de este repositorio (`README.md`, `THIRD_PARTY_NOTICES.md`, `package.json`, `package-lock.json`, `.gitignore`, `tools/*`, `tests/*` y este documento) no figuran en la tabla.
