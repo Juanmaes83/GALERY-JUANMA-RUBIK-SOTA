@@ -203,12 +203,38 @@ function setPlateTexture(id, tex) { const plate = plateOf(id); if (plate?.materi
 // Museum frame loop: stream the live transition into the active cuadro's own
 // canvas AND advance every cuadro's looping transition so the room always shows
 // the transformation from the start (image → effect), not a frozen still.
+// The donor is a WebGL canvas in another frame, drawn on its own schedule and
+// without preserveDrawingBuffer. Copied at the museum's frame, it is sometimes
+// read between clear and draw, and the copy comes out flat white. Two of eight
+// captured frames were like that, so every loop flashed white for ~300 ms and a
+// visitor could catch a cuadro blank. A flat copy is skipped, never shown or kept.
+const blankProbe = document.createElement('canvas');
+blankProbe.width = 16; blankProbe.height = 12;
+const blankCtx = blankProbe.getContext('2d', { willReadFrequently: true });
+function looksBlank(canvas) {
+    try {
+        blankCtx.drawImage(canvas, 0, 0, 16, 12);
+        const d = blankCtx.getImageData(0, 0, 16, 12).data;
+        let sum = 0; let sq = 0; let sat = 0;
+        for (let i = 0; i < d.length; i += 4) {
+            const l = (d[i] + d[i + 1] + d[i + 2]) / 3;
+            sum += l; sq += l * l;
+            sat += Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2]);
+        }
+        const n = d.length / 4; const mean = sum / n;
+        const sd = Math.sqrt(Math.max(0, sq / n - mean * mean));
+        return mean > 200 && sat / n < 30 && sd < 20;
+    } catch { return false; }
+}
+
 function tick() {
     const now = performance.now();
     if (stream) {
         const src = donorCanvas();
-        if (src) { try { stream.sctx.drawImage(src, 0, 0, stream.dst.width, stream.dst.height); stream.tex.needsUpdate = true; } catch { /* transient */ } }
-        if (now - (stream.lastCap || 0) > 250) { try { stream.frames.push(stream.dst.toDataURL('image/jpeg', 0.72)); } catch { /* noop */ } stream.lastCap = now; }
+        if (src && !looksBlank(src)) {
+            try { stream.sctx.drawImage(src, 0, 0, stream.dst.width, stream.dst.height); stream.tex.needsUpdate = true; stream.hasFrame = true; } catch { /* transient */ }
+            if (stream.hasFrame && now - (stream.lastCap || 0) > 250) { try { stream.frames.push(stream.dst.toDataURL('image/jpeg', 0.72)); } catch { /* noop */ } stream.lastCap = now; }
+        }
     }
     loops.forEach((lp, id) => {
         if (stream && stream.entityId === id) return;   // it's currently (re)playing live
@@ -243,7 +269,10 @@ async function buildLoop(id, frameUrls) {
 async function finishTransition(id, extra = {}) {
     if (!stream) return false;
     const frames = stream.frames.slice();
-    try { stream.sctx.drawImage(donorCanvas(), 0, 0, stream.dst.width, stream.dst.height); frames.push(stream.dst.toDataURL('image/jpeg', 0.85)); } catch { /* noop */ }
+    const last = donorCanvas();
+    if (last && !looksBlank(last)) {
+        try { stream.sctx.drawImage(last, 0, 0, stream.dst.width, stream.dst.height); frames.push(stream.dst.toDataURL('image/jpeg', 0.85)); } catch { /* noop */ }
+    }
     stopStream();
     if (!frames.length) { notify('error', {}); return false; }
     const compact = await Promise.all(frames.map((f) => toStoredJpeg(f, 640, 0.7)));
@@ -279,7 +308,7 @@ async function playTransition() {
     const dst = document.createElement('canvas');
     dst.width = canvas.width || 1024; dst.height = canvas.height || 768;
     const sctx = dst.getContext('2d');
-    try { sctx.drawImage(canvas, 0, 0, dst.width, dst.height); } catch { /* first frame */ }
+    if (!looksBlank(canvas)) { try { sctx.drawImage(canvas, 0, 0, dst.width, dst.height); } catch { /* first frame */ } }
     const tex = new THREE.CanvasTexture(dst); tex.colorSpace = THREE.SRGBColorSpace;
     setPlateTexture(id, tex);
     stream = { entityId: id, dst, sctx, tex, frames: [], lastCap: 0 };

@@ -334,6 +334,31 @@ try {
           ok, JSON.stringify(r));
       }
     }
+    // Walking speed must not depend on frame rate. Throttled, SwiftShader runs
+    // well below 20 FPS; the Character must cover what the runtime clock grants
+    // (Σ min(Δt, 0.5 s) × FORWARD_SPEED 1.05 m/s), not a fixed 0.05 s per frame.
+    if (mounted) {
+      const cdp = await page.context().newCDPSession(page);
+      await cdp.send('Emulation.setCPUThrottlingRate', { rate: 2 });
+      const pace = await page.evaluate(async () => {
+        const c = window.__IW_CHARACTER_PHASE4B; const p4a = window.__IW_CHARACTER_PHASE4A;
+        const a = c.root.position.clone(); const stamps = [];
+        let walking = true;
+        const mark = (t) => { stamps.push(t); if (walking) requestAnimationFrame(mark); };
+        requestAnimationFrame((t) => { p4a.setInput({ forward: 1 }); mark(t); });
+        await new Promise((r) => setTimeout(r, 2500));
+        p4a.setInput({}); walking = false;
+        let granted = 0;
+        for (let k = 1; k < stamps.length; k += 1) granted += Math.min((stamps[k] - stamps[k - 1]) / 1000, 0.5);
+        const b = c.root.position;
+        return { metres: +Math.hypot(b.x - a.x, b.z - a.z).toFixed(2), expected: +(granted * 1.05).toFixed(2),
+          fps: +((stamps.length - 1) / Math.max(0.001, (stamps.at(-1) - stamps[0]) / 1000)).toFixed(1) };
+      });
+      await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+      const ratio = pace.metres / Math.max(pace.expected, 0.001);
+      check('AVATAR-PACE-LOW-FPS', 'Con pocos FPS, el avatar camina a su velocidad (sin cámara lenta)', ratio >= 0.8 && pace.expected > 0.5,
+        `${JSON.stringify(pace)} · ${(ratio * 100).toFixed(0)} % de lo esperado`);
+    }
     check('AVATAR CONSOLE', 'Sin errores de consola con avatar', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
     await page.close();
   }

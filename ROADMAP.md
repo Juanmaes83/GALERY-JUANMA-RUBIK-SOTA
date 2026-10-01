@@ -63,7 +63,7 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 | 1.5 | Puerta visual WebGPU de Breeze en navegador gráfico | ○ tras 1.4 |
 | 1.6 | Avatar: alojado en el repositorio ✅; continuidad en las 6 salas ✅ (pruebas automáticas, 👁 validación humana pendiente); en móvil, control con el pulgar y encuadre vertical ✅ (A-20, A-27); registrar el nombre exacto de la licencia ⏳; optimizarlo (≤ 5 MB) ○ |
 | 1.7 | Bloque 2B: puerta humana del cruce entre salas | ⏳ Juanma |
-| 1.8 | **Auditoría E2E en escritorio y móvil** ([docs/10](docs/10-AUDITORIA.md)): 30 hallazgos, cada uno con su causa y su corrección, verificados con pruebas. El móvil se ha recorrido con gestos táctiles reales y queda vigilado en `npm test` | 🟡 en curso: falta la personalización completa desde el Studio y 👁 la prueba en un teléfono real |
+| 1.8 | **Auditoría E2E en escritorio y móvil** ([docs/10](docs/10-AUDITORIA.md)): 38 hallazgos, cada uno con su causa y su corrección, verificados con pruebas (`npm test`: 59 comprobaciones). El móvil se ha recorrido con gestos táctiles reales. La personalización completa desde el Studio (12 medios y 5 cuadros Wet Paint) destapó que el visitante nunca veía Wet Paint (A-34), ya corregido | 🟡 👁 falta la prueba en un teléfono y una GPU reales (Breeze y avatar **no validados**) |
 
 ## Fase 2 — Producto vendible: del Studio a la publicación
 

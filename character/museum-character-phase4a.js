@@ -193,9 +193,25 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
     return { spaceId, groundY, volume: nextVolume };
   }
 
+  // Collision is resolved in steps of at most 0.05 s (no tunnelling through a
+  // blocker), but the whole frame is walked. Capping the frame itself at 0.05 s
+  // made the Character walk in slow motion below 20 FPS: a third of its speed at
+  // 7 FPS on a modest phone, while a first-person visitor kept full speed.
+  // Stalls (hidden tab, GC) are already absorbed by the runtime clock, whose
+  // maxDelta (0.5 s) the first-person visitor also walks with.
+  const LOCOMOTION_STEP = 0.05;
+  const LOCOMOTION_MAX_FRAME = 0.5;
   function updateLocomotion(dt) {
     if (disposed || runtime.state.activeSpaceId !== activeCharacterSpaceId) return;
-    const frameDt = Math.max(0, Math.min(Number(dt) || 0, 0.05));
+    let remaining = Math.max(0, Math.min(Number(dt) || 0, LOCOMOTION_MAX_FRAME));
+    do {
+      const step = Math.min(remaining, LOCOMOTION_STEP);
+      stepLocomotion(step);
+      remaining -= step;
+    } while (remaining > 1e-6);
+  }
+
+  function stepLocomotion(frameDt) {
     const turn = movement.turn;
     const forward = movement.forward;
     if (turn) root.rotation.y -= turn * TURN_SPEED * frameDt;

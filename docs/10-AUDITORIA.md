@@ -36,7 +36,7 @@ Estados:
 | A-07 | Entrada | Velo: «Compilando materiales…» con todo listo; botón «Entrar en Vestíbulo» con el avatar en Galería A | ✅ el título ya no se sobrescribe; el botón dice «Entrar en POV» o «Entrar con mi avatar» |
 | A-08 | Avatar | Se podía entrar antes de que el avatar existiera: arrancaba en primera persona y saltaba a tercera | ✅ «Preparando tu avatar…» hasta que monta (`AVATAR-READY`) |
 | A-09 | Avatar | Sin selector POV o avatar: solo por URL (PR #83 sin portar) | ✅ PR #83 portada (`PRESENCE-CHOICE`) |
-| A-10 | Avatar | Paso de locomoción limitado a 0,05 s: por debajo de 20 FPS el avatar camina a cámara lenta | 📋 |
+| A-10 | Avatar | Paso de locomoción limitado a 0,05 s: por debajo de 20 FPS el avatar camina a cámara lenta | ✅ ver A-37 |
 | A-11 | Mundo | Al volver de la Itinerante o de Breeze se aparecía junto a la puerta de la Galería A | ✅ anclajes de llegada propios |
 | A-12 | Render | Aviso de three r185: `PCFSoftShadowMap` obsoleto | 📋 trivial |
 | A-13 | UI | A 960 px de ancho, la barra superior y el título de sala se parten en dos líneas | 📋 (auditoría móvil) |
@@ -63,6 +63,8 @@ Estados:
 | A-34 | **Wet Paint · Visitante** | Las transformaciones Wet Paint guardadas solo se aplicaban al arrancar el puente del motor. Una visita que empieza en el Vestíbulo (todas) o que vuelve a la Itinerante encontraba los cuadros originales: **el visitante nunca veía el trabajo del autor** | ✅ se restauran en cada `SPACE_READY` de la Itinerante · `WETPAINT-RESTORE` (falla sin la corrección: «original · original») |
 | A-35 | Studio | «Guardar» daba la vista previa por aplicada (el mismo indicador servía para las dos cosas). «Empezar experiencia» se saltaba la reconstrucción y mostraba la sala tal como se aplicó por última vez | ✅ `previewStale` separado de «sin guardar» · `STUDIO-SAVED-NOT-APPLIED` |
 | A-36 | Studio · Medios | Al recargar, las referencias `authored:` de otra sesión se pasaban al cargador como URL: un error CORS por obra y un sustituto generado en la pared. El Studio, además, las mostraba como «En el proyecto» | ✅ la sala conserva el original; la ranura dice «Archivo no disponible» y Validar lo avisa sin bloquear · `STALE-UPLOAD`. La persistencia real de medios sigue pendiente (ROADMAP 2.2) |
+| A-37 | Avatar · Rendimiento | Confirmado en el recorrido grabado: con pocos FPS, el avatar avanzaba 0,16–0,31 m en ~6 s de teclas (≈5 % de su velocidad). El paso de locomoción recortaba **cada fotograma** a 0,05 s | ✅ subpasos de 0,05 s (la colisión sigue resolviéndose fina) hasta el `maxDelta` del reloj (0,5 s) · `AVATAR-PACE-LOW-FPS` con la CPU frenada 6× |
+| A-38 | Wet Paint | 2 de cada 8 fotogramas capturados de la transición eran blancos: el lienzo WebGL del motor se copiaba entre el borrado y el dibujo. Cada bucle parpadeaba en blanco ~300 ms, y un visitante podía ver un cuadro vacío («03 — Living» en la grabación) | ✅ las copias planas se descartan; verificado con dos cuadros: 0 fotogramas blancos |
 
 ## Detalle
 
