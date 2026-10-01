@@ -55,6 +55,11 @@ export class ExperienceHUD {
           <p class="iw-veil__mark">${escapeHtml(institution)}</p>
           <p class="iw-veil__title" data-el="veilTitle">Preparando la sala…</p>
           <div class="iw-veil__bar"><i data-el="veilBar"></i></div>
+          <fieldset class="iw-presence" data-el="presence" hidden>
+            <legend>Cómo quieres recorrer el museo</legend>
+            <button type="button" class="iw-presence__option" data-presence="pov">POV · primera persona</button>
+            <button type="button" class="iw-presence__option" data-presence="avatar">Con mi avatar</button>
+          </fieldset>
           <button class="iw-btn iw-btn--primary" data-el="enter" hidden>Entrar en ${escapeHtml(startSpace.title.toLowerCase())}</button>
           <p class="iw-veil__note">Contenido y obras ficticios, generados en tiempo de ejecución.</p>
         </div>
@@ -237,19 +242,79 @@ export class ExperienceHUD {
 
   setLoadingProgress(fraction, label) {
     this.el.veilBar.style.width = `${Math.round(fraction * 100)}%`;
-    if (label) this.el.veilTitle.textContent = label;
+    // Neighbouring rooms keep warming after the entry room is ready; their
+    // progress must not overwrite «La sala está preparada» on the veil.
+    if (label && !this._entryShown) this.el.veilTitle.textContent = label;
   }
 
   /** @param {() => void} onEnter */
   showEnter(onEnter) {
     this.el.veilTitle.textContent = 'La sala está preparada';
+    const params = new URLSearchParams(location.search);
+    const authoring = params.get('authoring') === '1';
+    const avatarMode = params.get('character') === '1' && params.get('mobility') === '1';
+    if (this.el.presence && !authoring) {
+      this.el.presence.hidden = false;
+      this.el.presence.querySelectorAll('[data-presence]').forEach((button) => {
+        const selected = button.dataset.presence === (avatarMode ? 'avatar' : 'pov');
+        button.classList.toggle('is-selected', selected);
+        button.setAttribute('aria-pressed', String(selected));
+        button.addEventListener('click', () => {
+          if (selected) return;
+          const url = new URL(location.href);
+          const characterFlags = ['character', 'mobility', 'continuity', 'gatea'];
+          if (button.dataset.presence === 'avatar') characterFlags.forEach((key) => url.searchParams.set(key, '1'));
+          else characterFlags.forEach((key) => url.searchParams.delete(key));
+          location.assign(url.href);
+        }, { once:true });
+      });
+      this.el.enter.textContent = avatarMode ? 'Entrar con mi avatar' : 'Entrar en POV';
+    }
+    this._entryShown = true;
     this.el.enter.hidden = false;
+    if (avatarMode && !authoring) this._gateEnterOnAvatar(params);
     this.el.enter.focus();
     this.el.enter.addEventListener('click', () => {
       this.el.veil.classList.add('is-gone');
       setTimeout(() => { this.el.veil.hidden = true; }, 700);
       onEnter();
     }, { once: true });
+  }
+
+  /**
+   * With «Con mi avatar» the Character (a 30 MB model) mounts after the room is
+   * ready. Entering before it exists would start the visit in first person and
+   * then jump to third person. Hold the door until the Character reports ready,
+   * or offer the first-person visit if it cannot load.
+   */
+  _gateEnterOnAvatar(params) {
+    const enter = this.el.enter;
+    const root = document.documentElement;
+    const needs = params.get('continuity') === '1' ? 'characterPhase4b' : 'characterPhase4a';
+    enter.disabled = true;
+    enter.textContent = 'Preparando tu avatar…';
+    this.el.veilTitle.textContent = 'Preparando tu avatar…';
+    const started = performance.now();
+    const check = () => {
+      if (!enter.isConnected) return;
+      const ready = root.dataset[needs] === 'ready';
+      const failed = root.dataset.characterGate === 'error' || performance.now() - started > 180000;
+      if (ready) {
+        enter.disabled = false;
+        enter.textContent = 'Entrar con mi avatar';
+        this.el.veilTitle.textContent = 'Tu avatar está preparado';
+        enter.focus();
+        return;
+      }
+      if (failed) {
+        enter.disabled = false;
+        enter.textContent = 'Entrar en POV';
+        this.el.veilTitle.textContent = 'No se pudo cargar el avatar: la visita seguirá en primera persona';
+        return;
+      }
+      setTimeout(check, 300);
+    };
+    check();
   }
 
   /* == state rendering ====================================================== */

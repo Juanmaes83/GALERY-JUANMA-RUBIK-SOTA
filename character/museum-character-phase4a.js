@@ -99,6 +99,8 @@ async function ensureGalleryA(runtime) {
 }
 
 function installBadge(api) {
+  // QA overlay only: visitors never see engineering gates (?debug=1 shows it).
+  if (new URLSearchParams(location.search).get('debug') !== '1') return { remove() {} };
   document.getElementById('character-phase4a-gate')?.remove();
   document.getElementById('character-phase3-gate')?.remove();
   const el = document.createElement('div');

@@ -30,6 +30,30 @@ import { ConfigStore } from '../authoring/config-store.js';
 
 const params = new URLSearchParams(location.search);
 const WORLD_URL = params.get('world') || './worlds/museum-v1.world.json';
+const bootInstallers = new Set();
+const bootInstallerCleanups = new Map();
+
+/**
+ * Register product layers that must be rebound to every freshly-built runtime.
+ * Studio preview intentionally rebuilds Museum from authored data; keeping the
+ * installers here makes the initial boot and every preview boot the same
+ * lifecycle instead of leaving the replacement Studio/runtime half-mounted.
+ */
+export function registerBootInstaller(installer) {
+  if (typeof installer !== 'function') throw new TypeError('Boot installer must be a function.');
+  bootInstallers.add(installer);
+  return () => bootInstallers.delete(installer);
+}
+
+async function runBootInstallers(runtime) {
+  for (const installer of bootInstallers) {
+    const previousCleanup = bootInstallerCleanups.get(installer);
+    bootInstallerCleanups.delete(installer);
+    await previousCleanup?.();
+    const cleanup = await installer(runtime);
+    if (typeof cleanup === 'function') bootInstallerCleanups.set(installer, cleanup);
+  }
+}
 
 export async function boot() {
   const canvas = document.getElementById('iw-canvas');
@@ -289,6 +313,7 @@ const portalVariant = (params.get('portalVariant') || 'D').toUpperCase();
     });
   }
 
+  await runBootInstallers(runtime);
   window.__IW.ready = true;
   document.documentElement.dataset.iwReady = 'true';
   return runtime;

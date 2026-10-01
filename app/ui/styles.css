@@ -76,6 +76,7 @@ kbd {
   color: #14120f;
   padding: 0.75rem 1.4rem;
 }
+.iw-btn:disabled { opacity: .55; cursor: progress; }
 
 /* -- loading veil --------------------------------------------------------- */
 
@@ -100,6 +101,12 @@ kbd {
 .iw-veil__title { margin: 0 0 1.4rem; font: 400 1.5rem/1.3 var(--iw-serif); }
 .iw-veil__bar { height: 1px; background: var(--iw-line); margin-bottom: 2rem; }
 .iw-veil__bar i { display: block; height: 100%; width: 0; background: var(--iw-ink); transition: width 0.4s ease; }
+.iw-presence { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; margin: 0 0 1rem; padding: 0; border: 0; }
+.iw-presence[hidden] { display: none; }
+.iw-presence legend { grid-column: 1 / -1; margin: 0 0 .35rem; font: 500 .68rem/1.3 var(--iw-sans); letter-spacing: .11em; text-transform: uppercase; color: var(--iw-ink-dim); }
+.iw-presence__option { min-height: 2.75rem; padding: .68rem .8rem; border: 1px solid var(--iw-line); border-radius: 2px; background: transparent; color: var(--iw-ink-dim); font: 500 .72rem/1.25 var(--iw-sans); cursor: pointer; }
+.iw-presence__option:hover, .iw-presence__option:focus-visible { border-color: var(--iw-ink-dim); color: var(--iw-ink); }
+.iw-presence__option.is-selected { border-color: var(--iw-ink); background: var(--iw-ink); color: #0a0908; }
 .iw-veil__note { margin: 1.6rem 0 0; font-size: 0.72rem; line-height: 1.6; color: var(--iw-ink-dim); }
 
 /* -- top bar -------------------------------------------------------------- */

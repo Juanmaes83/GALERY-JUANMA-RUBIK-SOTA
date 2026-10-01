@@ -2,15 +2,61 @@ import { CAMERA_AUTHORITY } from '../engine/schema/types.js';
 import { mountMuseumCharacterPhase4A } from './museum-character-phase4a.js';
 import { applyGalleryBCharacterPassage } from './museum-character-phase4b-gallery-b-circulation.js';
 
-const GALLERY_A = 'space.gallery-a';
 const GALLERY_B = 'space.gallery-b';
-const PORTAL_A_B = 'portal.gallery-a-gallery-b';
-const PORTAL_B_A = 'portal.gallery-b-gallery-a';
-const SUPPORTED_PORTALS = new Set([PORTAL_A_B, PORTAL_B_A]);
+
+// GALERY-JUANMA-RUBIK-SOTA: continuity covers every WorldGraph portal, not only
+// Gallery A <-> Gallery B. Any other crossing used to fall through to the legacy
+// path, which handed the camera back to first-person EXPLORE and left the
+// Character frozen in the previous room for the rest of the visit.
+// Nested rooms (space.metadata.nestedRuntime, e.g. Breeze) are presented by a
+// guest runtime: the Museum stops drawing there, so the Character is parked and
+// hidden, and re-bound on the way out.
+function isNestedSpace(runtime, spaceId) {
+  try { return Boolean(runtime.store.require(spaceId)?.metadata?.nestedRuntime); }
+  catch { return false; }
+}
+
+// Arrival anchors are authored for a first-person visitor and sit 1–2 m inside
+// the door. A third-person camera needs about 3.3 m of room behind the Character,
+// otherwise it ends up pinned above its head. Step the Character into the room
+// along the arrival normal just enough, never closer than 0.6 m to the far wall.
+const CHARACTER_REAR_ROOM = 3.3;
+const CHARACTER_FAR_MARGIN = 0.6;
+
+function distanceToEdge(position, dirX, dirZ, bounds) {
+  let t = Infinity;
+  if (dirX > 1e-6) t = Math.min(t, (bounds.max[0] - position[0]) / dirX);
+  if (dirX < -1e-6) t = Math.min(t, (bounds.min[0] - position[0]) / dirX);
+  if (dirZ > 1e-6) t = Math.min(t, (bounds.max[2] - position[2]) / dirZ);
+  if (dirZ < -1e-6) t = Math.min(t, (bounds.min[2] - position[2]) / dirZ);
+  return Number.isFinite(t) ? Math.max(0, t) : 0;
+}
+
+function thirdPersonArrival(spawn, bounds) {
+  const n = Array.isArray(spawn.normal) ? spawn.normal : [0, 0, 1];
+  const len = Math.hypot(n[0], n[2]) || 1;
+  const fx = n[0] / len;
+  const fz = n[2] / len;
+  const behind = distanceToEdge(spawn.position, -fx, -fz, bounds);
+  const ahead = distanceToEdge(spawn.position, fx, fz, bounds);
+  const shift = Math.max(0, Math.min(CHARACTER_REAR_ROOM - behind, ahead - CHARACTER_FAR_MARGIN));
+  return {
+    position: [spawn.position[0] + fx * shift, spawn.position[1], spawn.position[2] + fz * shift],
+    normal: spawn.normal,
+    shift
+  };
+}
+
+function characterDebugEnabled() {
+  try { return new URLSearchParams(location.search).get('debug') === '1'; }
+  catch { return false; }
+}
 
 function installBadge(api) {
   document.getElementById('character-phase4a-gate')?.remove();
   document.getElementById('character-phase4b-gate')?.remove();
+  // QA overlay only: visitors never see engineering gates (?debug=1 shows it).
+  if (!characterDebugEnabled()) return { remove() {} };
   const el = document.createElement('div');
   el.id = 'character-phase4b-gate';
   el.style.cssText = 'position:fixed;left:14px;top:14px;z-index:20000;padding:10px 12px;background:rgba(9,12,14,.86);border:1px solid rgba(255,255,255,.24);color:#f1eee8;font:600 11px/1.45 system-ui,sans-serif;pointer-events:none;max-width:540px';
@@ -51,11 +97,10 @@ export async function mountMuseumCharacterPhase4B({ runtime, sceneKit = runtime?
   let lastPortal = null;
   let lastSpawn = null;
   let continuityError = null;
+  let parkedIn = null;
 
   const previousTraversePortal = runtime.traversePortal;
   runtime.traversePortal = async function traverseCharacterPortal(portalId, context = {}) {
-    if (!SUPPORTED_PORTALS.has(portalId)) return previousTraversePortal.call(runtime, portalId, context);
-
     const portal = runtime.store.require(portalId);
     const fromSpaceId = runtime.state.activeSpaceId;
     if (portal.fromSpaceId !== fromSpaceId) {
@@ -95,6 +140,21 @@ export async function mountMuseumCharacterPhase4B({ runtime, sceneKit = runtime?
       throw new Error(`Phase 4B canonical traversal failed: ${continuityError}`);
     }
 
+    if (isNestedSpace(runtime, destination)) {
+      // The guest presents this room. Park the Character (hidden, no input) and
+      // keep the same root, motion and camera controller for the way back.
+      root.visible = false;
+      phase4a.setInput({});
+      parkedIn = destination;
+      currentSpaceId = destination;
+      input.setEnabled(true);
+      crossings += 1;
+      lastPortal = portalId;
+      lastSpawn = portal.destinationSpawnId;
+      continuityError = null;
+      return result;
+    }
+
     const spawn = sceneKit.poseForAnchor(portal.destinationSpawnId);
     if (!spawn?.position) {
       continuityError = `missing destination pose ${portal.destinationSpawnId}`;
@@ -103,7 +163,21 @@ export async function mountMuseumCharacterPhase4B({ runtime, sceneKit = runtime?
 
     // Same root, same MotionV2, same locomotion loop and same camera controller.
     // Only room-bound navigation/ground/proximity state changes.
-    phase4a.rebindSpace(destination, spawn);
+    const bounds = sceneKit.navigationVolume(destination)?.bounds;
+    const arrival = bounds ? thirdPersonArrival(spawn, bounds) : spawn;
+    phase4a.rebindSpace(destination, arrival);
+    if (arrival.shift > 0) {
+      // Resolve the stepped-in position against the room's blockers (plinths,
+      // benches, stanchions) with the Museum's own navigation resolver.
+      const eye = runtime.explore.eyeHeight;
+      const resolved = runtime.explore.resolveNavigationPosition([root.position.x, root.position.y + eye, root.position.z]);
+      root.position.x = resolved[0];
+      root.position.z = resolved[2];
+      root.updateMatrixWorld(true);
+    }
+    phase4a.cameraController.reacquire?.();
+    root.visible = true;
+    parkedIn = null;
     currentSpaceId = destination;
     input.setMovementSink({ setInput: phase4a.setInput, jump: phase4a.jump, inputFrame() {} });
     input.setEnabled(true);
@@ -138,7 +212,8 @@ export async function mountMuseumCharacterPhase4B({ runtime, sceneKit = runtime?
           lastSpawn,
           sameRoot: root.uuid === rootIdentity,
           currentSpaceId,
-          supported: [PORTAL_A_B, PORTAL_B_A],
+          supported: 'ALL_WORLDGRAPH_PORTALS',
+          parkedInNestedRoom: parkedIn,
           canonicalTraversal: 'runtime.traversePortal + Museum WorldGraph/SpaceLifecycle/WorldState',
           singleMotionLoop: base.frameSeam.includes('one Character locomotion loop'),
           singleCameraController: true,

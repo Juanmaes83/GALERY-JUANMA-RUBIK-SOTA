@@ -25,7 +25,7 @@
   <noscript><p style="padding:2rem;font-family:Georgia,serif">Este prototipo necesita JavaScript y WebGL. El contenido está descrito en <code>worlds/museum-v1.world.json</code>.</p></noscript>
 
   <script type="module">
-    import { boot } from './app/experience-app.js';
+    import { boot, registerBootInstaller } from './app/experience-app.js';
     import { installVisitorPhase1 } from './authoring/studio/visitor-phase1.js';
     import { installMuseumPhase2 } from './authoring/studio/museum-phase2.js';
     import { installMuseumPhase2LayoutFix } from './authoring/studio/museum-phase2-layout-fix.js';
@@ -42,7 +42,8 @@
       requestAnimationFrame(() => window.__IW_STUDIO?.render?.());
     });
 
-    boot().then(async (runtime) => {
+    registerBootInstaller(async (runtime) => {
+      let wetPaintInstallation = null;
       installVisitorPhase1();
       installMuseumPhase2();
       installMuseumPhase2LayoutFix();
@@ -112,6 +113,7 @@
         if (activeRuntime) {
           await new Promise((resolve) => requestAnimationFrame(resolve));
           const result = installWetPaint(activeRuntime);
+          wetPaintInstallation = result;
           installWetPaintStudioControls();
           if (result) console.log('[Wet Paint] Motor + controles nativos de Studio instalados (Sala 4)');
           else console.warn('[Wet Paint] Motor diferido — runtime no listo');
@@ -119,7 +121,19 @@
       } catch (bridgeError) {
         console.error('[Wet Paint] Instalación fallida (no crítica):', bridgeError);
       }
-    }).catch((error) => {
+
+      return async () => {
+        window.__IW_CHARACTER_CINEMATIC_CAMERA?.dispose?.();
+        window.__IW_CHARACTER_TOUR?.dispose?.();
+        window.__IW_CHARACTER_GATE_A?.dispose?.();
+        window.__IW_CHARACTER_PHASE4B?.dispose?.();
+        window.__IW_CHARACTER_PHASE4A?.dispose?.();
+        window.__IW_CHARACTER_PHASE3?.dispose?.();
+        wetPaintInstallation?.dispose?.();
+      };
+    });
+
+    boot().catch((error) => {
       console.error('[IW] boot failed', error);
       document.documentElement.dataset.iwError = String(error?.message || error);
       const ui = document.getElementById('iw-ui');

@@ -392,24 +392,41 @@ export function installWetPaint(runtime) {
     sceneKitRef = sceneKit;
     runtimeRef = runtime;
 
+    bridge?.dispose?.();
     bridge = createExperienceBridge({ id: EXPERIENCE_ID, url: STANDALONE_URL, adapter: donor, onStatus: () => {} });
+    const installedBridge = bridge;
 
     const originalOnFrame = runtime.onFrame;
     runtime.onFrame = (pose, dt) => { try { tick(); } catch { /* noop */ } if (originalOnFrame) originalOnFrame(pose, dt); };
 
-    bridge.waitReady().then(async () => { await engine.restoreAll(); notify('ready', {}); });
+    bridge.waitReady().then(async () => {
+        if (bridge !== installedBridge) return;
+        await engine.restoreAll();
+        notify('ready', {});
+    });
 
-    const originalTakeFile = StudioShell.prototype._takeFile;
-    StudioShell.prototype._takeFile = async function wetPaintTakeFile(slot, file) {
-        await originalTakeFile.call(this, slot, file);
-        if (!file || !ARTWORK_IDS.includes(this.selectedId)) return;
-        const isImg = String(file.type || '').startsWith('image/');
-        const isGlb = /\.glb$/i.test(file.name || '') || /gltf/i.test(file.type || '');
-        if (!isImg && !isGlb) return;
-        activeEntityId = this.selectedId;
-        try { await engine.processFromEditor(file); } catch (e) { console.error('[WetPaint] upload failed', e); notify('error', {}); }
-    };
+    if (!StudioShell.prototype.__wetPaintTakeFilePatched) {
+        Object.defineProperty(StudioShell.prototype, '__wetPaintTakeFilePatched', { value: true });
+        const originalTakeFile = StudioShell.prototype._takeFile;
+        StudioShell.prototype._takeFile = async function wetPaintTakeFile(slot, file) {
+            await originalTakeFile.call(this, slot, file);
+            if (!file || !ARTWORK_IDS.includes(this.selectedId)) return;
+            const isImg = String(file.type || '').startsWith('image/');
+            const isGlb = /\.glb$/i.test(file.name || '') || /gltf/i.test(file.type || '');
+            if (!isImg && !isGlb) return;
+            activeEntityId = this.selectedId;
+            try { await window.__WET_PAINT_ENGINE?.processFromEditor?.(file); }
+            catch (e) { console.error('[WetPaint] upload failed', e); notify('error', {}); }
+        };
+    }
 
     window.__WET_PAINT_ENGINE = engine;
-    return { engine, bridge };
+    return {
+        engine,
+        bridge: installedBridge,
+        dispose() {
+            if (bridge === installedBridge) bridge = null;
+            installedBridge.dispose?.();
+        }
+    };
 }

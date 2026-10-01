@@ -23,7 +23,10 @@ export const PHASE3_APPROVED_AVATAR = Object.freeze({
   source: 'VECINIA S3-A1R approved Character 2027 asset',
   sourceCommit: '45e454febe2deb3b88bf5e5b527c4a5f86fe8eb1',
   characterStudioCommit: 'f5a93a48ed0e3904fce58f08f7fbe08b5411b289',
-  url: 'https://pub-0f344e596c324724a0b7300e3bc1d129.r2.dev/Avatar%201/Avatar_1.glb',
+  // Hosted in this repository (owner: Juanma, free licence). Byte-identical to
+  // the former remote copy at pub-0f344e596c324724a0b7300e3bc1d129.r2.dev —
+  // the SHA-256 below still gates every load.
+  url: new URL('../assets/models/character/Avatar_1.glb', import.meta.url).href,
   expectedByteLength: 30306028,
   expectedSha256: '103f0fdbc556566b12412d09f758e13fa171fcec90cb285b8f824adac2c7b0e3'
 });
@@ -185,6 +188,8 @@ async function loadApprovedAvatar() {
 
 function installGateBadge(report) {
   document.getElementById('character-phase3-gate')?.remove();
+  // QA overlay only: visitors never see engineering gates (?debug=1 shows it).
+  if (new URLSearchParams(location.search).get('debug') !== '1') return { remove() {} };
   const el = document.createElement('div');
   el.id = 'character-phase3-gate';
   el.style.cssText = 'position:fixed;left:14px;top:14px;z-index:20000;padding:10px 12px;background:rgba(9,12,14,.82);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(10px);color:#f1eee8;font:600 11px/1.45 system-ui,sans-serif;pointer-events:none;max-width:360px';

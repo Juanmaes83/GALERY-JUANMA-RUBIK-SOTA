@@ -140,6 +140,11 @@ export function createExperienceBridge({ id, url, adapter, onStatus }) {
     function open() { opened = true; styleOpen(container); }
     function close() { opened = false; styleClosed(container); }
     function isOpen() { return opened; }
+    function dispose() {
+        opened = false;
+        iframe.src = 'about:blank';
+        container.remove();
+    }
 
     return {
         id,
@@ -150,6 +155,7 @@ export function createExperienceBridge({ id, url, adapter, onStatus }) {
         reset,
         open,
         close,
+        dispose,
         isOpen,
         waitReady,
         captureResult: () => adapter.captureResult(iframe),

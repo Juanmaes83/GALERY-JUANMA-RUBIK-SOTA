@@ -160,6 +160,8 @@
       ],
       "anchorRefs": [
         "anchor.gallery-b.arrive-from-gallery-a",
+        "anchor.gallery-b.arrive-from-breeze",
+        "anchor.gallery-b.arrive-from-itinerant",
         "anchor.gallery-b.wall-5",
         "anchor.gallery-b.wall-6",
         "anchor.gallery-b.screen",
@@ -627,6 +629,38 @@
         0,
         0
       ]
+    },
+    {
+      "id": "anchor.gallery-b.arrive-from-breeze",
+      "spaceId": "space.gallery-b",
+      "kind": "SPAWN",
+      "position": [
+        18.3,
+        0,
+        -12
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "label": "Llegada a la Galería B desde la sala Breeze"
+    },
+    {
+      "id": "anchor.gallery-b.arrive-from-itinerant",
+      "spaceId": "space.gallery-b",
+      "kind": "SPAWN",
+      "position": [
+        14,
+        0,
+        -6.7
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "label": "Llegada a la Galería B desde la Sala Itinerante"
     },
     {
       "id": "anchor.gallery-b.wall-5",
@@ -2592,7 +2626,7 @@
       "fromSpaceId": "space.breeze",
       "toSpaceId": "space.gallery-b",
       "sourceAnchorId": "anchor.breeze.door-gallery-b",
-      "destinationSpawnId": "anchor.gallery-b.arrive-from-gallery-a",
+      "destinationSpawnId": "anchor.gallery-b.arrive-from-breeze",
       "transitionBehaviour": "CONTINUOUS",
       "representationHint": "OPENING",
       "prefetchPolicy": "ON_APPROACH",
@@ -2616,7 +2650,7 @@
       "fromSpaceId": "space.itinerant-wet-paint",
       "toSpaceId": "space.gallery-b",
       "sourceAnchorId": "anchor.itinerant.door-gallery-b",
-      "destinationSpawnId": "anchor.gallery-b.arrive-from-gallery-a",
+      "destinationSpawnId": "anchor.gallery-b.arrive-from-itinerant",
       "representationHint": "OPENING",
       "transitionBehaviour": "CONTINUOUS",
       "returnPolicy": "RETURN_TO_SOURCE",

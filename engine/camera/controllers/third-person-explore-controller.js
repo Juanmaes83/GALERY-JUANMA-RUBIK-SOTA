@@ -89,6 +89,20 @@ export class ThirdPersonExploreController {
   }
 
   /**
+   * Discard the current camera pose and take a fresh rear candidate on the next
+   * frame. Used after the Character is re-bound to another room: the previous
+   * pose belongs to a different Space, and easing from it would sweep the camera
+   * through walls or leave it pinned above the Character.
+   */
+  reacquire() {
+    this._position = null;
+    this._target = null;
+    this._resetRecoveryState();
+    this._reacquirePending = true;
+    this._setShotMode('REACQUIRE');
+  }
+
+  /**
    * CameraAuthority passes the incoming pose on gain. A Focus pose is not a
    * meaningful third-person pose, so a focus-release explicitly discards it and
    * reacquires a fresh rear candidate around the current Character.
