@@ -40,8 +40,13 @@ export class ProximitySystem {
 
   /** Rebuild the candidate set when the active Space changes. */
   rebuild(spaceId) {
+    const hadNearest = this._nearestId !== null;
     this._active = [];
     this._nearestId = null;
+    // The previous room's nearest hotspot no longer exists here. Say so, or the
+    // presentation keeps offering the old room's action until something else
+    // happens to be near.
+    if (hadNearest) this.bus.emit(EVENTS.WORLD_STATE_CHANGED, { reason: 'proximity', nearestHotspotId: null });
     for (const hotspot of this.store.hotspotsOf(spaceId)) {
       if (hotspot.enabled === false) continue;
       const anchorId = hotspot.anchorId || this.store.require(hotspot.entityId).anchorId;

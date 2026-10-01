@@ -261,7 +261,9 @@
         "anchor.breeze.guide-cierre",
         "anchor.breeze.visitor-hero"
       ],
-      "hotspotRefs": [],
+      "hotspotRefs": [
+        "hotspot.breeze.to-gallery-b"
+      ],
       "portalRefs": [
         "portal.breeze-gallery-b"
       ],
@@ -2462,6 +2464,23 @@
       "action": {
         "type": "ACTIVATE_PORTAL",
         "target": "portal.itinerant-gallery-b"
+      },
+      "accessibilityLabel": "Volver a la Galería B"
+    },
+    {
+      "id": "hotspot.breeze.to-gallery-b",
+      "spaceId": "space.breeze",
+      "anchorId": "anchor.breeze.door-gallery-b",
+      "type": "PORTAL",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 3
+      },
+      "triggerDistance": 3,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "ACTIVATE_PORTAL",
+        "target": "portal.breeze-gallery-b"
       },
       "accessibilityLabel": "Volver a la Galería B"
     },

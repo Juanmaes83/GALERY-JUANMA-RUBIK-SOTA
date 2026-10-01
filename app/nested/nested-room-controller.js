@@ -95,10 +95,15 @@ export class NestedRoomController {
     button.dataset.breezeMuseumExit = 'true';
     button.textContent = `← ${destination.replace(/\s+—.*$/, '')}`;
     button.setAttribute('aria-label', `Volver a ${destination}`);
+    // Bottom-left: #iw-stage is position:fixed, so it is its own stacking
+    // context below #iw-ui (z-index 10) and no z-index here can lift the button
+    // above the HUD. At the top the HUD bar covered it and swallowed the click;
+    // the bottom-left corner is free of HUD furniture on desktop, phone and in
+    // the Studio's docked preview (tests/museum-smoke.mjs checks it).
     Object.assign(button.style, {
       position: 'absolute',
       left: '18px',
-      top: '18px',
+      bottom: '18px',
       zIndex: '60',
       padding: '10px 14px',
       border: '1px solid rgba(255,255,255,.34)',
