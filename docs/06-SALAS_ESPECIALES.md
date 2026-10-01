@@ -37,43 +37,40 @@ El museo no reconstruye la capacidad probada: la integra.
 
 ## Sala Breeze — Viento sobre mármol
 
-**Estado: no migrada.** La sala existe en el World y en el recorrido (último capítulo). Al entrar muestra el aviso «Sala no disponible en esta edición», con dos salidas: el botón «← Volver a Galería B» y la tecla `E`.
+**Estado: integrada, no validada.**
 
-**Qué es:** una instalación en la que una tela simulada en tiempo real (GPU/WebGPU) atraviesa la sala empujada por el viento y choca con una escultura. Funciones del producto Breeze Studio PRO V4.1:
+- Breeze Studio PRO V4.1 está en `experiences/breeze-studio-pro/`. Se importó de `escaparates-pro@382e566` en la rama `import/breeze-studio-pro` (@ `9ff10b3`):
+  - sin el script de analítica de terceros;
+  - sin las texturas originales de pétalo y hoja, sustituidas por texturas propias.
+- El invitado de la sala carga `./experiences/breeze-studio-pro/index.html`.
+
+**Qué es:** una instalación en la que una tela simulada en tiempo real (WebGPU) atraviesa la sala empujada por el viento y choca con una escultura. Funciones:
 
 - fondo de imagen o vídeo;
 - medio proyectado sobre la tela;
 - opacidad y gradación de la tela;
 - escala y posición;
 - modos Prairie Cloth, Autumn Leaves y Sakura Petals, y presets Museum Cloth, Gallery Wind, Fashion Drapery y Product Reveal;
-- Venus de Milo, plantillas generadas y CC0 de Khronos, y subida de GLB, glTF u OBJ con colisionador BVH real;
-- exportación a PNG o WebM.
+- Venus de Milo, plantillas generadas y CC0 de Khronos, y subida de GLB, glTF u OBJ;
+- exportación a PNG o WebM;
+- «Guardar en Museum», que persiste durante la sesión y al reentrar, pero no tras un F5.
 
-**Integración en el origen:**
+**Robustez añadida en el museo:**
 
-- `app/nested/breeze/breeze-studio-pro-guest.js` monta el producto en un iframe como invitado de sala anidada (ver [02](02-ARQUITECTURA.md)).
-- `authoring/studio/breeze-persistence-adapter.js` conecta su «Guardar en Museum» con el proyecto Schema 3. Los binarios subidos persisten solo durante la sesión y al reentrar; no persisten tras un F5.
-- **Veredicto humano previo:** «KEEP FOR CONTINUATION» (2026-08-16) sobre la sala con física real del donante: 6 561 vértices y 51 040 muelles, Venus, tela, viento, colisión, entrada, salida y reentrada. No se declaró visualmente final; la cámara y el punto de vista quedaron diferidos.
-- **Puerta humana pendiente en el origen:** validación visual de los píxeles WebGPU de la tela de la versión Studio PRO V4.1 en un navegador gráfico.
+| Situación | Qué ve el visitante |
+|---|---|
+| Navegador sin WebGPU | «Esta sala necesita WebGPU», con salida a Galería B |
+| La GPU detiene la simulación (pérdida del dispositivo) | «La instalación se ha detenido», con «Reintentar» y «Volver a Galería B» |
+| Producto no servido en el despliegue | «Sala no disponible en esta edición», con salida |
 
-**Por qué no está migrada:**
+Salidas siempre disponibles: botón-puente abajo a la izquierda (elevado para no tapar la barra «info» de Breeze), hotspot con `E` y botones del aviso.
 
-1. La migración requiere copiar un producto del repositorio privado a este repositorio público. El entorno de ejecución lo bloqueó por política de permisos («Out-of-Place Publication»). Hace falta una autorización explícita en la configuración de permisos.
-2. Antes de publicarla hay que resolver sus assets:
+**Pendiente:**
 
-| Asset | Licencia | Decisión propuesta |
-|---|---|---|
-| Venus de Milo (chiwei y Nancy/Lanzi Luo, Sketchfab) | CC Attribution | Mantener con atribución |
-| Textura de tela Fabric Lace 038 (3dtextures.me) | CC0 | Mantener |
-| HDRI Qwantani Noon, Piazza Martin Lutero y Ninomaru Teien (Poly Haven) | CC0 | Mantener |
-| Corset, BoomBox y Lantern (Khronos glTF Sample Assets, 33 MB) | CC0 | Mantener o aligerar (son opcionales) |
-| Pétalo de cerezo (Vecteezy) | Licencia gratuita personal; redistribución no clara | **Sustituir** por una textura propia con el mismo nombre y tamaño |
-| Hoja de arce (modelo de Sketchfab) | Sin confirmar | **Sustituir** por una textura propia |
-| Script de analítica de terceros en `index.html` (`s.holtsetio.com`) | — | **Eliminar**: rastrearía a los visitantes del museo |
-
-3. Necesita WebGPU. Hay que definir una alternativa (aviso o vídeo) para navegadores sin WebGPU.
-
-Cuando se autorice, la ruta del producto pasa a ser relativa dentro del repositorio, en lugar de `/labs/website-modules-source/…`. La comprobación de disponibilidad del invitado ya está preparada: si el producto está servido, se monta tal cual.
+- 👁 **Validación visual** de la tela y el viento en un navegador con GPU real. En el entorno de pruebas (WebGPU emulado por CPU) el dispositivo se pierde a los pocos segundos, también con Breeze funcionando solo.
+- **Licencias sin verificar:** Venus de Milo (Sketchfab, chiwei y Lanzi Luo), HDRI de Poly Haven y Fabric Lace 038 (3dtextures.me). No se publica en `main` hasta confirmarlas.
+- El panel del producto mezcla inglés y español.
+- Veredicto humano previo de la sala con la física real del donante: «KEEP FOR CONTINUATION» (2026-08-16), no visualmente final.
 
 ## Contrato de sala anidada (resumen)
 

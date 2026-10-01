@@ -31,11 +31,23 @@ Este repositorio redistribuye los siguientes componentes de terceros. Cada uno c
   - `experiences/wet-paint-flow/ASSET_PROVENANCE.md`.
 - Escenas (`experiences/wet-paint-flow/scenes/`): reproducciones fieles de pinturas de Vincent van Gogh en dominio público. Proceden de The Met Open Access (CC0), RISD, Saint Louis Art Museum y Minneapolis Institute of Art, y de Wikimedia Commons (PD-Art). El detalle por archivo está en `ASSET_PROVENANCE.md`. Commons advierte de que la reutilización puede estar restringida en algunas jurisdicciones.
 
-## Recurso remoto no redistribuido
+## Avatar del personaje
 
-- **Avatar `Avatar_1.glb`** (Character 2027).
-  - No se incluye en este repositorio: se descarga en tiempo de ejecución desde `pub-0f344e596c324724a0b7300e3bc1d129.r2.dev` y se verifica por SHA-256.
+- **`assets/models/character/Avatar_1.glb`** (Character 2027), 30 306 028 bytes, SHA-256 `103f0fdbc556566b12412d09f758e13fa171fcec90cb285b8f824adac2c7b0e3`.
+  - Antes se servía desde `pub-0f344e596c324724a0b7300e3bc1d129.r2.dev`. Ahora se aloja en este repositorio, con copia idéntica procedente de `Juanmaes83/VECINIA-WORLDS` (`visual/public/assets/character2027/Avatar_1.glb`).
   - **Titular:** Juanma, confirmado el 2026-10-01. Licencia libre según el titular; **falta registrar el nombre exacto de la licencia**.
+
+## Breeze Studio PRO V4.1
+
+- **Ubicación:** `experiences/breeze-studio-pro/`, importado de `escaparates-pro@382e566`.
+- **Código:** MIT, © 2025 Niklas Niehus (`LICENSE`). Créditos en `CREDITS.md`, ambos sin modificar.
+- **Licencias de assets sin verificar (pendientes):**
+  - Venus de Milo (Sketchfab, chiwei y Lanzi Luo);
+  - HDRI Qwantani Noon, Piazza Martin Lutero y Ninomaru Teien (Poly Haven);
+  - Fabric Lace 038 (3dtextures.me).
+- **Khronos (Corset, BoomBox, Lantern):** CC0 1.0 según `CREDITS.md`.
+- **Texturas originales de pétalo (Vecteezy) y hoja (Sketchfab):** excluidas. Las sustituyen texturas propias con el mismo nombre.
+- Detalle completo en `experiences/breeze-studio-pro/IMPORT_NOTES.md`.
 
 ## Contenido propio
 

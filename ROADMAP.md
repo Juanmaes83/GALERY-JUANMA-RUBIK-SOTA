@@ -58,10 +58,10 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 |---|---|---|
 | 1.1 | Veredicto de Marble Bust 01 (KEEP o ADJUST) | ⏳ Juanma |
 | 1.2 | Auditoría visual humana del Studio, fase 2 | ⏳ Juanma (requiere preview) |
-| 1.3 | Portar la PR #83: elección «POV» o «Con mi avatar» al entrar y reinstalación del avatar y de Wet Paint tras reconstruir Studio | ○ |
-| 1.4 | **Migrar Breeze Studio PRO** con estos pasos previos: <br>• quitar la analítica de terceros; <br>• sustituir las texturas de pétalo y hoja por otras propias; <br>• mantener la Venus con atribución CC BY; <br>• ruta relativa en el repositorio; <br>• alternativa para navegadores sin WebGPU | ⛔ bloqueado por la política de permisos del entorno; requiere autorización explícita |
+| 1.3 | Portar la PR #83: elección «POV» o «Con mi avatar» al entrar y reinstalación del avatar y de Wet Paint tras reconstruir Studio | ✅ en `import/breeze-studio-pro` |
+| 1.4 | **Migrar Breeze Studio PRO**: analítica eliminada, texturas propias, ruta relativa, aviso sin WebGPU y vigilancia de pérdida del dispositivo | ✅ en `import/breeze-studio-pro`. Licencias de Venus, Poly Haven y Fabric Lace **pendientes** |
 | 1.5 | Puerta visual WebGPU de Breeze en navegador gráfico | ○ tras 1.4 |
-| 1.6 | Avatar: registrar el nombre exacto de la licencia, optimizarlo (Draco o meshopt y KTX2, objetivo ≤ 5 MB) y alojarlo en un origen controlado | ⏳ licencia y alojamiento |
+| 1.6 | Avatar: alojado en el repositorio ✅; continuidad en las 6 salas ✅ (pruebas automáticas, 👁 validación humana pendiente); registrar el nombre exacto de la licencia ⏳; optimizarlo (≤ 5 MB) ○ |
 | 1.7 | Bloque 2B: puerta humana del cruce entre salas | ⏳ Juanma |
 
 ## Fase 2 — Producto vendible: del Studio a la publicación

@@ -9,18 +9,19 @@
  *   - arranque sin errores de consola ni peticiones locales fallidas;
  *   - invariantes arquitectónicas del runtime y World válido;
  *   - recorrido por las seis salas a través de los portales del WorldGraph;
- *   - Sala Breeze sin Breeze Studio PRO: aviso explícito y salida a Galería B;
+ *   - Sala Breeze sin WebGPU (Chromium headless no lo ofrece por defecto):
+ *     aviso explicativo y salidas a Galería B (botón, botón-puente y tecla E);
  *   - Marble Bust 01 cargado como GLB local y su fallback forzado;
  *   - Studio (`?authoring=1`): montaje, áreas, guardado y recarga.
- * El avatar (Character 2027) depende de un host externo y se informa aparte.
+ *   - selector «POV / Con mi avatar» en la entrada;
+ *   - avatar (Character 2027) en las seis salas: tercera persona, mismo avatar,
+ *     oculto y aparcado en la sala anidada (Breeze), sin conflictos de cámara.
  */
 import { chromium } from 'playwright';
 import { startServer } from '../tools/serve.mjs';
 
 const PORT = Number(process.env.MUSEUM_TEST_PORT || 4199);
 const BASE = `http://127.0.0.1:${PORT}`;
-const BREEZE_PRO_PATH = '/labs/website-modules-source/breeze-studio-pro/index.html';
-const AVATAR_HOST = 'pub-0f344e596c324724a0b7300e3bc1d129.r2.dev';
 
 let failures = 0;
 function check(id, claim, pass, detail = '') {
@@ -78,6 +79,12 @@ try {
     check('WORLD-VALID', 'El World cumple el esquema', boot.valid, `${boot.spaces.length} salas`);
     check('START-SPACE', 'La visita empieza en el Vestíbulo', boot.active === 'space.lobby', boot.active);
 
+    const presence = await page.evaluate(() => {
+      const box = window.__IW.hud.el.presence;
+      return box && !box.hidden ? { selected: box.querySelector('.is-selected')?.dataset.presence, enter: window.__IW.hud.el.enter.textContent.trim() } : null;
+    });
+    check('PRESENCE-CHOICE', 'La entrada ofrece «POV» o «Con mi avatar»', presence?.selected === 'pov' && presence.enter === 'Entrar en POV', JSON.stringify(presence));
+
     // The visitor's own first gesture: the entry veil and its button.
     const entered = await page.evaluate(async () => {
       const hud = window.__IW.hud;
@@ -107,13 +114,14 @@ try {
     }
 
     // Breeze without Breeze Studio PRO: explicit notice, working exit.
-    await page.waitForSelector('[data-breeze-unavailable="true"]', { timeout: 30000 }).catch(() => null);
+    await page.waitForSelector('[data-breeze-unavailable]', { timeout: 30000 }).catch(() => null);
     const breeze = await page.evaluate(() => ({
-      notice: Boolean(document.querySelector('[data-breeze-unavailable="true"]')),
+      notice: Boolean(document.querySelector('[data-breeze-unavailable]')),
       iframe: Boolean(document.querySelector('iframe[data-nested-room-studio="room.breeze"]')),
       exit: Boolean(document.querySelector('[data-breeze-museum-exit]'))
     }));
-    check('BREEZE-NOTICE', 'Sala Breeze muestra el aviso de producto no incluido', breeze.notice && !breeze.iframe);
+    const noticeKind = await page.evaluate(() => document.querySelector('[data-breeze-unavailable]')?.dataset.breezeUnavailable || null);
+    check('BREEZE-NOTICE', 'Sin WebGPU, la Sala Breeze explica qué necesita en vez de un escenario vacío', breeze.notice && !breeze.iframe && noticeKind === 'no-webgpu', noticeKind);
 
     // Keyboard exit: the room's own return hotspot (E) crosses back to Gallery B.
     await page.waitForTimeout(1200);
@@ -128,7 +136,7 @@ try {
     check('BREEZE-KEY-E', 'La tecla E sale de la Sala Breeze a Galería B', keyExit);
     const reentered = await travel(page, 'portal.gallery-b-breeze');
     check('BREEZE-REENTER', 'Se vuelve a entrar en la Sala Breeze', reentered === 'space.breeze', reentered);
-    await page.waitForSelector('[data-breeze-unavailable="true"]', { timeout: 30000 }).catch(() => null);
+    await page.waitForSelector('[data-breeze-unavailable]', { timeout: 30000 }).catch(() => null);
     await page.waitForSelector('[data-breeze-museum-exit]', { timeout: 30000 }).catch(() => null);
     // The exit bridge must be reachable by a pointer (it was covered by the
     // HUD top bar in escaparates-pro@382e566).
@@ -146,14 +154,14 @@ try {
       .then(() => true).catch((error) => { console.log(`  info  click salida: ${error.message.split('\n')[0]}`); return false; });
     const back = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-b', null, { timeout: 30000 })
       .then(() => 'space.gallery-b').catch(() => null);
-    const noticeGone = await page.evaluate(() => !document.querySelector('[data-breeze-unavailable="true"]'));
+    const noticeGone = await page.evaluate(() => !document.querySelector('[data-breeze-unavailable]'));
     check('BREEZE-EXIT', 'Clic real en «Volver a Galería B» cruza el portal canónico y retira el aviso', exitClicked && back === 'space.gallery-b' && noticeGone);
 
-    const failedLocal = requests.filter((r) => r.status >= 400 && r.url.split('?')[0] !== BREEZE_PRO_PATH);
-    check('NO-BROKEN-REQUESTS', 'Ninguna petición local falla (salvo la sonda de Breeze PRO)', failedLocal.length === 0,
+    const failedLocal = requests.filter((r) => r.status >= 400);
+    check('NO-BROKEN-REQUESTS', 'Ninguna petición local falla', failedLocal.length === 0,
       failedLocal.length ? failedLocal.map((r) => `${r.status} ${r.url}`).join(', ') : `${requests.length} peticiones`);
     check('NO-EXTERNAL-REQUESTS', 'La visita base no depende de la red externa', externalRequests.length === 0, externalRequests.join(', '));
-    const relevantErrors = consoleErrors.filter((text) => !text.includes(BREEZE_PRO_PATH) && !/404 \(Not Found\)/.test(text));
+    const relevantErrors = consoleErrors;
     check('NO-CONSOLE-ERRORS', 'Sin errores de consola', relevantErrors.length === 0, relevantErrors.slice(0, 3).join(' | '));
     await page.close();
   }
@@ -211,12 +219,33 @@ try {
     await context.close();
   }
 
-  /* 4. Avatar: informative only, depends on an external host ---------------- */
+  /* 4. Avatar in every room ------------------------------------------------ */
   {
-    const { page } = await openMuseum('?character=1');
-    await page.waitForFunction(() => document.documentElement.dataset.characterGate || window.__IW_CHARACTER_PHASE3 || null, null, { timeout: 45000 }).catch(() => null);
-    const gate = await page.evaluate(() => document.documentElement.dataset.characterGateError || document.documentElement.dataset.characterGate || 'sin señal');
-    console.log(`  info  AVATAR                       ?character=1 → ${gate} (asset remoto en ${AVATAR_HOST}; no forma parte del resultado)`);
+    const { page, consoleErrors } = await openMuseum('?character=1&mobility=1&continuity=1&gatea=1');
+    const gate = await page.evaluate(() => ({ disabled: window.__IW.hud.el.enter.disabled, label: window.__IW.hud.el.enter.textContent.trim() }));
+    check('AVATAR-ENTRY-GATED', 'Con avatar, la entrada espera a que el avatar esté listo',
+      gate.disabled === true || gate.label === 'Entrar con mi avatar', JSON.stringify(gate));
+    const mounted = await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000, polling: 1000 })
+      .then(() => true).catch(() => false);
+    const label = await page.evaluate(() => window.__IW.hud.el.enter.textContent.trim());
+    check('AVATAR-READY', 'El avatar se monta desde el repositorio y la entrada se habilita', mounted && label === 'Entrar con mi avatar', label);
+    if (mounted) {
+      await page.evaluate(() => window.__IW.hud.el.enter.click());
+      const route = ['portal.gallery-a-lobby', 'portal.lobby-gallery-a', 'portal.gallery-a-archive', 'portal.archive-gallery-a',
+        'portal.gallery-a-gallery-b', 'portal.gallery-b-itinerant', 'portal.itinerant-gallery-b', 'portal.gallery-b-breeze', 'portal.breeze-gallery-b'];
+      for (const id of route) {
+        const active = await travel(page, id);
+        const r = await page.evaluate(() => {
+          const c = window.__IW_CHARACTER_PHASE4B; const rt = window.__IW.runtime;
+          return { active: rt.state.activeSpaceId, visible: c.root.visible, cam: rt.camera.report().owner, viol: rt.camera.violations.length,
+            err: c.report().continuity.error, nested: Boolean(rt.store.require(rt.state.activeSpaceId).metadata?.nestedRuntime) };
+        });
+        const ok = r.cam === 'THIRD_PERSON_EXPLORE' && r.viol === 0 && !r.err && (r.nested ? r.visible === false : r.visible === true);
+        check(`AVATAR ${active.replace('space.', '')}`, r.nested ? 'Avatar aparcado y oculto en la sala anidada' : 'Avatar en tercera persona en la sala',
+          ok, JSON.stringify(r));
+      }
+    }
+    check('AVATAR CONSOLE', 'Sin errores de consola con avatar', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
     await page.close();
   }
 } finally {

@@ -14,7 +14,7 @@ PRESENTE → RIG / ESCALA / APOYO CORRECTOS → MOVIMIENTO LIBRE → COLISIÓN R
 
 ## Cómo se activa
 
-Hoy se activa solo por URL. Cada capa exige las anteriores (`index.html` lo comprueba y, si falta alguna, muestra `CHARACTER GATE ERROR`).
+En la entrada, el visitante elige **«POV · primera persona»** o **«Con mi avatar»** (PR #83 del origen, portada). Con avatar, el botón de entrada espera hasta que el personaje está montado y, si no carga, ofrece seguir en POV. Internamente se activa con estas capas de URL; cada una exige las anteriores y, si falta alguna, se muestra `CHARACTER GATE ERROR`:
 
 | Parámetros | Capa | Módulo | Estado en el origen |
 |---|---|---|---|
@@ -31,7 +31,16 @@ Ejemplo completo:
 index.html?character=1&mobility=1&continuity=1&gatea=1&tour=1&cinematic=1
 ```
 
-**Pendiente:** la elección **«POV» o «Con mi avatar» al entrar**, sin parámetros, estaba en la PR #83 del origen (borrador, gate humano pendiente). Hay que portarla (ver [ROADMAP](../ROADMAP.md)).
+### Continuidad en todas las salas
+
+Antes, la continuidad solo existía entre Galería A ↔ B: cualquier otro cruce devolvía la cámara a primera persona y dejaba el avatar congelado. Ahora todos los portales del WorldGraph mantienen el mismo avatar, el mismo motion y el mismo controlador de cámara.
+
+- Al llegar a una sala, el avatar avanza lo justo para que la cámara tenga unos 3,3 m libres detrás, y la cámara se recoloca al instante (`reacquire()`).
+- En la Sala Breeze (anidada) el avatar se aparca oculto y reaparece al volver a Galería B.
+- `npm test` recorre las seis salas con avatar.
+- **Pendiente:** validación visual humana.
+
+Los paneles de QA de las fases («PHASE 3/4A/4B · HUMAN GATE») solo se muestran con `?debug=1`.
 
 ## Acciones
 
@@ -48,7 +57,7 @@ Las acciones que dependen del contexto (sentarse, abrir una puerta, subir escale
 | Titular | **Juanma** (confirmado el 2026-10-01) |
 | Licencia | **Libre**, según el titular. **Falta el nombre exacto** (por ejemplo CC0 o CC BY 4.0) para registrarlo |
 | Tamaño y huella | 30 306 028 bytes · SHA-256 `103f0fdbc556566b12412d09f758e13fa171fcec90cb285b8f824adac2c7b0e3` |
-| Alojamiento | Remoto: `pub-0f344e596c324724a0b7300e3bc1d129.r2.dev/Avatar%201/Avatar_1.glb` |
+| Alojamiento | **En el repositorio:** `assets/models/character/Avatar_1.glb`, copia idéntica de la que se servía desde r2.dev |
 | Requisitos de rig | Humanoide con hips, spine, chest, neck, head, brazos, manos, piernas y pies |
 | Escala | Normalizada a 1,66 m |
 
@@ -62,8 +71,7 @@ Si el SHA-256 no coincide, el avatar se rechaza: no se usa un modelo distinto de
 
 **Riesgos actuales:**
 
-- Sin el host remoto no hay avatar. En el entorno de la extracción estaba bloqueado, así que el avatar no está validado en este repositorio.
-- Son 30 MB por visita. Conviene optimizarlo (Draco o meshopt y texturas KTX2) y alojarlo en un origen controlado, en este repositorio con Git LFS o en el hosting del proyecto.
+- Son 30 MB por visita, y varias rutas de carga usan `cache: 'no-store'`. Conviene optimizarlo (Draco o meshopt y texturas KTX2, objetivo ≤ 5 MB) y permitir la caché del navegador, ya que el SHA-256 garantiza la integridad.
 
 ## Avatar Studio (fase 5)
 
@@ -85,7 +93,7 @@ Los donantes congelados (`donors-frozen/`) no se migraron, porque el runtime no 
 
 ## Lo que falta del roadmap del personaje
 
-- Selector POV o avatar al entrar (PR #83 del origen).
+- Validación visual humana del avatar en las seis salas, también en móvil.
 - Exterior Pilot y Full World C2: hay una rama sin fusionar en el origen (`…phase6-exterior-full-world-v1`).
 - Integración del personaje con Wet Paint y Breeze (fase 4D del tracker original).
 - Asset local y optimizado, y licencia registrada.
