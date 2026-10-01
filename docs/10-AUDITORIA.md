@@ -154,3 +154,26 @@ Siguen **pendientes**, y no se declara ninguna licencia no verificada:
 - Fabric Lace 038 (3dtextures.me).
 
 Las dos texturas originales de terceros siguen fuera. Las sustituyen texturas propias con el mismo nombre (ver `experiences/breeze-studio-pro/IMPORT_NOTES.md`).
+
+## Grabaciones y estado por sala (2026-10-01)
+
+Grabadas con Playwright y Chromium SwiftShader (render por CPU): el tiempo real es lento. Los vídeos no se versionan en el repositorio.
+
+| Grabación | Qué cubre | Resultado |
+|---|---|---|
+| Studio: personalización y visita (1440 × 900) | Logotipo; 7 piezas de A y B y la proyección con Van Gogh y WebM propios; prueba MP4; 5 cuadros Wet Paint; guardar, «Empezar» y foco en cada obra; recarga | 12/12 medios y 5/5 Wet Paint visibles en la visita · 0 errores de consola |
+| POV en escritorio (1280 × 720) | Teclado: W + E para cruzar, E para la ficha, flechas para recorrer la colección, Esc; Archivo, B y proyección, Itinerante, Breeze (aviso sin WebGPU y salida), mapa y texto | 0 violaciones de cámara · 0 errores |
+| Avatar en las 6 salas (1280 × 720) | Paseo con teclado en cada sala, incluidas la Itinerante y Breeze | Tercera persona en todas, oculto en Breeze, 0 violaciones · 0 errores |
+| Móvil (390 × 844, táctil) | Pulgar, puerta tocando el aviso, ficha, mapa, texto, avatar y Studio | 0 hallazgos · 0 errores |
+
+| Sala | POV | Avatar | Móvil |
+|---|---|---|---|
+| Vestíbulo | PASS | PASS | PASS (POV) |
+| Galería A | PASS | PASS | PASS (POV y avatar) |
+| Galería B | PASS | PASS | NO PROBADO (avatar) |
+| Archivo | PASS | PASS | NO PROBADO |
+| Itinerante (Wet Paint) | PASS | PASS | NO PROBADO |
+| Breeze | PASS **solo el aviso sin WebGPU y la salida** | PASS (avatar aparcado) | NO PROBADO |
+
+**Breeze y el avatar no están validados.** Falta la prueba visual en una GPU real y la revisión humana. El recorrido comentado se inició, pero sus paradas no quedaron verificadas: **NO PROBADO**.
+
