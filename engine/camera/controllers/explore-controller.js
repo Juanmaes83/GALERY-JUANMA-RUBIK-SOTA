@@ -68,12 +68,20 @@ export class ExploreController {
     this._smoothed[1] += (input.right * speed - this._smoothed[1]) * k;
     const sin = Math.sin(this.yaw);
     const cos = Math.cos(this.yaw);
-    const next = [
-      this.position[0] + (this._smoothed[0] * sin + this._smoothed[1] * cos) * dt,
-      this.position[1],
-      this.position[2] + (this._smoothed[0] * cos - this._smoothed[1] * sin) * dt
-    ];
-    this.position = this.resolveNavigationPosition(next);
+    const dx = (this._smoothed[0] * sin + this._smoothed[1] * cos) * dt;
+    const dz = (this._smoothed[0] * cos - this._smoothed[1] * sin) * dt;
+    // Resolve in steps no longer than a rope's collision box is thick. On a
+    // slow frame (0.5 s at 1.35 m/s) one step could land past the middle of a
+    // blocker and be pushed out on the far side: the visitor walked through
+    // the Itinerant room's rope.
+    const steps = Math.max(1, Math.ceil(Math.hypot(dx, dz) / 0.1));
+    for (let i = 0; i < steps; i += 1) {
+      this.position = this.resolveNavigationPosition([
+        this.position[0] + dx / steps,
+        this.position[1],
+        this.position[2] + dz / steps
+      ]);
+    }
     commit({
       position: [...this.position],
       target: [

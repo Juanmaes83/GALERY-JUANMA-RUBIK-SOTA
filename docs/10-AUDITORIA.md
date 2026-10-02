@@ -71,6 +71,13 @@ Estados:
 | A-42 | Obras | No se distinguía qué obra abriría E | ✅ marco cálido y filete en la obra que nombra el aviso, o anillo en el suelo si es exenta; nada se resalta con la ficha abierta |
 | A-43 | Tienda | La tienda del museo no existía | ✅ sala `SHOP` con 8 productos administrables desde el Studio (categoría, precio de demostración, orden y visibilidad, además de los campos comunes) · `SHOP-*` |
 | A-44 | Contenido | La doc 03 decía «Viento sobre mármol (dominio público)» y «Breeze no migrada» | ✅ corregido: licencias pendientes e integración real |
+| A-45 | **Breeze · Acceso** | Frente a la puerta de Breeze, E abría la ficha de *Marea baja*: la puerta no tenía hotspot y la obra colgaba sobre el hueco | ✅ hotspot de puerta, obra a 2,1 m del hueco y distancia en planta · `BREEZE-DOOR-E`, `MAREA-BAJA-SHEET`, `SPATIAL-DOOR-HOTSPOTS`, `DOOR-AHEAD` |
+| A-46 | **Wet Paint · Montaje** | Cuatro obras en la pared de la puerta (dos invadían el hueco) y tres paredes vacías | ✅ las cinco obras, en bucle por las cuatro paredes · `WETPAINT-FOUR-WALLS`, `WETPAINT-WORKS-ANSWER`, `MOBILE-WETPAINT-FRAMING` |
+| A-47 | **Cuerdas** | La cuerda de Wet Paint cruzaba la puerta, y la llegada quedaba entre la pared y la cuerda. A pocos FPS se atravesaba; a FPS normales, el visitante se quedaba atascado. Otros extremos de cuerda dejaban huecos de 0,85–0,9 m | ✅ la cuerda se corta en las puertas y cierra los huecos estrechos; la primera persona resuelve la colisión en subpasos · `SPATIAL-ROPES-OPEN`, `WETPAINT-WALK-IN` |
+| A-48 | **Interacción** | La distancia contaba la altura del ancla (puertas en el suelo, cuadros a la altura de los ojos): cualquier obra cercana ganaba a la puerta | ✅ distancia en planta · `tests/proximity.test.mjs` (falla 2 de 5 sin la corrección) |
+| A-49 | **Avatar · Interacción** | Con avatar, lo cercano se medía desde la cámara (3 m detrás), no desde el avatar: el aviso y E nombraban lo que estaba cerca de la cámara | ✅ una sola fuente por fotograma: el cuerpo del avatar · `AVATAR-PROXIMITY-BODY` |
+| A-50 | **Avatar · Breeze** | Con avatar, dentro de Breeze ni E ni el aviso salían de la sala: la proximidad se medía desde la cámara que seguía encuadrando el avatar aparcado en la Galería B. Solo funcionaba el botón-puente | ✅ aparcado, se mide desde donde el cruce dejó al visitante · `AVATAR-BREEZE-E` |
+| A-51 | **Avatar · Fluidez** | La cámara se quedaba quieta y daba saltos (42 de 43 fotogramas quieta, 38 recolocaciones en 2 s) y el avatar pasaba de 0 a velocidad máxima en un fotograma | ✅ cámara que sigue al avatar 1:1, avatar con aceleración, giro suave y colisión deslizante · `AVATAR-CAMERA-FOLLOW`, `AVATAR-EASE`, `AVATAR-DT-INDEPENDENT` · 👁 falta la revisión visual en una GPU real |
 
 ## Detalle
 
@@ -219,3 +226,119 @@ Grabadas con Playwright y Chromium SwiftShader (render por CPU): el tiempo real 
 | Móvil | **PASS** en POV y avatar (Galería A y tienda por portal) · **NO PROBADO** en un teléfono real | Sección «Phone» |
 | Licencias de Venus, Poly Haven y Fabric Lace | **NO PROBADO**: dominios bloqueados en el entorno | `IMPORT_NOTES.md` |
 
+## Misión 3 (2026-10-02): accesos, montaje, avatar y cuerdas
+
+Incidencias de la revisión humana del preview. Cada una se reprodujo antes de cambiar nada: con teclas reales en Chromium (`audit/repro-m3.mjs`), con una auditoría espacial de todas las salas (`audit/spatial-probe.mjs`) y con un banco determinista del avatar que para el bucle y avanza `runtime.step(dt)` con tiempos elegidos (`audit/avatar-harness.mjs`). Los scripts están en el área de trabajo de la sesión, no en el repositorio. Sus comprobaciones pasaron a `npm test`.
+
+### A-45 · Breeze: E abría la ficha en vez de entrar
+
+- **Reproducción:** en la Galería B, de pie en (18,6; −12) mirando a la puerta de Breeze, el hotspot elegido era `hotspot.art.marea-baja`. E abría su ficha y el visitante seguía en la Galería B.
+- **Causa:**
+  1. La Galería B no tenía hotspot para `portal.gallery-b-breeze`. Las demás puertas sí, y a esta solo llegaba el recorrido comentado. Las pruebas cruzaban con `traversePortal`, así que no lo veían.
+  2. *Marea baja* colgaba de la pared este con su centro a 0,6 m de la puerta, y su ancho invadía el hueco 1,5 m.
+  3. La distancia era 3D: una puerta, anclada en el suelo, quedaba 1,6 m «más lejos» que un cuadro a la altura de los ojos (A-48).
+- **Corrección:**
+  - `hotspot.gallery-b.to-breeze`, igual que las demás puertas;
+  - *Marea baja* sigue en la pared este, en z = −8, a 2,1 m del hueco, con su ficha, contenido y personalización intactos (`entity.artwork.marea-baja`);
+  - distancia en planta, conservando la ponderación por orientación (de frente ×1, a 90° ×1,5, detrás ×2; las obras de lado o detrás no se ofrecen). No es una regla de «la puerta siempre gana»: mirando la obra desde cerca, E abre la obra (`WORK-AHEAD`).
+- **Pruebas:** `BREEZE-DOOR-E`, `BREEZE-EXIT-E` y `MAREA-BAJA-SHEET` (teclas reales), `SPATIAL-DOOR-HOTSPOTS` y `SPATIAL-DOORWAYS-CLEAR` (todas las salas), y `DOOR-AHEAD`, `WORK-AHEAD`, `DOOR-BEHIND`, `BACK-OUT` y `FLOOR-ANCHOR` en `tests/proximity.test.mjs`.
+
+### A-46 · Wet Paint: una pared de cuadros
+
+- **Reproducción:** cuatro obras en la pared norte, que es la de la puerta: *Painterly* y *Living* invadían el hueco 0,83 m cada una. Solo *Experimental* estaba en otra pared (la este); la sur y la oeste estaban vacías.
+- **Corrección:** las cinco obras, sin añadir ni quitar ninguna, recorren la sala en bucle desde la puerta y en su orden editorial:
+  - *01 Original*, en la oeste;
+  - *02 Painterly* y *03 Living*, en la sur, la que ve quien entra;
+  - *04 Combined*, en la este;
+  - *05 Experimental*, en la norte, a 2,6 m de la puerta.
+
+  Solo cambian las posiciones de los anclajes `anchor.itinerant.wall-1…5`. Las entidades, fichas, imágenes y la personalización del Studio y de Wet Paint se enlazan por `entityId` y no cambian. La llegada antigua `anchor.itinerant.spawn` se movió delante de la nueva cuerda.
+- **Pruebas:**
+  - `WETPAINT-FOUR-WALLS`;
+  - `WETPAINT-WORKS-ANSWER`: cada obra se resalta, es la que nombra E y abre su ficha;
+  - `MOBILE-WETPAINT-FRAMING`: en 390 × 844, cada obra enfocada queda por encima de su cartela;
+  - `WETPAINT-RESTORE`, sin cambios.
+
+### A-47 · Cuerdas que cierran pasos
+
+- **Reproducción:** en Wet Paint, la cuerda de la pared norte iba de x 7,2 a 20,8, cruzando la puerta (12,7–15,3). La llegada desde la Galería B (z −3,4) quedaba entre la pared (−5) y la cuerda (−3,05).
+  - Caminando con W a los FPS de SwiftShader, el visitante **atravesó** la cuerda (z −3,6 → 3,16): un paso de 0,5 s caía más allá del centro de la caja y la colisión lo empujaba al otro lado.
+  - A FPS normales, quedaba atascado.
+  - En el Vestíbulo, la Galería A y la tienda, los extremos de cuerda dejaban huecos de 0,85–0,9 m entre cuerda y pared, demasiado estrechos para un cuerpo de 0,35 m de radio.
+- **Causa:** `_barrierLinesFor` tendía una sola cuerda sobre todo el tramo con obras de la pared, sin mirar sus puertas. Además, la primera persona resolvía la colisión una sola vez por fotograma.
+- **Corrección:**
+  - la cuerda se corta alrededor de cada puerta de su pared, con 0,6 m libres a cada lado;
+  - si un extremo deja un hueco menor de 1,1 m, la cuerda llega hasta la pared (la obra queda protegida y no hay bolsillo);
+  - la primera persona resuelve el movimiento en tramos de 0,1 m.
+
+  No se ha quitado ninguna cuerda: en Wet Paint ahora protege la pared con más obra (la sur), sin puertas.
+- **Pruebas:** `SPATIAL-ROPES-OPEN` (ninguna cuerda cruza una puerta, ninguna llegada atrapada, ningún hueco intransitable, en todas las salas) y `WETPAINT-WALK-IN` (W real desde la puerta: z −3,40 → 0,20, delante de la cuerda).
+
+### A-48 · Puerta u obra: la altura no es distancia
+
+La causa común de A-45, y de cualquier puerta con una obra cerca. `tests/proximity.test.mjs` falla 2 de 5 casos con el código anterior (`DOOR-AHEAD` y `FLOOR-ANCHOR`) y pasa con la corrección.
+
+### A-49 y A-50 · Proximidad con avatar
+
+- **Reproducción:**
+  - con el avatar a 1,6 m de *Marea baja* y mirándola, el hotspot elegido fue `null` durante 3 s: la cámara estaba a 4,4 m;
+  - dentro de Breeze con avatar, la salida estaba siempre `AVAILABLE` (nunca `NEAR`), con la cámara en (8,7; −10), en la Galería B.
+- **Causa:** el runtime actualizaba la proximidad con la pose de la cámara, y el avatar también, compartiendo la misma ranura de 12 Hz: ganaba la cámara. Al entrar en Breeze, la cámara seguía encuadrando el avatar aparcado.
+- **Corrección:** `runtime.proximitySource` da una sola fuente por fotograma:
+  - el cuerpo del avatar en su sala;
+  - aparcado, el punto donde el cruce dejó al visitante;
+  - sin avatar, la cámara en primera persona.
+- **Pruebas:** `AVATAR-PROXIMITY-BODY` y `AVATAR-BREEZE-E` (E entra y sale de Breeze con avatar; el avatar reaparece visible). `AVATAR-BREEZE-E` falló en la primera ejecución de esta misión y así destapó A-50, un defecto anterior a la misión.
+
+### A-51 · Fluidez del avatar
+
+- **Reproducción**, con el banco determinista en la Galería A y fotogramas irregulares (1/60, 1/20, 1/45, 1/15, 1/90 s):
+
+  | Medida | Antes | Después |
+  |---|---|---|
+  | Fotogramas con la cámara quieta y el avatar andando | 42 de 43 | 0 |
+  | Recolocaciones bruscas de la cámara en 2 s | 38 | 0 |
+  | Salto máximo de la cámara en un fotograma | 1,01 m | 0 |
+  | Velocidad de la cámara ÷ la del avatar | media 1,03, σ 6,7 | media 0,997, σ 0,001 |
+  | Mayor salto de velocidad del avatar por fotograma | 1,05 m/s | 0,35 m/s |
+  | Distancia en 2 s a 60, 30 y 10 FPS e irregular | 2,10–2,12 m | 2,03–2,05 m |
+
+  La distancia ya era independiente de los FPS (A-37). Es algo menor ahora por la rampa de arranque.
+- **Causa** (tres defectos encadenados en la cámara, más uno del avatar):
+  1. La línea de visión de cada candidato se comprobaba con la regla de altura mínima de la cámara (1,25 m). Desde el pecho del avatar (1,02 m), el primer punto fallaba siempre en horizontal: la cámara vivía en su plan de reserva (`HOLD_LAST_SAFE`), se quedaba quieta, salía de su envolvente y era recolocada de golpe cada 6–7 fotogramas. En vertical el objetivo está a 1,55 m, por eso en el móvil no se notaba.
+  2. Perseguía un punto de la sala con un retraso de unos 0,2 m al andar.
+  3. Encuadraba la posición del fotograma anterior: el avatar se movía después de la cámara.
+  4. El avatar pasaba de 0 a velocidad máxima en un fotograma y paraba en seco.
+- **Corrección:**
+  - la línea de visión solo se comprueba contra paredes, techo y obstáculos;
+  - la cámara sigue su desplazamiento respecto al avatar (andar la arrastra 1:1; solo se suavizan los cambios de encuadre), con zona muerta gradual;
+  - `runtime.preCamera` mueve el cuerpo antes que la cámara;
+  - velocidad y giro con rampa (la misma constante que la primera persona) y colisión deslizante, que en una esquina detiene al avatar sin oscilar.
+- **Pruebas:** `AVATAR-DT-INDEPENDENT`, `AVATAR-CAMERA-FOLLOW`, `AVATAR-EASE` y `AVATAR-PACE-LOW-FPS`, que ahora descuenta la rampa de arranque.
+- **Límite:** son medidas funcionales (posición, velocidad y cámara por fotograma), no una valoración visual. La sensación de fluidez **debe revisarla una persona en una GPU real**. SwiftShader no sirve como prueba de rendimiento.
+
+### Validación de la misión 3
+
+`npm test`: `npm run check` OK, `tests/proximity.test.mjs` 5/5 y `tests/museum-smoke.mjs` **93/93**, en Chromium headless con SwiftShader, 2026-10-02.
+
+Las pruebas nuevas, ejecutadas sobre el código anterior (`a2e0cc5`), **fallan**:
+
+- `DOOR-AHEAD` y `FLOOR-ANCHOR`;
+- `SPATIAL-DOORWAYS-CLEAR`, `SPATIAL-ROPES-OPEN` y `SPATIAL-DOOR-HOTSPOTS`;
+- `WETPAINT-FOUR-WALLS`;
+- `BREEZE-DOOR-E` (E abría *Marea baja*) y `AVATAR-BREEZE-E`;
+- `AVATAR-CAMERA-FOLLOW` (37 de 43 fotogramas con la cámara quieta);
+- `AVATAR-EASE` (salto de 1,05 m/s).
+
+| Criterio de aceptación | Resultado | Evidencia |
+|---|---|---|
+| 1. E frente a la puerta entra en Breeze, sin abrir la ficha cercana | **PASS** en POV y avatar | `BREEZE-DOOR-E`, `AVATAR-BREEZE-E` |
+| 2. *Marea baja* sigue visible y con ficha | **PASS** | `MAREA-BAJA-SHEET` |
+| 3. Wet Paint en las cuatro paredes, sin ocupar la puerta ni el paso | **PASS** | `WETPAINT-FOUR-WALLS`, `SPATIAL-DOORWAYS-CLEAR`, `WETPAINT-WALK-IN` |
+| 4. Cada obra de Wet Paint conserva contenido y personalización | **PASS**: mismas entidades; solo cambian los anclajes | `WETPAINT-WORKS-ANSWER`, `WETPAINT-RESTORE` |
+| 5. Avatar sin saltos, patinaje ni temblores reproducibles | **PASS** funcional · 👁 **revisión visual en GPU real pendiente** | `AVATAR-CAMERA-FOLLOW`, `AVATAR-EASE`, esquina sin oscilación |
+| 6. Velocidad coherente con distintos FPS | **PASS**: 2,03–2,05 m en 2 s a 60/30/10 FPS e irregular | `AVATAR-DT-INDEPENDENT`, `AVATAR-PACE-LOW-FPS` |
+| 7. Cuerdas que protegen sin bloquear rutas ni atrapar | **PASS** | `SPATIAL-ROPES-OPEN`, `WETPAINT-WALK-IN` |
+| 8. Puerta u obra según proximidad y orientación | **PASS** | `tests/proximity.test.mjs`, `AVATAR-PROXIMITY-BODY` |
+| 9. Entrada, salida, navegación y selección en POV, avatar y móvil | **PASS** en emulación móvil 390 × 844 · **NO PROBADO** en un teléfono real | Suite completa, `MOBILE-*` |
+| 10. Las pruebas nuevas fallan antes y pasan después; sin regresiones | **PASS** | Ver arriba |

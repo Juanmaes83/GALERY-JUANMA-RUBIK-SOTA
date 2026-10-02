@@ -158,6 +158,13 @@ export class Runtime {
     this._rafHandle = null;
     this._frameTimes = [];
     this.onFrame = null;
+    // Whatever moves the visitor's body before the camera frames it (the
+    // Character). Run after it, the camera framed last frame's position: a
+    // frame of lag that read as judder once the camera followed a walker.
+    this.preCamera = null;
+    // Who stands where the visitor is, for proximity: { position, facing } or
+    // null. Null means the camera pose, as in first person.
+    this.proximitySource = null;
 
     // A crossing holds two things it must give back: the Scene Kit's atmosphere,
     // and the lifecycle's deferred working-set reconcile. Losing the camera is the
@@ -739,15 +746,23 @@ export class Runtime {
   /** @param {number} dt seconds */
   step(dt) {
     this.experience.update(dt);
+    this.preCamera?.(dt);
     const pose = this.camera.update(dt);
     // A crossing that is abandoned rather than completed — the visitor presses
     // Escape halfway through a doorway — never runs its own completion, and the
     // two things it holds are both things that stay wrong silently: the
     // atmosphere would freeze mid-blend, and two rooms would stay resident.
     if (this._crossingHolds && !this.crossing.isCrossing) this._releaseCrossingHolds();
-    this.proximity.update(dt, pose.position, pose.target
-      ? [pose.target[0] - pose.position[0], 0, pose.target[2] - pose.position[2]]
-      : null);
+    // One body decides what is near. With a Character the visitor is the
+    // avatar, not the third-person camera three metres behind it; the camera
+    // only stands in when nothing else claims the visitor's place.
+    const body = this.proximitySource?.() || null;
+    if (body) this.proximity.update(dt, body.position, body.facing);
+    else {
+      this.proximity.update(dt, pose.position, pose.target
+        ? [pose.target[0] - pose.position[0], 0, pose.target[2] - pose.position[2]]
+        : null);
+    }
     this.sceneKit.update(dt, this.clock.elapsed);
     this.onFrame?.(pose, dt);
     return pose;

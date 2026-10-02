@@ -17,6 +17,12 @@ const FORWARD_SPEED = 1.05;
 const BACKWARD_SPEED = 0.78;
 const RUN_MULTIPLIER = 1.35;
 const TURN_SPEED = 2.15;
+// Speed and turn rate ease toward what the input asks, as the first-person
+// walk already does (rate 12 /s ≈ 95 % in a quarter of a second). Jumping from
+// standstill to full speed in one frame, and stopping dead, read as a puppet.
+const LOCOMOTION_EASE = 12;
+const TURN_EASE = 14;
+const WALK_ANIMATION_SPEED = 0.15;
 const JUMP_HEIGHT = 0.34;
 const JUMP_DURATION = 1.0;
 
@@ -152,6 +158,8 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
   let disposed = false;
   let previousMoving = false;
   let previousTurn = 0;
+  let speedNow = 0;
+  let turnNow = 0;
 
   function setInput(next = {}) {
     movement.forward = Math.max(-1, Math.min(1, Number(next.forward) || 0));
@@ -184,6 +192,8 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
     jumping = false;
     jumpElapsed = 0;
     stopElapsed = 0;
+    speedNow = 0;
+    turnNow = 0;
     previousMoving = false;
     previousTurn = 0;
     setInput({});
@@ -211,23 +221,46 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
     } while (remaining > 1e-6);
   }
 
+  // A step that runs into something keeps the part of it that is free: first
+  // the whole move, then each axis on its own. Pushing out along the shortest
+  // axis alone made the Character swap sides of a box corner from one step to
+  // the next. Fully blocked, it stays where it is instead of being shoved.
+  function resolveStep(x0, z0, x1, z1) {
+    const eye = groundY + runtime.explore.eyeHeight;
+    const clear = (x, z) => { const r = runtime.explore.resolveNavigationPosition([x, eye, z]); return Math.hypot(r[0] - x, r[2] - z) <= 0.0005 ? r : null; };
+    const whole = clear(x1, z1);
+    if (whole) return { position: whole, corrected: false };
+    const alongX = clear(x1, z0);
+    const alongZ = clear(x0, z1);
+    if (alongX && (!alongZ || Math.abs(x1 - x0) >= Math.abs(z1 - z0))) return { position: alongX, corrected: true };
+    if (alongZ) return { position: alongZ, corrected: true };
+    // Already overlapping something (a spawn inside a blocker): push out.
+    if (!clear(x0, z0)) return { position: runtime.explore.resolveNavigationPosition([x1, eye, z1]), corrected: true };
+    return { position: [x0, eye, z0], corrected: true };
+  }
+
   function stepLocomotion(frameDt) {
     const turn = movement.turn;
     const forward = movement.forward;
-    if (turn) root.rotation.y -= turn * TURN_SPEED * frameDt;
-    if (forward !== 0) {
-      const speed = (forward > 0 ? FORWARD_SPEED : BACKWARD_SPEED) * (movement.run ? RUN_MULTIPLIER : 1);
-      const direction = forward > 0 ? 1 : -1;
-      const desiredX = root.position.x + Math.sin(root.rotation.y) * speed * frameDt * direction;
-      const desiredZ = root.position.z + Math.cos(root.rotation.y) * speed * frameDt * direction;
-      const desiredEye = [desiredX, groundY + runtime.explore.eyeHeight, desiredZ];
-      const resolvedEye = runtime.explore.resolveNavigationPosition(desiredEye);
-      const corrected = Math.hypot(resolvedEye[0] - desiredX, resolvedEye[2] - desiredZ) > 0.0005;
+    const wantedSpeed = forward === 0 ? 0
+      : (forward > 0 ? FORWARD_SPEED : -BACKWARD_SPEED) * (movement.run ? RUN_MULTIPLIER : 1);
+    speedNow += (wantedSpeed - speedNow) * (1 - Math.exp(-frameDt * LOCOMOTION_EASE));
+    if (wantedSpeed === 0 && Math.abs(speedNow) < 0.01) speedNow = 0;
+    turnNow += (turn * TURN_SPEED - turnNow) * (1 - Math.exp(-frameDt * TURN_EASE));
+    if (turn === 0 && Math.abs(turnNow) < 0.01) turnNow = 0;
+    if (turnNow) root.rotation.y -= turnNow * frameDt;
+    const moving = Math.abs(speedNow) > WALK_ANIMATION_SPEED;
+    if (speedNow !== 0) {
+      const desiredX = root.position.x + Math.sin(root.rotation.y) * speedNow * frameDt;
+      const desiredZ = root.position.z + Math.cos(root.rotation.y) * speedNow * frameDt;
+      const { position: resolvedEye, corrected } = resolveStep(root.position.x, root.position.z, desiredX, desiredZ);
       if (corrected) { collision.corrections += 1; collision.wallOrBlockerFrames += 1; }
       collision.lastDesired = [desiredX, groundY, desiredZ];
       collision.lastResolved = [resolvedEye[0], groundY, resolvedEye[2]];
       root.position.x = resolvedEye[0];
       root.position.z = resolvedEye[2];
+    }
+    if (moving) {
       if (!jumping && motion.state !== 'WALK_V2') motion.play('WALK_V2', 0.12);
       stopElapsed = 0;
     } else if (!jumping && turn !== 0) {
@@ -248,14 +281,31 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
 
     motion.update(frameDt);
     root.updateMatrixWorld(true);
-    runtime.proximity.update(frameDt, [root.position.x, groundY + runtime.explore.eyeHeight, root.position.z],
-      [Math.sin(root.rotation.y), 0, Math.cos(root.rotation.y)]);
-    previousMoving = forward !== 0;
+    previousMoving = moving;
     previousTurn = turn;
   }
 
-  const previousOnFrame = runtime.onFrame;
-  runtime.onFrame = (pose, dt) => { updateLocomotion(dt); previousOnFrame?.(pose, dt); };
+  // The Character moves before the camera frames it (see runtime.preCamera),
+  // and it is the body proximity measures from — not the camera behind it,
+  // which used to win the shared 12 Hz slot and name what was near *it*.
+  const previousPreCamera = runtime.preCamera;
+  runtime.preCamera = (dt) => { previousPreCamera?.(dt); updateLocomotion(dt); };
+  const previousProximitySource = runtime.proximitySource;
+  runtime.proximitySource = () => {
+    if (disposed) return previousProximitySource?.() || null;
+    if (!root.visible || runtime.state.activeSpaceId !== activeCharacterSpaceId) {
+      // Parked (the nested Breeze room renders itself): the visitor stands
+      // where the crossing put them, not where the third-person camera still
+      // frames the parked body in Gallery B. Measuring from that camera left
+      // the Breeze exit never «near»: E and its prompt could not leave.
+      const e = runtime.explore;
+      return { position: [...e.position], facing: [Math.sin(e.yaw), 0, Math.cos(e.yaw)] };
+    }
+    return {
+      position: [root.position.x, groundY + runtime.explore.eyeHeight, root.position.z],
+      facing: [Math.sin(root.rotation.y), 0, Math.cos(root.rotation.y)]
+    };
+  };
 
   const sink = { setInput, jump, inputFrame() {} };
   input.setMovementSink(sink);
@@ -295,6 +345,8 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
     motion,
     collision,
     circulation,
+    // What a test needs to know about the walk: top speed and how fast it is reached.
+    locomotion: { forwardSpeed: FORWARD_SPEED, ease: LOCOMOTION_EASE, startLag: FORWARD_SPEED / LOCOMOTION_EASE },
     cameraController,
     setInput,
     jump,
@@ -321,7 +373,8 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
       if (disposed) return;
       disposed = true;
       setInput({});
-      runtime.onFrame = previousOnFrame;
+      runtime.preCamera = previousPreCamera;
+      runtime.proximitySource = previousProximitySource;
       runtime.releaseFocus = previousReleaseFocus;
       offCameraInputBridge();
       input.setMovementSink(null);

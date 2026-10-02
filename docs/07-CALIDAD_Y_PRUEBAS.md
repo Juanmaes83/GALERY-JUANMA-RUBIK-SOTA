@@ -18,6 +18,10 @@ npm test        # check + Chromium (Playwright, SwiftShader)
 - Cada `content.media.src` del World existe.
 - SHA-256, tamaño y licencia de Marble Bust 01 coinciden con su procedencia.
 
+### `tests/proximity.test.mjs`
+
+Sin navegador: qué hotspot elige E cuando hay una puerta y una obra cerca (de frente, de lado, de espaldas, anclas a distinta altura). La geometría es la de la puerta de Breeze cuando la tecla abría la ficha de *Marea baja*.
+
 ### `tests/museum-smoke.mjs`
 
 | Grupo | Qué demuestra |
@@ -26,6 +30,8 @@ npm test        # check + Chromium (Playwright, SwiftShader)
 | Invariantes | `window.__IW.assertInvariants()` en verde |
 | Recorrido | Las 6 salas a través de los 10 portales canónicos |
 | Sala Breeze | Aviso, aviso de proximidad «Volver a la Galería B», salida con `E`, botón-puente alcanzable por el puntero y salida con clic real |
+| Accesos y obstáculos | En todas las salas: ninguna obra en el hueco de una puerta, ninguna cuerda cruza una puerta ni atrapa una llegada, cada puerta se cruza con E. Con teclas reales: E entra y sale de Breeze, *Marea baja* abre su ficha, desde la puerta de Wet Paint se camina hacia dentro y cada obra de Wet Paint se resalta y abre su ficha; en móvil, cada una queda encima de su cartela |
+| Avatar determinista | Con el bucle parado y `runtime.step(dt)` a mano: la misma distancia a 60, 30, 10 FPS y con fotogramas irregulares; la cámara acompaña sin quedarse quieta ni saltar; arranque y parada suaves; lo cercano se mide desde el avatar; E entra y sale de Breeze con avatar |
 | Red | Ninguna petición local rota y ninguna petición externa en la visita base |
 | Consola | Sin errores de consola |
 | Marble Bust 01 | Modo `GLB` y modo `FALLBACK` forzado, ambos con foco correcto |

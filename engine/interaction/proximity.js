@@ -76,9 +76,12 @@ export class ProximitySystem {
     let nearestDistance = Infinity;
 
     for (const candidate of this._active) {
+      // Distance on the floor plan. A door's anchor stands on the floor and a
+      // painting's at eye height; counting that height as distance made every
+      // door 1.6 m further away than it is, so a work beside a doorway always
+      // won E over the door the visitor was facing (Breeze, Gallery B).
       const distance = Math.hypot(
         visitorPosition[0] - candidate.position[0],
-        visitorPosition[1] - candidate.position[1],
         visitorPosition[2] - candidate.position[2]
       );
       const inside = distance <= candidate.radius;

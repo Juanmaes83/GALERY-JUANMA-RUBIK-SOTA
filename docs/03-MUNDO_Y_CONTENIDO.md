@@ -6,11 +6,11 @@
 
 | Colección | Cantidad | Qué es |
 |---|---:|---|
-| `spaces` | 6 | Salas, con sus referencias a anclajes, entidades, hotspots y portales |
-| `anchors` | 59 | Referencias espaciales (DÓNDE): llegadas, muros, peanas, puertas, posiciones de guía |
-| `entities` | 18 | Obras, esculturas, proyección, audio, textos e instalaciones (QUÉ) |
-| `hotspots` | 25 | Disparadores de proximidad (CUÁNDO) con una Action (`FOCUS_ENTITY`, `ACTIVATE_PORTAL`, `PLAY_MEDIA`, `START_ROUTE`) |
-| `portals` | 10 | Conexiones entre salas (por dónde se pasa), con transición, precarga y política de retorno |
+| `spaces` | 7 | Salas, con sus referencias a anclajes, entidades, hotspots y portales |
+| `anchors` | 76 | Referencias espaciales (DÓNDE): llegadas, muros, peanas, puertas, posiciones de guía |
+| `entities` | 27 | Obras, esculturas, proyección, audio, textos e instalaciones (QUÉ) |
+| `hotspots` | 37 | Disparadores de proximidad (CUÁNDO) con una Action (`FOCUS_ENTITY`, `ACTIVATE_PORTAL`, `PLAY_MEDIA`, `START_ROUTE`) |
+| `portals` | 12 | Conexiones entre salas (por dónde se pasa), con transición, precarga y política de retorno |
 | `chapters` | 4 | Capítulos del recorrido |
 | `storySteps` | 40 | Beats del recorrido |
 | `routes` | 1 | `route.comentado` |
@@ -44,6 +44,10 @@ Grafo: Tienda ↔ Vestíbulo ↔ Galería A ↔ Galería B. Desde la Galería A 
 - **Salida:** la visita termina en la puerta de salida del Vestíbulo. Es un hotspot con la acción `END_VISIT`: el motor emite `visit:end-requested` y la aplicación decide qué significa salir (confirmar, despedirse, volver a empezar). El botón «Salir» de la barra superior abre el mismo diálogo desde cualquier sala.
 - **Señales verdes de salida** (persona y flecha, «SALIDA»): las coloca el Scene Kit a partir del grafo, no se escriben a mano. En cada sala se señala la puerta que inicia el camino más corto hasta la sala de la salida, con la flecha hacia esa puerta. Si una obra ocupa el sitio, la señal sube sobre el rótulo de la puerta con la flecha hacia arriba. Una sala sin ruta no tiene señal. `npm test` comprueba cada ruta (`EXIT-SIGNS`, `EXIT-ROUTE`). Es orientación dentro de una visita virtual, **no** señalización de seguridad de un edificio.
 - **Obra cercana:** la obra que nombra el aviso «E · Observar de cerca…» se resalta: el marco se calienta y aparece un filete fino a su alrededor, o un anillo en el suelo si es una pieza exenta. Solo se resalta una, la que está **delante** del visitante, aunque haya otra en la esquina. Una obra que queda de lado o detrás no se ofrece. Abrir la ficha siempre es una acción intencional (E, Intro o tocar el aviso); acercarse no la abre.
+- **Puerta u obra con E:** se mide la distancia en planta (la altura del ancla no cuenta: una puerta se ancla en el suelo y un cuadro a la altura de los ojos) y se pondera por la orientación: lo que está delante cuenta a su distancia, a 90° vale 1,5 veces y detrás 2 veces. Una puerta detrás sigue siendo elegible (se puede salir de espaldas); una obra de lado o detrás, no. Cada puerta de cada sala tiene su hotspot `ACTIVATE_PORTAL` (`SPATIAL-DOOR-HOTSPOTS`).
+- **Puertas libres:** ninguna obra de pared puede quedar a menos de 0,5 m del hueco de una puerta en la misma pared (`SPATIAL-DOORWAYS-CLEAR`). *Marea baja* cuelga en la pared este de la Galería B a 2,1 m del paso a Breeze.
+- **Cuerdas:** las coloca el Scene Kit delante de la pared con más obra (no se escriben a mano). Se cortan alrededor de cada puerta de esa pared con 0,6 m libres a cada lado, y si entre el extremo de una cuerda y la pared queda un hueco de menos de 1,1 m (por el que se entra pero no se gira), la cuerda llega hasta la pared. Ninguna llegada queda entre la pared y la cuerda (`SPATIAL-ROPES-OPEN`).
+- **Sala Itinerante (Wet Paint):** las cinco obras recorren la sala en bucle desde la puerta norte y en su orden: *01 Original* en la pared oeste, *02 Painterly* y *03 Living* en la sur (la que mira a quien entra, protegida por la cuerda), *04 Combined* en la este y *05 Experimental* en la norte, a 2,6 m de la puerta.
 
 ## Medios y derechos
 

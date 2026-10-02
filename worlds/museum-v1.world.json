@@ -184,6 +184,7 @@
         "hotspot.art.marea-baja",
         "hotspot.media.cuaderno-de-luz",
         "hotspot.gallery-b.to-gallery-a",
+        "hotspot.gallery-b.to-breeze",
         "hotspot.gallery-b.to-itinerant"
       ],
       "portalRefs": [
@@ -770,7 +771,7 @@
       "position": [
         19.85,
         1.55,
-        -11.4
+        -8.0
       ],
       "normal": [
         -1,
@@ -1274,7 +1275,7 @@
       "position": [
         14,
         0,
-        4.6
+        2.0
       ],
       "normal": [
         0,
@@ -1288,14 +1289,14 @@
       "spaceId": "space.itinerant-wet-paint",
       "kind": "WALL",
       "position": [
-        9.1,
+        6.0,
         1.64,
-        -5.0
+        0.5
       ],
       "normal": [
+        1,
         0,
-        0,
-        1
+        0
       ],
       "extent": [
         2.6,
@@ -1308,14 +1309,14 @@
       "spaceId": "space.itinerant-wet-paint",
       "kind": "WALL",
       "position": [
-        12.35,
+        10.5,
         1.64,
-        -5.0
+        6.0
       ],
       "normal": [
         0,
         0,
-        1
+        -1
       ],
       "extent": [
         2.6,
@@ -1328,14 +1329,14 @@
       "spaceId": "space.itinerant-wet-paint",
       "kind": "WALL",
       "position": [
-        15.65,
+        17.5,
         1.64,
-        -5.0
+        6.0
       ],
       "normal": [
         0,
         0,
-        1
+        -1
       ],
       "extent": [
         2.6,
@@ -1348,14 +1349,14 @@
       "spaceId": "space.itinerant-wet-paint",
       "kind": "WALL",
       "position": [
-        18.9,
+        22.0,
         1.64,
-        -5.0
+        0.5
       ],
       "normal": [
+        -1,
         0,
-        0,
-        1
+        0
       ],
       "extent": [
         2.6,
@@ -1368,14 +1369,14 @@
       "spaceId": "space.itinerant-wet-paint",
       "kind": "WALL",
       "position": [
-        22,
+        18.8,
         1.55,
-        -1.9000000000000004
+        -5.0
       ],
       "normal": [
-        -1,
         0,
-        0
+        0,
+        1
       ],
       "extent": [
         2.4,
@@ -3162,6 +3163,23 @@
         "target": "portal.gallery-b-gallery-a"
       },
       "accessibilityLabel": "Volver a la Galería A"
+    },
+    {
+      "id": "hotspot.gallery-b.to-breeze",
+      "spaceId": "space.gallery-b",
+      "anchorId": "anchor.gallery-b.door-breeze",
+      "type": "PORTAL",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.3
+      },
+      "triggerDistance": 2.3,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "ACTIVATE_PORTAL",
+        "target": "portal.gallery-b-breeze"
+      },
+      "accessibilityLabel": "Entrar en la sala Breeze"
     },
     {
       "id": "hotspot.archive.escucha",

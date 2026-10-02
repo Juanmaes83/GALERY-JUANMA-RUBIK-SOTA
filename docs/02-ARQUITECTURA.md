@@ -48,14 +48,15 @@ Se pueden ejecutar en el navegador con `await window.__IW.assertInvariants()`, y
 ## Orden de actualización por frame
 
 ```text
-reloj → experiencia → autoridad de cámara → proximidad → scene kit → render
+reloj → experiencia → cuerpo del visitante → autoridad de cámara → proximidad → scene kit → render
 ```
 
 1. La experiencia decide qué debe ocurrir.
-2. La autoridad de cámara resuelve quién la controla y la escribe **una vez**.
-3. La proximidad observa la posición resultante del visitante.
-4. El Scene Kit reacciona a la semántica.
-5. El host renderiza.
+2. El cuerpo del visitante se mueve (`runtime.preCamera`: el avatar, cuando lo hay). Antes de este paso la cámara encuadraba la posición del fotograma anterior.
+3. La autoridad de cámara resuelve quién la controla y la escribe **una vez**.
+4. La proximidad observa dónde está el visitante: el cuerpo que declara `runtime.proximitySource` (el avatar) o, si no hay ninguno, la cámara en primera persona. Una sola fuente por fotograma.
+5. El Scene Kit reacciona a la semántica.
+6. El host renderiza.
 
 El estado de cada frame **no** viaja por el bus de eventos (Constitución §8). El bus es para cambios semánticos: `WORLD_READY`, `SPACE_*`, `ENTITY_FOCUSED`, `HOTSPOT_*`, `PORTAL_*`, `ROUTE_*`, `EXPERIENCE_*`, `SHOT_*`, `CAMERA_AUTHORITY_CHANGED`, `AUDIO_CUE`, `NARRATION_CUE`, `QUALITY_TIER_CHANGED`, `ASSET_READY` y `ASSET_ERROR`.
 

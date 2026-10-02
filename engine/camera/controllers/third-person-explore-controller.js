@@ -62,6 +62,7 @@ export class ThirdPersonExploreController {
     this._volume = null;
     this._position = null;
     this._target = null;
+    this._lastHuman = null;
     this._lastSafe = null;
     this._lastSafeCharacter = null;
     this._lastSafeYaw = null;
@@ -103,6 +104,7 @@ export class ThirdPersonExploreController {
   reacquire() {
     this._position = null;
     this._target = null;
+    this._lastHuman = null;
     this._resetRecoveryState();
     this._reacquirePending = true;
     this._setShotMode('REACQUIRE');
@@ -118,6 +120,7 @@ export class ThirdPersonExploreController {
     if (returningFromFocus) {
       this._position = null;
       this._target = null;
+      this._lastHuman = null;
       this._resetRecoveryState();
       this._reacquirePending = true;
       this._diag.focusReacquisitions += 1;
@@ -126,6 +129,7 @@ export class ThirdPersonExploreController {
     }
     this._position = pose?.position ? [...pose.position] : null;
     this._target = pose?.target ? [...pose.target] : null;
+    this._lastHuman = null;
   }
 
   onLose() {}
@@ -159,12 +163,25 @@ export class ThirdPersonExploreController {
     const frameDt = Math.max(0.001, Number(dt) || 0.001);
     const alpha = 1 - Math.exp(-frameDt * CAMERA_LERP_RATE);
 
-    if (distance3(this._position, chosen) > CAMERA_POSITION_DEAD_ZONE) {
-      lerp3InPlace(this._position, chosen, alpha);
-    }
-    if (distance3(this._target, desiredTarget) > CAMERA_TARGET_DEAD_ZONE) {
-      lerp3InPlace(this._target, desiredTarget, Math.min(1, alpha * 1.08));
-    }
+    // The camera follows its offset from the Character, not a point in the
+    // room. Chasing a point lagged the walker by speed / lerp rate (≈0.2 m),
+    // which pushed the shot past the far envelope and made it teleport back
+    // every few frames, while the hard dead zone held it still in between:
+    // the camera stood, then jumped. Walking now carries the camera 1:1; only
+    // changes of framing (turns, an obstruction) are eased. The dead zone is
+    // soft — the response shrinks with the gap instead of switching off.
+    const anchor = this._lastHuman || human;
+    const offset = sub3(this._position, anchor);
+    const wanted = sub3(chosen, human);
+    const offsetGap = distance3(offset, wanted);
+    lerp3InPlace(offset, wanted, alpha * Math.min(1, offsetGap / CAMERA_POSITION_DEAD_ZONE));
+    this._position = add3(human, offset);
+
+    const targetOffset = sub3(this._target, anchor);
+    const wantedTarget = sub3(desiredTarget, human);
+    const targetGap = distance3(targetOffset, wantedTarget);
+    lerp3InPlace(targetOffset, wantedTarget, Math.min(1, alpha * 1.08) * Math.min(1, targetGap / CAMERA_TARGET_DEAD_ZONE));
+    this._target = add3(human, targetOffset);
 
     if (!isBehind(this._position, desiredTarget, forward, MIN_BEHIND_PROJECTION)) {
       this._position = [...chosen];
@@ -180,6 +197,7 @@ export class ThirdPersonExploreController {
 
     this._diag.distance = frameDistance;
     this._diag.shotMode = this._shotMode;
+    this._lastHuman = [...human];
     commit({ position: [...this._position], target: [...this._target], fov: this._currentFov });
   }
 
@@ -374,10 +392,29 @@ export class ThirdPersonExploreController {
         from[1] + (to[1] - from[1]) * t,
         from[2] + (to[2] - from[2]) * t
       ];
-      if (!this._insideBounds(probe)) return false;
+      if (!this._insideWalls(probe)) return false;
       if (this._pointInsideAnyBlocker(probe, CAMERA_CLEARANCE)) return false;
     }
     return true;
+  }
+
+  /**
+   * Walls and ceiling only, for points on the line of sight. `_insideBounds`
+   * also asks a *camera* to stay 1.25 m above the floor; applied to the line
+   * from the Character's chest (1.02 m) it failed the first probe of every
+   * candidate in a landscape viewport, so the camera lived on its fallback:
+   * it held still, drifted out of the envelope and was pulled back — the
+   * stop-and-jump a visitor saw as an avatar that does not move smoothly.
+   */
+  _insideWalls(point) {
+    const bounds = this._volume?.bounds;
+    if (!bounds?.min || !bounds?.max) return true;
+    return point[0] >= bounds.min[0] + CAMERA_MARGIN
+      && point[0] <= bounds.max[0] - CAMERA_MARGIN
+      && point[2] >= bounds.min[2] + CAMERA_MARGIN
+      && point[2] <= bounds.max[2] - CAMERA_MARGIN
+      && point[1] >= bounds.min[1]
+      && point[1] <= bounds.max[1] - 0.2;
   }
 
   _pointInsideAnyBlocker(point, padding = 0) {
@@ -427,6 +464,14 @@ function uniqueFirst(primary, values) {
 
 function lerp3InPlace(current, target, alpha) {
   for (let i = 0; i < 3; i += 1) current[i] += (target[i] - current[i]) * alpha;
+}
+
+function sub3(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+function add3(a, b) {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 }
 
 function distance3(a, b) {

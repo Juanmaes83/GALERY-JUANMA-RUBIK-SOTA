@@ -43,10 +43,11 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 
 | Prioridad | Qué | Problema que resuelve | Impacto para el visitante | Esfuerzo | Dependencia | Estado |
 |---|---|---|---|---|---|---|
-| **Necesario** | Preview pública por enlace (Vercel, sin build, salida `.`) | Hoy solo se ve en local | Sin enlace no hay MVP que enseñar | Bajo | Crear o conectar el proyecto en Vercel | ⏳ autorización |
+| **Necesario** | Preview pública por enlace (Vercel, sin build, salida `.`) | Hoy solo se ve en local | Sin enlace no hay MVP que enseñar | Bajo | — | ✅ proyecto solo de preview (0.9) |
 | **Necesario** | Validar en un **navegador con GPU real**: avatar en las 7 salas, Breeze y móvil | SwiftShader no prueba WebGPU ni el rendimiento real | Breeze y avatar no se pueden presentar como validados sin esto | Bajo (una sesión) | Preview | ⏳ |
 | **Necesario** | Salida de la visita, señales hacia ella y resaltado de la obra cercana | El visitante no sabía cómo terminar ni qué obra abría E | Orientación y control | — | — | ✅ (A-39 a A-42) |
 | **Necesario** | Puertas táctiles y avatar con el pulgar | En móvil no se podía cruzar ni mover el avatar | Móvil usable | — | — | ✅ (A-20 a A-27) |
+| **Necesario** | Puertas que se cruzan con E, obras fuera de los huecos, cuerdas que no cierran pasos y avatar sin tirones | En la revisión del preview, E abría una ficha en vez de entrar en Breeze, Wet Paint era una pared de cuadros, una cuerda atrapaba al visitante y la cámara del avatar daba saltos | Recorrido sin bloqueos | — | — | ✅ (A-45 a A-51) · 👁 fluidez del avatar en GPU real |
 | **Necesario** | Licencias de Venus, Poly Haven y Fabric Lace | No verificables desde este entorno | Bloquea publicar Breeze | Bajo | Consulta en navegador | ⛔ pendiente |
 | Recomendado | Avatar ≤ 5 MB (hoy 30 MB y sin caché) | Entrada lenta con avatar | Tiempo de espera | Medio | Herramienta glTF | ○ |
 | Recomendado | Wet Paint bajo demanda (A-14) | 660 KB y un contexto WebGL para todos | Arranque y memoria en móvil | Medio | — | ○ |

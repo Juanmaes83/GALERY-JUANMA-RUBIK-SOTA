@@ -346,6 +346,132 @@ try {
     await page.close();
   }
 
+  /* 1b. Doorways, works and ropes: the room data a visitor walks through --- */
+  {
+    const { page, consoleErrors } = await openMuseum();
+    // Every room, from the Scene Kit's own geometry (doorways, rope lines and
+    // their collision boxes, wall works, arrivals) — the data, not a picture.
+    const spatial = await page.evaluate(async () => {
+      const { profileFor } = await import('./scene-kits/museum/profiles.js');
+      const rt = window.__IW.runtime; const kit = rt.sceneKit; const st = rt.store;
+      const along = (wall, p) => (wall === 'NORTH' || wall === 'SOUTH' ? p[0] : p[2]);
+      const out = { doorwayWorks: [], ropeDoors: [], trapped: [], pockets: [], doorsWithoutE: [], itinerantWalls: [] };
+      for (const space of st.spaces) {
+        const [w, , d] = space.bounds.size; const [ox, , oz] = space.bounds.origin;
+        const planes = { NORTH: oz - d / 2, SOUTH: oz + d / 2, WEST: ox - w / 2, EAST: ox + w / 2 };
+        const wallOf = (p) => Object.entries({ NORTH: Math.abs(p[2] - planes.NORTH), SOUTH: Math.abs(p[2] - planes.SOUTH), WEST: Math.abs(p[0] - planes.WEST), EAST: Math.abs(p[0] - planes.EAST) }).sort((a, b) => a[1] - b[1])[0];
+        const profile = profileFor(space.sceneProfile);
+        const openings = kit._openingsFor(space, st);
+        const lines = profile.barrier?.enabled === false ? [] : kit._barrierLinesFor(space, st, profile);
+        const works = st.entitiesOf(space.id).map((e) => ({ e, a: st.get(e.anchorId) })).filter(({ a }) => a?.kind === 'WALL');
+        for (const o of openings) {
+          const c = along(o.wall, o.worldPosition); const lo = c - o.width / 2; const hi = c + o.width / 2;
+          for (const { e, a } of works) {
+            const [wall, dist] = wallOf(a.position); if (wall !== o.wall || dist > 0.6) continue;
+            const half = (e.size?.[0] ?? 1) / 2; const x = along(wall, a.position);
+            const gap = Math.max(lo - (x + half), (x - half) - hi);
+            if (gap < 0.5) out.doorwayWorks.push(`${e.id} ${gap.toFixed(2)} m · puerta a ${o.toSpaceId}`);
+          }
+          for (const l of lines) {
+            if (l.wall !== o.wall) continue;
+            const a0 = along(l.wall, l.from); const a1 = along(l.wall, l.to);
+            if (Math.min(a0, a1) < hi && Math.max(a0, a1) > lo) out.ropeDoors.push(`${space.id} ${l.wall} · puerta a ${o.toSpaceId}`);
+          }
+        }
+        const nav = kit.navigationVolume(space.id);
+        for (const l of lines) {
+          const ax = l.wall === 'NORTH' || l.wall === 'SOUTH';
+          const lo = ax ? nav.bounds?.min[0] : nav.bounds?.min[2]; const hi = ax ? nav.bounds?.max[0] : nav.bounds?.max[2];
+          const a0 = Math.min(along(l.wall, l.from), along(l.wall, l.to)); const a1 = Math.max(along(l.wall, l.from), along(l.wall, l.to));
+          // the gap a body can actually use: wall-to-rope minus the rope box margin
+          for (const gap of [a0 - 0.2 - (lo ?? a0), (hi ?? a1) - a1 - 0.2]) if (gap > 0.05 && gap < 0.8) out.pockets.push(`${space.id} ${l.wall} hueco ${gap.toFixed(2)} m`);
+          for (const sp of st.anchors.filter((x) => x.spaceId === space.id && x.kind === 'SPAWN')) {
+            const [x, , z] = sp.position; const v = ax ? z : x; const s = ax ? x : z; const line = ax ? l.from[2] : l.from[0];
+            const behind = s > a0 - 0.2 && s < a1 + 0.2 && (v - planes[l.wall]) * (line - planes[l.wall]) > 0 && Math.abs(v - planes[l.wall]) < Math.abs(line - planes[l.wall]) + 0.2;
+            if (behind) out.trapped.push(`${sp.id} (${l.wall})`);
+          }
+        }
+        for (const portal of st.portalsOf(space.id).filter((p) => p.fromSpaceId === space.id && p.representationHint !== 'NONE')) {
+          if (!st.hotspotsOf(space.id).some((h) => h.action?.type === 'ACTIVATE_PORTAL' && h.action.target === portal.id)) out.doorsWithoutE.push(portal.id);
+        }
+        if (space.id === 'space.itinerant-wet-paint') out.itinerantWalls = works.map(({ e, a }) => `${e.id.split('.').pop()}:${wallOf(a.position)[0]}`);
+      }
+      return out;
+    });
+    check('SPATIAL-DOORWAYS-CLEAR', 'Ninguna obra de pared invade una puerta ni se queda a menos de 0,5 m de su hueco',
+      spatial.doorwayWorks.length === 0, spatial.doorwayWorks.join(' | ') || 'todas las salas');
+    check('SPATIAL-ROPES-OPEN', 'Ninguna cuerda cruza una puerta, deja una llegada atrapada ni un hueco por el que no se cabe',
+      !spatial.ropeDoors.length && !spatial.trapped.length && !spatial.pockets.length, [...spatial.ropeDoors, ...spatial.trapped, ...spatial.pockets].join(' | ') || 'todas las salas');
+    check('SPATIAL-DOOR-HOTSPOTS', 'Cada puerta de cada sala se cruza con E', spatial.doorsWithoutE.length === 0, spatial.doorsWithoutE.join(', ') || 'todas');
+    const walls = new Set(spatial.itinerantWalls.map((x) => x.split(':')[1]));
+    check('WETPAINT-FOUR-WALLS', 'Wet Paint reparte sus cinco obras por las cuatro paredes', spatial.itinerantWalls.length === 5 && walls.size === 4, spatial.itinerantWalls.join(', '));
+
+    // Breeze with the real keyboard: in front of its doorway, facing it, E crosses.
+    await page.evaluate(async () => { const h = window.__IW.hud; h.el.enter.click(); await new Promise((r) => setTimeout(r, 900)); });
+    await travel(page, 'portal.lobby-gallery-a');
+    await travel(page, 'portal.gallery-a-gallery-b');
+    const keyE = async () => { await page.locator('#iw-canvas').focus().catch(() => {}); await page.keyboard.press('KeyE'); };
+    await page.evaluate(() => window.__IW.runtime.explore.placeAt([18.6, 0, -12], [1, 0, 0]));
+    await page.waitForTimeout(600);
+    const atDoor = await page.evaluate(() => window.__IW.runtime.proximity.nearestHotspot?.id || null);
+    await keyE();
+    const breeze = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.breeze', null, { timeout: 30000 }).then(() => true).catch(() => false);
+    const breezeState = await page.evaluate(() => ({ space: window.__IW.runtime.state.activeSpaceId, focused: window.__IW.runtime.state.focusedEntityId }));
+    check('BREEZE-DOOR-E', 'Frente a la puerta de Breeze, E entra en la sala (no abre la ficha de la obra cercana)',
+      breeze && atDoor === 'hotspot.gallery-b.to-breeze' && !breezeState.focused, `${atDoor} → ${JSON.stringify(breezeState)}`);
+    await page.waitForTimeout(1500);
+    await keyE();
+    const back = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-b', null, { timeout: 30000 }).then(() => true).catch(() => false);
+    check('BREEZE-EXIT-E', 'Y E vuelve de Breeze a la Galería B', back);
+
+    // The work moved off the doorway is still a work: in reach, outlined, with its sheet.
+    await page.evaluate(() => { const rt = window.__IW.runtime; const a = rt.sceneKit.poseForAnchor(rt.store.require('entity.artwork.marea-baja').anchorId); rt.explore.placeAt([a.position[0] + a.normal[0] * 1.8, 0, a.position[2] + a.normal[2] * 1.8], [-a.normal[0], 0, -a.normal[2]]); });
+    // Proximity runs at 12 Hz inside the render loop; right after leaving Breeze
+    // SwiftShader frames are slow, so wait for the update instead of a fixed pause.
+    await page.waitForFunction(() => window.__IW.runtime.proximity.nearestHotspot?.id === 'hotspot.art.marea-baja'
+      && window.__IW.runtime.sceneKit.nearestEntityId === 'entity.artwork.marea-baja', null, { timeout: 10000 }).catch(() => {});
+    const nearMarea = await page.evaluate(() => ({ nearest: window.__IW.runtime.proximity.nearestHotspot?.id || null, outlined: window.__IW.runtime.sceneKit.nearestEntityId }));
+    await keyE();
+    await page.waitForTimeout(2500);
+    const sheet = await page.evaluate(() => ({ focused: window.__IW.runtime.state.focusedEntityId, title: window.__IW.hud.el.detailTitle.textContent.trim() }));
+    check('MAREA-BAJA-SHEET', '«Marea baja», fuera de la puerta, se resalta y abre su ficha con E',
+      nearMarea.nearest === 'hotspot.art.marea-baja' && nearMarea.outlined === 'entity.artwork.marea-baja' && sheet.focused === 'entity.artwork.marea-baja' && /Marea baja/i.test(sheet.title),
+      `${JSON.stringify(nearMarea)} · ${JSON.stringify(sheet)}`);
+    await page.evaluate(() => window.__IW.runtime.releaseFocus());
+    await page.waitForTimeout(800);
+
+    // Wet Paint: from the doorway the visitor walks in, and every work answers.
+    await travel(page, 'portal.gallery-b-itinerant');
+    await page.waitForTimeout(800);
+    await page.evaluate(() => { window.__IW.runtime.explore.yaw = 0; });
+    const arrival = await page.evaluate(() => [...window.__IW.runtime.explore.position]);
+    await page.locator('#iw-canvas').focus().catch(() => {});
+    await page.keyboard.down('KeyW'); await page.waitForTimeout(2000); await page.keyboard.up('KeyW');
+    await page.waitForTimeout(400);
+    const walked = await page.evaluate(() => [...window.__IW.runtime.explore.position]);
+    // Inside the room, and in front of the south rope (z 4.05, box ±0.2, radius 0.35).
+    check('WETPAINT-WALK-IN', 'Desde la puerta de Wet Paint se camina hacia dentro sin chocar con una cuerda y sin atravesarla',
+      walked[2] - arrival[2] > 1.2 && walked[2] < 4.05 - 0.2 - 0.34, `z ${arrival[2].toFixed(2)} → ${walked[2].toFixed(2)}`);
+    const works = await page.evaluate(async () => {
+      const rt = window.__IW.runtime; const rows = [];
+      for (const e of rt.store.entitiesOf('space.itinerant-wet-paint')) {
+        const a = rt.sceneKit.poseForAnchor(e.anchorId);
+        rt.explore.placeAt([a.position[0] + a.normal[0] * 1.9, 0, a.position[2] + a.normal[2] * 1.9], [-a.normal[0], 0, -a.normal[2]]);
+        for (let t = 0; t < 40 && !(rt.proximity.nearestHotspot?.entityId === e.id && rt.sceneKit.nearestEntityId === e.id); t++) await new Promise((r) => setTimeout(r, 250));
+        const nearest = rt.proximity.nearestHotspot?.entityId || null; const outlined = rt.sceneKit.nearestEntityId;
+        rt.focusEntity(e.id); await new Promise((r) => setTimeout(r, 1800));
+        rows.push({ id: e.id, nearest: nearest === e.id, outlined: outlined === e.id, sheet: window.__IW.hud.el.detailTitle.textContent.trim() === (e.content?.title || e.id) });
+        rt.releaseFocus(); await new Promise((r) => setTimeout(r, 900));
+      }
+      return rows;
+    });
+    const bad = works.filter((r) => !r.nearest || !r.outlined || !r.sheet);
+    check('WETPAINT-WORKS-ANSWER', 'Cada obra de Wet Paint, en su nuevo sitio, se resalta, es la que nombra E y abre su ficha',
+      works.length === 5 && bad.length === 0, bad.map((r) => JSON.stringify(r)).join(' | ') || `${works.length} obras`);
+    check('SPATIAL CONSOLE', 'Sin errores de consola', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
+    await page.close();
+  }
+
   /* 2. Marble Bust 01: GLB and forced fallback ------------------------------ */
   for (const [query, expected] of [['?state=museum:marble-bust-detail', 'GLB'], ['?state=museum:marble-bust-detail&glbStone=fallback', 'FALLBACK']]) {
     const { page, consoleErrors } = await openMuseum(query);
@@ -497,9 +623,89 @@ try {
           ok, JSON.stringify(r));
       }
     }
+    if (mounted) {
+      // What is near is measured from the avatar, not from the camera behind it.
+      await page.evaluate(async () => {
+        const rt = window.__IW.runtime; const c = window.__IW_CHARACTER_PHASE4B;
+        const a = rt.sceneKit.poseForAnchor(rt.store.require('entity.artwork.marea-baja').anchorId);
+        c.root.position.set(a.position[0] + a.normal[0] * 1.6, c.root.position.y, a.position[2] + a.normal[2] * 1.6);
+        c.root.rotation.y = Math.atan2(-a.normal[0], -a.normal[2]);
+        await new Promise((r) => setTimeout(r, 1500));
+      });
+      const body = await page.evaluate(() => {
+        const rt = window.__IW.runtime; const cam = window.__IW_CHARACTER_PHASE4A.cameraController.report().position; const c = window.__IW_CHARACTER_PHASE4B.root.position;
+        return { nearest: rt.proximity.nearestHotspot?.id || null, cameraBehind: +Math.hypot(cam[0] - c.x, cam[2] - c.z).toFixed(2) };
+      });
+      check('AVATAR-PROXIMITY-BODY', 'Con avatar, lo cercano se mide desde el cuerpo, no desde la cámara que va detrás',
+        body.nearest === 'hotspot.art.marea-baja' && body.cameraBehind > 2.4, JSON.stringify(body));
+
+      // Breeze with the avatar and the real keyboard: in and out with E.
+      await page.evaluate(async () => {
+        const c = window.__IW_CHARACTER_PHASE4B; c.root.position.set(18.6, c.root.position.y, -12); c.root.rotation.y = Math.PI / 2;
+        await new Promise((r) => setTimeout(r, 1500));
+      });
+      const doorTarget = await page.evaluate(() => window.__IW.runtime.proximity.nearestHotspot?.id || null);
+      await page.locator('#iw-canvas').focus().catch(() => {});
+      await page.keyboard.press('KeyE');
+      const inBreeze = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.breeze', null, { timeout: 60000 }).then(() => true).catch(() => false);
+      await page.waitForTimeout(2500);
+      await page.locator('#iw-canvas').focus().catch(() => {});
+      await page.keyboard.press('KeyE');
+      const outBreeze = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-b', null, { timeout: 60000 }).then(() => true).catch(() => false);
+      await page.waitForTimeout(1500);
+      const visibleAgain = await page.evaluate(() => window.__IW_CHARACTER_PHASE4B.root.visible);
+      check('AVATAR-BREEZE-E', 'Con avatar, E frente a la puerta entra en Breeze y E vuelve a la Galería B con el avatar visible',
+        doorTarget === 'hotspot.gallery-b.to-breeze' && inBreeze && outBreeze && visibleAgain, `${doorTarget} · dentro ${inBreeze} · fuera ${outBreeze} · visible ${visibleAgain}`);
+
+      // Deterministic walk: the RAF loop stops and the runtime is stepped with
+      // chosen frame times, so smoothness is measured, not eyeballed (SwiftShader
+      // FPS says nothing about a real GPU; the motion maths does not depend on it).
+      await travel(page, 'portal.gallery-b-gallery-a');
+      await page.waitForTimeout(1500);
+      const bench = await page.evaluate(() => {
+        const rt = window.__IW.runtime; rt.stopLoop();
+        const render = window.__IW.renderHost.render; const portalPass = rt.sceneKit.renderPortalPass;
+        window.__IW.renderHost.render = () => {}; rt.sceneKit.renderPortalPass = () => {};
+        const c = window.__IW_CHARACTER_PHASE4B; const p4a = window.__IW_CHARACTER_PHASE4A; const cam = p4a.cameraController;
+        const settle = (n) => { p4a.setInput({}); for (let i = 0; i < n; i++) rt.step(1 / 60); };
+        const walk = (pattern, seconds = 2) => {
+          settle(20); c.root.position.set(-2, c.root.position.y, -9); c.root.rotation.y = Math.PI / 2; settle(120);
+          const r0 = cam.report(); const rows = []; let t = 0; let i = 0;
+          p4a.setInput({ forward: 1 });
+          while (t < seconds) { const dt = pattern[i++ % pattern.length]; rt.step(dt); t += dt; const r = cam.report(); rows.push({ dt, t, ax: c.root.position.x, az: c.root.position.z, cx: r.position[0], cz: r.position[2] }); }
+          p4a.setInput({});
+          const r1 = cam.report();
+          return { rows, metres: c.root.position.x - -2, recoveries: (r1.hardEnvelopeRecoveries || 0) - (r0.hardEnvelopeRecoveries || 0), holds: (r1.comfortHolds || 0) - (r0.comfortHolds || 0) };
+        };
+        const metres = Object.fromEntries([['60', [1 / 60]], ['30', [1 / 30]], ['10', [1 / 10]], ['irregular', [1 / 60, 1 / 20, 1 / 45, 1 / 15, 1 / 90]]]
+          .map(([k, p]) => [k, +walk(p).metres.toFixed(3)]));
+        const run = walk([1 / 60, 1 / 20, 1 / 45, 1 / 15, 1 / 90]);
+        let frozen = 0; let moving = 0; const ratios = [];
+        for (let i = 1; i < run.rows.length; i++) {
+          const a = run.rows[i]; const z = run.rows[i - 1]; if (a.t < 0.6) continue;
+          const da = Math.hypot(a.ax - z.ax, a.az - z.az); const dc = Math.hypot(a.cx - z.cx, a.cz - z.cz);
+          if (da > 0.003) { moving++; if (dc < 1e-5) frozen++; ratios.push(dc / da); }
+        }
+        const mean = ratios.reduce((x, y) => x + y, 0) / Math.max(1, ratios.length);
+        const sd = Math.sqrt(ratios.reduce((x, y) => x + (y - mean) ** 2, 0) / Math.max(1, ratios.length));
+        settle(20); c.root.position.set(-2, c.root.position.y, -9); c.root.rotation.y = Math.PI / 2; settle(120);
+        const xs = []; p4a.setInput({ forward: 1 }); for (let i = 0; i < 60; i++) { rt.step(1 / 60); xs.push(c.root.position.x); }
+        p4a.setInput({}); for (let i = 0; i < 40; i++) { rt.step(1 / 60); xs.push(c.root.position.x); }
+        let jump = 0; for (let i = 2; i < xs.length; i++) jump = Math.max(jump, Math.abs((xs[i] - xs[i - 1]) - (xs[i - 1] - xs[i - 2])) * 60);
+        window.__IW.renderHost.render = render; rt.sceneKit.renderPortalPass = portalPass; rt.startLoop();
+        return { metres, follow: { mean: +mean.toFixed(3), sd: +sd.toFixed(3), frozen, moving, recoveries: run.recoveries, holds: run.holds }, start: { maxSpeedJump: +jump.toFixed(3), coast: +(xs.at(-1) - xs[59]).toFixed(3) } };
+      });
+      const spread = Math.max(...Object.values(bench.metres)) / Math.min(...Object.values(bench.metres));
+      check('AVATAR-DT-INDEPENDENT', 'El avatar recorre lo mismo a 60, 30, 10 FPS y con fotogramas irregulares', spread < 1.03 && bench.metres['60'] > 1.8, JSON.stringify(bench.metres));
+      check('AVATAR-CAMERA-FOLLOW', 'Caminando con fotogramas irregulares, la cámara acompaña al avatar sin quedarse quieta ni dar saltos',
+        bench.follow.frozen === 0 && bench.follow.recoveries === 0 && bench.follow.holds === 0 && Math.abs(bench.follow.mean - 1) < 0.05 && bench.follow.sd < 0.05, JSON.stringify(bench.follow));
+      check('AVATAR-EASE', 'El avatar arranca y se detiene con suavidad (sin pasar de 0 a velocidad máxima en un fotograma)',
+        bench.start.maxSpeedJump < 0.5 && bench.start.coast > 0.02 && bench.start.coast < 0.2, JSON.stringify(bench.start));
+    }
     // Walking speed must not depend on frame rate. Throttled, SwiftShader runs
     // well below 20 FPS; the Character must cover what the runtime clock grants
-    // (Σ min(Δt, 0.5 s) × FORWARD_SPEED 1.05 m/s), not a fixed 0.05 s per frame.
+    // (Σ min(Δt, 0.5 s) × FORWARD_SPEED 1.05 m/s, less the quarter-second ease
+    // to full speed), not a fixed 0.05 s per frame.
     if (mounted) {
       const cdp = await page.context().newCDPSession(page);
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: 2 });
@@ -514,12 +720,12 @@ try {
         let granted = 0;
         for (let k = 1; k < stamps.length; k += 1) granted += Math.min((stamps[k] - stamps[k - 1]) / 1000, 0.5);
         const b = c.root.position;
-        return { metres: +Math.hypot(b.x - a.x, b.z - a.z).toFixed(2), expected: +(granted * 1.05).toFixed(2),
+        return { metres: +Math.hypot(b.x - a.x, b.z - a.z).toFixed(2), expected: +Math.max(0, granted * p4a.locomotion.forwardSpeed - p4a.locomotion.startLag).toFixed(2),
           fps: +((stamps.length - 1) / Math.max(0.001, (stamps.at(-1) - stamps[0]) / 1000)).toFixed(1) };
       });
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
       const ratio = pace.metres / Math.max(pace.expected, 0.001);
-      check('AVATAR-PACE-LOW-FPS', 'Con pocos FPS, el avatar camina a su velocidad (sin cámara lenta)', ratio >= 0.8 && pace.expected > 0.5,
+      check('AVATAR-PACE-LOW-FPS', 'Con pocos FPS, el avatar camina a su velocidad (sin cámara lenta)', ratio >= 0.8 && pace.expected > 0.4,
         `${JSON.stringify(pace)} · ${(ratio * 100).toFixed(0)} % de lo esperado`);
     }
     check('AVATAR CONSOLE', 'Sin errores de consola con avatar', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
@@ -600,6 +806,26 @@ try {
         return { centre: toScreen(0), bottom: toScreen(-record.size[1] / 2), label: Math.round(document.querySelector('.iw-detail .iw-label').getBoundingClientRect().top) };
       });
       check('MOBILE-DETAIL-FRAMING', 'La obra enfocada queda por encima de la cartela', framing.bottom < framing.label, JSON.stringify(framing));
+      // Wet Paint on a phone: each work, focused, sits above its sheet.
+      await page.evaluate(() => window.__IW.runtime.releaseFocus());
+      await page.waitForTimeout(800);
+      await travel(page, 'portal.gallery-a-gallery-b');
+      await travel(page, 'portal.gallery-b-itinerant');
+      const phoneWorks = await page.evaluate(async () => {
+        const rt = window.__IW.runtime; const camera = window.__IW.renderHost.camera; const rows = [];
+        for (const e of rt.store.entitiesOf('space.itinerant-wet-paint')) {
+          rt.focusEntity(e.id); await new Promise((r) => setTimeout(r, 3500));
+          const anchor = rt.store.require(e.anchorId);
+          const v = camera.position.clone().set(anchor.position[0], anchor.position[1] - e.size[1] / 2, anchor.position[2]).project(camera);
+          const bottom = Math.round((1 - v.y) / 2 * innerHeight);
+          const label = Math.round(document.querySelector('.iw-detail .iw-label').getBoundingClientRect().top);
+          rows.push({ id: e.id.split('.').pop(), bottom, label, ok: bottom < label && v.z < 1 });
+          rt.releaseFocus(); await new Promise((r) => setTimeout(r, 900));
+        }
+        return { rows, overflow: document.documentElement.scrollWidth - innerWidth };
+      });
+      check('MOBILE-WETPAINT-FRAMING', 'En el móvil, cada obra de Wet Paint enfocada queda por encima de su cartela',
+        phoneWorks.rows.length === 5 && phoneWorks.rows.every((r) => r.ok) && phoneWorks.overflow <= 0, JSON.stringify(phoneWorks));
       check('MOBILE-POV CONSOLE', 'Sin errores de consola (móvil, POV)', errors.length === 0, errors.slice(0, 3).join(' | '));
       await context.close();
     }

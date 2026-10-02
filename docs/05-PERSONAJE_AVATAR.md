@@ -40,6 +40,16 @@ Antes, la continuidad solo existía entre Galería A ↔ B: cualquier otro cruce
 - `npm test` recorre las seis salas con avatar.
 - **Pendiente:** validación visual humana.
 
+### Movimiento y cámara
+
+- **Velocidad independiente de los FPS:** la locomoción avanza en subpasos de 0,05 s hasta el `maxDelta` del reloj (0,5 s). A 60, 30 o 10 FPS, o con fotogramas irregulares, el avatar recorre lo mismo (`AVATAR-DT-INDEPENDENT`).
+- **Arranque, parada y giro suaves:** la velocidad y el giro se acercan a lo que pide la entrada con la misma constante que la primera persona (≈95 % en un cuarto de segundo). Al soltar, el avatar se detiene en unos 8 cm (`AVATAR-EASE`).
+- **Colisión deslizante:** si un paso choca, el avatar conserva la parte libre del movimiento (primero el paso entero, luego cada eje). Contra una esquina se queda quieto en vez de oscilar.
+- **Orden del fotograma:** el avatar se mueve antes de que la cámara lo encuadre (`runtime.preCamera`).
+- **Cámara:** sigue su desplazamiento respecto al avatar, no un punto de la sala. Caminar la arrastra 1:1; solo se suavizan los cambios de encuadre (giros, obstáculos). La zona muerta es gradual. La línea de visión solo se comprueba contra paredes, techo y obstáculos. Antes también se le exigía la altura mínima de la cámara, y en horizontal todos los candidatos fallaban: la cámara se quedaba quieta y daba saltos de 0,25–0,3 m (`AVATAR-CAMERA-FOLLOW`).
+- **Proximidad desde el cuerpo:** con avatar, lo cercano se mide desde el avatar (`runtime.proximitySource`), no desde la cámara que va 3 m detrás (`AVATAR-PROXIMITY-BODY`).
+- **Pendiente:** la medición es funcional (posición, velocidad y cámara por fotograma, en SwiftShader). Falta la revisión visual humana en una GPU real.
+
 Los paneles de QA de las fases («PHASE 3/4A/4B · HUMAN GATE») solo se muestran con `?debug=1`.
 
 ## Acciones

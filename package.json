@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node tools/serve.mjs 4180",
     "check": "node tools/check-static.mjs",
-    "test": "npm run check && node tests/museum-smoke.mjs"
+    "test": "npm run check && node tests/proximity.test.mjs && node tests/museum-smoke.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.1"

@@ -49,6 +49,11 @@ function isFloorAnchor(anchor) {
   return anchor.normal[1] > 0.5 || (anchor.normal[0] === 0 && anchor.normal[2] === 0);
 }
 
+/** Free floor kept on each side of a doorway that shares a wall with a rope. */
+const DOORWAY_CLEARANCE = 0.6;
+/** Narrowest gap left open between a rope end and a wall: two collision radii and room to turn. */
+const PASSABLE_GAP = 1.1;
+
 export class MuseumSceneKit extends SceneKit {
   /**
    * @param {{
@@ -575,28 +580,46 @@ export class MuseumSceneKit extends SceneKit {
       walls = [walls.sort((a, b) => span(b[1]) - span(a[1]))[0]];
     }
 
+    // A rope never crosses a doorway, and never leaves a gap too narrow to walk
+    // through. It used to run the whole span of the works, so in the Itinerant
+    // room it closed the entrance and the visitor arrived between wall and rope.
+    const openings = this._openingsFor(space, store);
     const lines = [];
     for (const [wall, positions] of walls) {
-      const min = Math.min(...positions) - 0.75;
-      const max = Math.max(...positions) + 0.75;
-      if (max - min < 1.2) continue;
-
+      const axisX = wall === 'NORTH' || wall === 'SOUTH';
       const inset = WALL_THICKNESS / 2 + 0.12;
-      let from;
-      let to;
-      let blocker;
-      if (wall === 'NORTH' || wall === 'SOUTH') {
-        const zLine = wall === 'NORTH' ? oz - d / 2 + standoff : oz + d / 2 - standoff;
-        from = [clampAxis(min, ox - w / 2 + inset, ox + w / 2 - inset), oy, zLine];
-        to = [clampAxis(max, ox - w / 2 + inset, ox + w / 2 - inset), oy, zLine];
-        blocker = { min: [from[0] - 0.2, 0, zLine - 0.2], max: [to[0] + 0.2, 1.2, zLine + 0.2] };
-      } else {
-        const xLine = wall === 'WEST' ? ox - w / 2 + standoff : ox + w / 2 - standoff;
-        from = [xLine, oy, clampAxis(min, oz - d / 2 + inset, oz + d / 2 - inset)];
-        to = [xLine, oy, clampAxis(max, oz - d / 2 + inset, oz + d / 2 - inset)];
-        blocker = { min: [xLine - 0.2, 0, from[2] - 0.2], max: [xLine + 0.2, 1.2, to[2] + 0.2] };
+      const lo = axisX ? ox - w / 2 + inset : oz - d / 2 + inset;
+      const hi = axisX ? ox + w / 2 - inset : oz + d / 2 - inset;
+      let segments = [[clampAxis(Math.min(...positions) - 0.75, lo, hi), clampAxis(Math.max(...positions) + 0.75, lo, hi)]];
+      for (const opening of openings) {
+        if (opening.wall !== wall) continue;
+        const centre = axisX ? opening.worldPosition[0] : opening.worldPosition[2];
+        const gapLo = centre - opening.width / 2 - DOORWAY_CLEARANCE;
+        const gapHi = centre + opening.width / 2 + DOORWAY_CLEARANCE;
+        segments = segments.flatMap(([a, b]) => [[a, Math.min(b, gapLo)], [Math.max(a, gapHi), b]]).filter(([a, b]) => b - a > 0);
       }
-      lines.push({ from, to, blocker, wall });
+      for (let [a, b] of segments) {
+        // A pocket between a rope end and the side wall that a visitor can enter
+        // but not turn round in is a trap: close it to the wall instead.
+        if (a - lo > 0.05 && a - lo < PASSABLE_GAP) a = lo;
+        if (hi - b > 0.05 && hi - b < PASSABLE_GAP) b = hi;
+        if (b - a < 1.2) continue;
+        let from;
+        let to;
+        let blocker;
+        if (axisX) {
+          const zLine = wall === 'NORTH' ? oz - d / 2 + standoff : oz + d / 2 - standoff;
+          from = [a, oy, zLine];
+          to = [b, oy, zLine];
+          blocker = { min: [a - 0.2, 0, zLine - 0.2], max: [b + 0.2, 1.2, zLine + 0.2] };
+        } else {
+          const xLine = wall === 'WEST' ? ox - w / 2 + standoff : ox + w / 2 - standoff;
+          from = [xLine, oy, a];
+          to = [xLine, oy, b];
+          blocker = { min: [xLine - 0.2, 0, a - 0.2], max: [xLine + 0.2, 1.2, b + 0.2] };
+        }
+        lines.push({ from, to, blocker, wall });
+      }
     }
     return lines;
   }
