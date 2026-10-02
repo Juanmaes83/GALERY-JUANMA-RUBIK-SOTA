@@ -229,13 +229,18 @@ try {
       const place = (d) => { const a = rt.sceneKit.poseForAnchor(rt.store.require(id).anchorId); rt.explore.placeAt([a.position[0] + a.normal[0] * d, 0, a.position[2] + a.normal[2] * d], [-a.normal[0], 0, -a.normal[2]]); };
       const read = () => { const rec = rt.sceneKit._entityIndex.get(id); let glow = false; rec?.object.traverse((n) => { if (n.isMesh && n.material === rec.frameGlow) glow = true; }); return { nearest: rt.proximity.nearestHotspot?.entityId || null, outlined: rt.sceneKit.nearestEntityId, glow }; };
       rt.explore.placeAt([0, 0, -10], [1, 0, -0.6]); await new Promise((r) => setTimeout(r, 1200)); const far = read();
+      // 2.4 m in front, just outside its own range, with the corner neighbour
+      // (División tercera) in range behind-left: that one must not be offered.
+      const a0 = rt.sceneKit.poseForAnchor(rt.store.require(id).anchorId);
+      rt.explore.placeAt([a0.position[0] + a0.normal[0] * 2.4, 0, a0.position[2] + 0.6], [-a0.normal[0], 0, -a0.normal[2]]);
+      await new Promise((r) => setTimeout(r, 1200)); const aside = read();
       place(2.0); await new Promise((r) => setTimeout(r, 1200)); const near = read();
       rt.focusEntity(id); await new Promise((r) => setTimeout(r, 1500)); const focused = read();
       rt.releaseFocus();
-      return { far, near, focused };
+      return { far, aside, near, focused };
     });
     check('WORK-OUTLINE', 'Se resalta solo la obra que nombra el aviso, la de enfrente aunque haya otra en la esquina; nada con la ficha abierta',
-      outline.far.outlined !== 'entity.artwork.estudio-de-figura' && outline.far.outlined === outline.far.nearest && outline.near.outlined === 'entity.artwork.estudio-de-figura' && outline.near.nearest === outline.near.outlined && outline.near.glow && !outline.focused.outlined,
+      outline.far.outlined !== 'entity.artwork.estudio-de-figura' && outline.far.outlined === outline.far.nearest && outline.aside.nearest !== 'entity.artwork.division-tercera' && outline.near.outlined === 'entity.artwork.estudio-de-figura' && outline.near.nearest === outline.near.outlined && outline.near.glow && !outline.focused.outlined,
       JSON.stringify(outline));
 
     // Every exit sign stands by the doorway that starts the shortest route to

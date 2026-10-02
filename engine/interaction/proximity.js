@@ -99,8 +99,13 @@ export class ProximitySystem {
       // one could name its neighbour on the side wall. A work straight ahead
       // counts at its distance, one at 90° at 1.5×, one behind at 2×. Range
       // (NEAR) is still plain distance.
-      const ranked = facing ? distance * (1.5 - 0.5 * facingCosine(visitorPosition, facing, candidate.position)) : distance;
-      if (inside && ranked < nearestDistance) {
+      const cosine = facing ? facingCosine(visitorPosition, facing, candidate.position) : 1;
+      const ranked = distance * (1.5 - 0.5 * cosine);
+      // A work beside or behind the visitor is in range, but it is not the one
+      // they mean: E must not open a painting they are not looking at. Doors
+      // keep the plain rule, so a visitor can still back out through one.
+      const eligible = !candidate.hotspot.entityId || cosine > 0.1;
+      if (inside && eligible && ranked < nearestDistance) {
         nearest = candidate.hotspot;
         nearestDistance = ranked;
       }
