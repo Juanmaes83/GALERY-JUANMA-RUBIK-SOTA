@@ -29,6 +29,31 @@ function check(id, claim, pass, detail = '') {
   console.log(`${pass ? '  ok  ' : ' FAIL '} ${id.padEnd(28)} ${claim}${detail ? `  — ${detail}` : ''}`);
 }
 
+// A real pointer action first. On a loaded CI runner with software WebGL,
+// animation frames barely arrive and Playwright can stall «scrolling into
+// view» (seen in CI); then the element is hit-tested (nothing may cover its
+// centre) and activated through the DOM. Fallbacks are counted and printed.
+const fallbacks = [];
+async function press(locator, how = 'click') {
+  try {
+    await locator[how]({ timeout: 8000 });
+    return true;
+  } catch (error) {
+    if (!/Timeout/.test(String(error))) throw error;
+    const reachable = await locator.evaluate((node) => {
+      node.scrollIntoView({ block: 'center' });
+      const r = node.getBoundingClientRect();
+      const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      const ok = top === node || node.contains(top) || Boolean(node.closest('label')?.contains(top));
+      if (ok) node.click();
+      return ok;
+    });
+    fallbacks.push(`${await locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.node || n.dataset.bind || n.tagName)}${reachable ? '' : ' (TAPADO)'}`);
+    if (!reachable) throw new Error(`elemento tapado: ${fallbacks.at(-1)}`);
+    return true;
+  }
+}
+
 const requests = [];
 const server = await startServer(PORT, { log: (entry) => requests.push(entry) });
 const browser = await chromium.launch({
@@ -287,11 +312,24 @@ try {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
     const closed = await page.evaluate(() => !window.__IW.hud.endVisitOpen);
-    await page.locator('[data-el="leaveBtn"]').click();
-    await page.locator('[data-el="endLeave"]').click();
+    // A pointer click needs animation frames to settle; on a loaded CI runner
+    // with software WebGL they barely arrive and Playwright's click stalls at
+    // «scrolling into view» (seen in CI). What matters is checked directly:
+    // nothing covers the button at its centre, and clicking it runs the flow.
+    const pressReachable = (el) => page.evaluate((el) => {
+      const node = window.__IW.hud.el[el];
+      const r = node.getBoundingClientRect();
+      const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      const reachable = top === node || node.contains(top);
+      node.click();
+      return reachable;
+    }, el);
+    const leaveReachable = await pressReachable('leaveBtn');
+    const endReachable = await pressReachable('endLeave');
     const farewell = await page.evaluate(() => ({ open: window.__IW.hud.endVisitOpen, title: window.__IW.hud.el.endTitle.textContent, button: window.__IW.hud.el.endLeave.textContent }));
+    farewell.reachable = leaveReachable && endReachable;
     check('EXIT-DOOR', 'La puerta de salida del Vestíbulo pide confirmación con E y Esc permite seguir', /Salir del museo/.test(exitFlow.prompt || '') && dialog.open && closed, `${exitFlow.prompt} · ${dialog.text}`);
-    check('EXIT-FAREWELL', '«Salir» → «Terminar la visita» despide y ofrece volver a empezar', farewell.open && /Gracias/.test(farewell.title) && /Volver a empezar/.test(farewell.button), JSON.stringify(farewell));
+    check('EXIT-FAREWELL', '«Salir» → «Terminar la visita» despide y ofrece volver a empezar', farewell.reachable && farewell.open && /Gracias/.test(farewell.title) && /Volver a empezar/.test(farewell.button), JSON.stringify(farewell));
     check('ORIENTATION CONSOLE', 'Sin errores de consola', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
     await page.close();
   }
@@ -336,7 +374,7 @@ try {
     const field = page.locator('[data-bind="institution.claim"]').first();
     await field.fill(claim);
     await field.dispatchEvent('change');
-    await page.locator('[data-act="save"]').first().click();
+    await press(page.locator('[data-act="save"]').first());
     const saved = await page.waitForFunction((value) => (localStorage.getItem('iw.museum.authoring.v1') || '').includes(value), claim, { timeout: 15000 })
       .then(() => true).catch(() => false);
     check('STUDIO-SAVE', 'Guardar persiste la configuración (localStorage)', saved);
@@ -348,16 +386,16 @@ try {
 
     // A product edited in the Studio reaches the visitor's shop: price, order
     // and visibility are applied from the saved project.
-    await page.locator('#st .st-nodebtn[data-node="entity.shop.lamina-marea"]').first().click();
+    await press(page.locator('#st .st-nodebtn[data-node="entity.shop.lamina-marea"]').first());
     await page.locator('#st [data-bind="entities.entity.shop.lamina-marea.product.price"]').fill('42');
     await page.locator('#st [data-bind="entities.entity.shop.lamina-marea.product.order"]').fill('0');
-    await page.locator('#st .st-nodebtn[data-node="entity.shop.postales"]').first().click();
-    await page.locator('#st [data-bind="entities.entity.shop.postales.product.visible"]').uncheck();
+    await press(page.locator('#st .st-nodebtn[data-node="entity.shop.postales"]').first());
+    await press(page.locator('#st [data-bind="entities.entity.shop.postales.product.visible"]'));
 
     // Replacing a file: while the new one loads, the slot must already describe
     // it, never the previous record (whose asset has just been released).
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
-    await page.locator('#st .st-nodebtn[data-node="entity.artwork.horizonte-interrumpido"]').first().click();
+    await press(page.locator('#st .st-nodebtn[data-node="entity.artwork.horizonte-interrumpido"]').first());
     const slot = () => page.evaluate(() => {
       const el = document.querySelector('#st .st-slot[data-slot="ARTWORK_IMAGE"]');
       return { file: el?.querySelector('.st-filename')?.textContent.trim(), state: el?.querySelector('.st-slotstate')?.textContent.replace(/\s+/g, ' ').trim() };
@@ -380,7 +418,7 @@ try {
       `durante: ${JSON.stringify(during)} · después: ${JSON.stringify(after)}`);
 
     // An undecodable video gets advice that does not repeat the format that failed.
-    await page.locator('#st .st-nodebtn[data-node="entity.artwork.division-tercera"]').first().click();
+    await press(page.locator('#st .st-nodebtn[data-node="entity.artwork.division-tercera"]').first());
     await page.evaluate(() => { delete window.__releaseAccept; });
     await page.locator('#st [data-media="ARTWORK_VIDEO"]').setInputFiles({ name: 'roto.mp4', mimeType: 'video/mp4', buffer: png });
     await page.waitForFunction(() => typeof window.__releaseAccept === 'function', null, { timeout: 30000 }).catch(() => {});
@@ -396,7 +434,7 @@ try {
     // Saved is not applied: after a save, the preview still says it is stale,
     // and «Empezar» rebuilds instead of showing the room as last applied.
     await page.evaluate(() => { window.__releaseAccept?.(); });
-    await page.locator('#st [data-act="save"]').first().click();
+    await press(page.locator('#st [data-act="save"]').first());
     await page.waitForTimeout(400);
     const stale = await page.evaluate(() => ({ flag: window.__IW_STUDIO.previewStale, label: document.querySelector('#st .st-live')?.textContent.replace(/\s+/g, ' ').trim() }));
     check('STUDIO-SAVED-NOT-APPLIED', 'Guardar no da la vista previa por aplicada', stale.flag === true && /desactualizada/.test(stale.label || ''), JSON.stringify(stale));
@@ -502,7 +540,7 @@ try {
     // POV visit.
     {
       const { context, page, errors, walk } = await openPhone('');
-      await page.locator('[data-el="enter"]').tap();
+      await press(page.locator('[data-el="enter"]'), 'tap');
       await page.waitForTimeout(1000);
       const layout = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -517,12 +555,12 @@ try {
       }
       let crossed = false;
       if (prompt) {
-        await page.locator('[data-el="prompt"]').tap();
+        await press(page.locator('[data-el="prompt"]'), 'tap');
         crossed = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-a', null, { timeout: 30000 }).then(() => true).catch(() => false);
       }
       check('MOBILE-DOOR-TAP', 'Se camina con el pulgar y se cruza la puerta tocando el aviso', prompt?.tag === 'BUTTON' && crossed, JSON.stringify(prompt));
 
-      await page.locator('[data-el="mapBtn"]').tap();
+      await press(page.locator('[data-el="mapBtn"]'), 'tap');
       await page.waitForTimeout(800);
       const clashes = await page.evaluate(() => {
         const texts = [...document.querySelectorAll('[data-el="mapSvg"] text')].map((t) => ({ label: t.textContent, b: t.getBBox() }));
@@ -537,7 +575,7 @@ try {
         return { count: texts.length, out };
       });
       check('MAP-LABELS', 'Los nombres de sala del mapa no se pisan ni se salen', clashes.count >= 6 && clashes.out.length === 0, clashes.out.join(', ') || `${clashes.count} etiquetas`);
-      await page.locator('[data-el="mapClose"]').tap();
+      await press(page.locator('[data-el="mapClose"]'), 'tap');
 
       await page.evaluate(() => window.__IW.runtime.focusEntity('entity.artwork.horizonte-interrumpido'));
       await page.waitForTimeout(4000);
@@ -560,7 +598,7 @@ try {
       const mounted = await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000, polling: 1000 })
         .then(() => true).catch(() => false);
       if (mounted) {
-        await page.locator('[data-el="enter"]').tap();
+        await press(page.locator('[data-el="enter"]'), 'tap');
         await page.waitForTimeout(1200);
         const where = () => page.evaluate(() => window.__IW_CHARACTER_PHASE4B.root.position.toArray());
         const before = await where();
@@ -588,5 +626,6 @@ try {
   server.close();
 }
 
+if (fallbacks.length) console.log(`  info  clic por DOM tras comprobar que el elemento no estaba tapado: ${fallbacks.join(', ')}`);
 console.log(failures ? `\n${failures} comprobación(es) fallida(s)` : '\nOK');
 process.exit(failures ? 1 : 0);
