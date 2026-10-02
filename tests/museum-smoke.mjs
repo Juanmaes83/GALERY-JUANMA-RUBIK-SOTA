@@ -73,8 +73,17 @@ async function openMuseum(query = '') {
   });
   await page.goto(`${BASE}/index.html${query}`, { waitUntil: 'load' });
   await page.waitForFunction(() => window.__IW?.ready === true || document.documentElement.dataset.iwError, null, { timeout: 120000 });
+  // From here on the page must not navigate or crash on its own; if it does,
+  // the failure says how (seen once in CI as «Execution context was destroyed»).
+  const life = [];
+  page.on('framenavigated', (frame) => { if (frame === page.mainFrame()) life.push(`navegación a ${frame.url().slice(BASE.length)}`); });
+  page.on('crash', () => life.push('el proceso de la página se cayó'));
+  page.on('close', () => life.push('página cerrada'));
+  pageLife.set(page, life);
   return { page, consoleErrors, externalRequests };
 }
+
+const pageLife = new WeakMap();
 
 async function travel(page, portalId) {
   return page.evaluate(async (id) => {
@@ -86,7 +95,10 @@ async function travel(page, portalId) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
     return runtime.state.activeSpaceId;
-  }, portalId);
+  }, portalId).catch((error) => {
+    const life = pageLife.get(page) || [];
+    throw new Error(`${portalId}: ${String(error).split('\n')[0]}${life.length ? ` · ${life.join(' · ')}` : ' · sin navegación ni caída registradas'}`);
+  });
 }
 
 try {

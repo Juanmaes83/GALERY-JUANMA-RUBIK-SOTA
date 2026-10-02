@@ -71,7 +71,7 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 | 0.6 | CI en GitHub Actions con `npm test` en cada PR | ✅ primera ejecución verde en la PR #1 |
 | 0.7 | Fusionar la PR #1 y poner `main` como rama por defecto | ⏳ Juanma |
 | 0.8 | Licencia del código propio | ⏳ Juanma |
-| 0.9 | Preview en Vercel (proyecto conectado al repo, sin build, salida `.`) y comprobar si se abre sin iniciar sesión | ⏳ autorización para crear el proyecto |
+| 0.9 | Preview en Vercel (sin build, salida `.`), abierto sin iniciar sesión | ✅ proyecto solo de preview, sin Git ni producción; recorrido Studio → visita comprobado en el propio preview (Chromium headless, SwiftShader) |
 | 0.10 | Nota en `escaparates-pro/labs/immersive-worlds` que apunte aquí y congelación del lab | ⏳ autorización para tocar el origen |
 
 ## Fase 1 — Cerrar lo heredado

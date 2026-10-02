@@ -98,7 +98,15 @@ docs/ · tools/ · tests/
 
 ## Despliegue
 
-Es un sitio estático: se publica la raíz tal cual. En Vercel corresponde al framework «Other», sin build command y con output `.`. Todavía no hay ningún proyecto de hosting conectado (roadmap 0.9).
+Es un sitio estático: se publica la raíz tal cual. En Vercel corresponde al framework «Other», sin build command y con output `.`.
+
+Para revisión existe un proyecto Vercel **solo de preview** (`galery-juanma-rubik-sota-preview`):
+
+- No está enlazado a Git, así que ningún push despliega nada. Cada preview se crea a mano desde un commit concreto, con entorno `staging`.
+- La producción está bloqueada: el «Ignored Build Step» cancela cualquier despliegue de producción, y el proyecto no tiene ninguno.
+- Sin protección de acceso: la URL del preview se abre sin iniciar sesión.
+- Studio: `<url>/index.html?authoring=1`. Visita: `<url>/index.html`.
+- Lo que se edita en el Studio se guarda solo en el navegador de quien lo edita (localStorage). Los archivos subidos duran lo que la sesión. No hay publicación global (roadmap 2.1–2.3).
 
 ## Licencias
 
