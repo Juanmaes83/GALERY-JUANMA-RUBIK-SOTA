@@ -31,6 +31,7 @@ import {
   buildGlbSculptureInstallation, buildLabel, buildPitchedRoof, buildPlinth, buildProjection, buildRoomShell,
   buildPremiumVesselInstallation, buildSkylightDaylight, buildThreshold, buildVessel, disposeObject
 } from './builders.js';
+import { buildExitDoor, buildExitSign, buildNearHalo, firstStepTowards, placeExitSign } from './wayfinding.js';
 import { GUIDE_DESIGNS, buildGuideFigure, buildVisitorFigure, guideMaterials } from './guide.js';
 import { MARBLE_BUST_PROFILE, MuseumModelAssets } from './model-assets.js';
 
@@ -321,6 +322,7 @@ export class MuseumSceneKit extends SceneKit {
         object: built.object,
         anchorId: entity.anchorId,
         presentation: built.presentation || null,
+        frameMaterial: materials.frame,
         hotspotIds: entity.interaction?.hotspotRefs || []
       });
       if (built.blocker) blockers.push(built.blocker);
@@ -375,6 +377,7 @@ export class MuseumSceneKit extends SceneKit {
     }
 
     const hotspotMarks = this._buildHotspotMarks(space, ctx.store, profile, group);
+    this._buildWayfinding(space, ctx.store, openings, materials, group);
 
     // A room carries its own response to the environment, on its own materials.
     //
@@ -482,8 +485,11 @@ export class MuseumSceneKit extends SceneKit {
         this.mediaLoader?.release(src);
         this._mediaRefs.delete(entityId);
       }
+      this._entityIndex.get(entityId)?.frameGlow?.dispose?.();
       this._entityIndex.delete(entityId);
+      if (this._nearestEntityId === entityId) this._nearestEntityId = null;
     }
+    this._wayfinding?.delete(handle.spaceId);
     this._spaces.delete(handle.spaceId);
     this._animated = this._animated.filter((item) => {
       if (item.spaceId !== handle.spaceId) return true;
@@ -892,6 +898,96 @@ export class MuseumSceneKit extends SceneKit {
    * every work is still reachable from the text outline, so nothing that made a
    * hotspot discoverable has been removed along with the ring.
    */
+  /**
+   * The exit door (a hotspot whose action is END_VISIT) and, in every other
+   * room, one exit sign by the doorway that starts the shortest route to it.
+   * A room with no route to the exit gets no sign: a sign that points nowhere
+   * is worse than none. Nested rooms present their own guest and get none.
+   */
+  _buildWayfinding(space, store, openings, materials, group) {
+    this._wayfinding ||= new Map();
+    const record = { spaceId: space.id, exitDoors: [], sign: null };
+    for (const hotspot of store.hotspotsOf(space.id)) {
+      if (hotspot.action?.type !== 'END_VISIT' || !hotspot.anchorId) continue;
+      const pose = this._anchorPoses.get(hotspot.anchorId);
+      if (!pose) continue;
+      // The anchor sits on the boundary plane and its normal points out; the
+      // visible face of the wall is a wall thickness back into the room.
+      const anchor = store.require(hotspot.anchorId);
+      const inset = WALL_THICKNESS + 0.004 + 0.005;
+      const door = buildExitDoor({ frameColor: materials.frame?.color?.getHex?.() ?? 0x6a5942 });
+      door.position.set(anchor.position[0] - pose.normal[0] * inset, space.bounds.origin[1], anchor.position[2] - pose.normal[2] * inset);
+      // The anchor's normal points out through the door; the door faces the room.
+      door.rotation.y = Math.atan2(-pose.normal[0], -pose.normal[2]);
+      group.add(door);
+      record.exitDoors.push({ hotspotId: hotspot.id, position: [...pose.position] });
+    }
+    if (!space.metadata?.nestedRuntime) {
+      const targets = new Set(store.hotspots.filter((h) => h.action?.type === 'END_VISIT').map((h) => h.spaceId));
+      const step = targets.size ? firstStepTowards(store, space.id, targets) : null;
+      const opening = step ? openings.find((o) => o.portalId === step.id) : null;
+      if (opening) {
+        const wallAnchors = store.anchorsOf(space.id).filter((a) => a.kind === 'WALL' && a.extent);
+        const place = placeExitSign(opening, space, wallAnchors);
+        const sign = buildExitSign(place.direction);
+        sign.position.set(...place.position);
+        sign.rotation.y = place.yaw;
+        group.add(sign);
+        record.sign = { portalId: step.id, toSpaceId: step.toSpaceId, direction: place.direction, side: place.side, position: place.position };
+      }
+    }
+    this._wayfinding.set(space.id, record);
+  }
+
+  /** QA evidence: where the exit door and exit signs are, and which route each sign serves. */
+  wayfindingReport() {
+    return Object.fromEntries([...(this._wayfinding || new Map()).entries()].filter(([id]) => this._spaces.has(id)));
+  }
+
+  /**
+   * Outline the one work the proximity prompt is about. Only the nearest, not
+   * every work in range: E opens exactly one, so exactly one is marked.
+   */
+  setNearestEntity(entityId) {
+    if (this._nearestEntityId === entityId) return;
+    const previous = this._nearestEntityId ? this._entityIndex.get(this._nearestEntityId) : null;
+    if (previous?.halo) previous.halo.visible = false;
+    if (previous) this._glowFrame(previous, false);
+    this._nearestEntityId = entityId || null;
+    const record = entityId ? this._entityIndex.get(entityId) : null;
+    if (!record?.object || !record.size) return;
+    if (!record.halo) {
+      const anchor = this._anchorPoses.get(record.anchorId);
+      const floor = !anchor || anchor.normal[1] > 0.5 || (anchor.normal[0] === 0 && anchor.normal[2] === 0);
+      record.halo = buildNearHalo({ size: record.size, floor });
+      record.object.add(record.halo);
+    }
+    record.halo.visible = true;
+    this._glowFrame(record, true);
+  }
+
+  /**
+   * Warm the frame of the nearest work. A 2.6 m painting fills the view at the
+   * prompt's distance and an outline outside it is off screen, but its own
+   * frame is always in view. The room's frame material is shared, so the work
+   * gets a lit copy while it is the nearest and its own material back after.
+   */
+  _glowFrame(record, on) {
+    if (!record?.object || !record.frameMaterial) return;
+    if (on && !record.frameGlow) {
+      record.frameGlow = record.frameMaterial.clone();
+      record.frameGlow.emissive = new THREE.Color(0x6b5226);
+      record.frameGlow.emissiveIntensity = 0.85;
+    }
+    record.object.traverse((node) => {
+      if (!node.isMesh) return;
+      if (on && node.material === record.frameMaterial) node.material = record.frameGlow;
+      else if (!on && node.material === record.frameGlow) node.material = record.frameMaterial;
+    });
+  }
+
+  get nearestEntityId() { return this._nearestEntityId || null; }
+
   _buildHotspotMarks(space, store, profile, group) {
     const marks = new Map();
     for (const hotspot of store.hotspotsOf(space.id)) {

@@ -65,8 +65,9 @@ export class ProximitySystem {
   /**
    * @param {number} dt
    * @param {[number,number,number]} visitorPosition
+   * @param {[number,number,number]} [facing] where the visitor looks (any length)
    */
-  update(dt, visitorPosition) {
+  update(dt, visitorPosition, facing = null) {
     this._accumulator += dt;
     if (this._accumulator < this.interval) return;
     this._accumulator = 0;
@@ -93,9 +94,15 @@ export class ProximitySystem {
           this.sceneKit.setHotspotState(candidate.hotspot.id, next);
         }
       }
-      if (inside && distance < nearestDistance) {
+      // Which one E opens: the nearest *in front of* the visitor. In a corner
+      // two works are in range; by distance alone, standing two metres from
+      // one could name its neighbour on the side wall. A work straight ahead
+      // counts at its distance, one at 90° at 1.5×, one behind at 2×. Range
+      // (NEAR) is still plain distance.
+      const ranked = facing ? distance * (1.5 - 0.5 * facingCosine(visitorPosition, facing, candidate.position)) : distance;
+      if (inside && ranked < nearestDistance) {
         nearest = candidate.hotspot;
-        nearestDistance = distance;
+        nearestDistance = ranked;
       }
     }
 
@@ -119,4 +126,12 @@ export class ProximitySystem {
       states: Object.fromEntries(this._active.map((c) => [c.hotspot.id, this.state.hotspotState(c.hotspot.id)]))
     };
   }
+}
+
+function facingCosine(from, facing, to) {
+  const fx = facing[0]; const fz = facing[2];
+  const tx = to[0] - from[0]; const tz = to[2] - from[2];
+  const lf = Math.hypot(fx, fz); const lt = Math.hypot(tx, tz);
+  if (lf < 1e-6 || lt < 1e-6) return 1;
+  return (fx * tx + fz * tz) / (lf * lt);
 }

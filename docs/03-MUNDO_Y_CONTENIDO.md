@@ -21,7 +21,11 @@ El validador (`engine/schema/validate.js`) aplica las invariantes al cargar. Un 
 
 ## Salas y obras
 
-Toda la Fundación Arenas, sus artistas y sus obras son **ficticios**. Las excepciones son las obras invitadas reales con licencia: Marble Bust 01 (CC0), Viento sobre mármol y las escenas de Van Gogh de Wet Paint (dominio público).
+Toda la Fundación Arenas, sus artistas y sus obras son **ficticios**. Las excepciones con autoría real son:
+
+- Marble Bust 01 (CC0);
+- las escenas de Van Gogh de Wet Paint (dominio público);
+- la instalación de la Sala Breeze: código MIT de Niklas Niehus, con las licencias de la Venus, los HDRI y la tela **pendientes** (ver `experiences/breeze-studio-pro/IMPORT_NOTES.md`).
 
 | Sala | Entidades |
 |---|---|
@@ -30,9 +34,16 @@ Toda la Fundación Arenas, sus artistas y sus obras son **ficticios**. Las excep
 | **Galería B — Cámara oscura** | *Noche de invierno* (Jonás Vilar), *Marea baja* (Teresa Miralles), proyección *Cuaderno de luz* (Jonás Vilar) |
 | **Archivo — Sala de escucha** | Pieza sonora *Cinta 14: taller, tarde*, *Nota de cierre* |
 | **Sala Itinerante — Wet Paint** | 01 Original · 02 Painterly · 03 Living · 04 Combined · 05 Experimental (ver [06](06-SALAS_ESPECIALES.md)) |
-| **Sala Breeze — Viento sobre mármol** | Instalación de tela y viento sobre escultura (Breeze Studio PRO). **No migrada** (ver [06](06-SALAS_ESPECIALES.md)) |
+| **Sala Breeze — Viento sobre mármol** | Instalación de tela y viento sobre escultura (Breeze Studio PRO, WebGPU). Integrada en `import/breeze-studio-pro`; **no validada en GPU real** (ver [06](06-SALAS_ESPECIALES.md)) |
+| **Tienda del museo** | 8 productos de demostración: 3 láminas, catálogo, postales, cuaderno, bolsa y una réplica de la *Vasija de arenas* en peana; más el rótulo «Tienda de demostración». Precios ficticios, sin compra (ver [06](06-SALAS_ESPECIALES.md#tienda-del-museo)) |
 
-Grafo: Vestíbulo ↔ Galería A ↔ Galería B. Desde la Galería A se pasa al Archivo; desde la Galería B, a la Sala Breeze y a la Itinerante. Todas las salas son alcanzables desde el inicio (`INV-GRAPH-CONNECTED`).
+Grafo: Tienda ↔ Vestíbulo ↔ Galería A ↔ Galería B. Desde la Galería A se pasa al Archivo; desde la Galería B, a la Sala Breeze y a la Itinerante. Todas las salas son alcanzables desde el inicio (`INV-GRAPH-CONNECTED`).
+
+## Orientación y salida
+
+- **Salida:** la visita termina en la puerta de salida del Vestíbulo. Es un hotspot con la acción `END_VISIT`: el motor emite `visit:end-requested` y la aplicación decide qué significa salir (confirmar, despedirse, volver a empezar). El botón «Salir» de la barra superior abre el mismo diálogo desde cualquier sala.
+- **Señales verdes de salida** (persona y flecha, «SALIDA»): las coloca el Scene Kit a partir del grafo, no se escriben a mano. En cada sala se señala la puerta que inicia el camino más corto hasta la sala de la salida, con la flecha hacia esa puerta. Si una obra ocupa el sitio, la señal sube sobre el rótulo de la puerta con la flecha hacia arriba. Una sala sin ruta no tiene señal. `npm test` comprueba cada ruta (`EXIT-SIGNS`, `EXIT-ROUTE`). Es orientación dentro de una visita virtual, **no** señalización de seguridad de un edificio.
+- **Obra cercana:** la obra que nombra el aviso «E · Observar de cerca…» se resalta: el marco se calienta y aparece un filete fino a su alrededor, o un anillo en el suelo si es una pieza exenta. Solo se resalta una, la que está **delante** del visitante, aunque haya otra en la esquina. Abrir la ficha siempre es una acción intencional (E, Intro o tocar el aviso); acercarse no la abre.
 
 ## Medios y derechos
 

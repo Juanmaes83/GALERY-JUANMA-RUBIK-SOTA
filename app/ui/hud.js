@@ -76,6 +76,7 @@ export class ExperienceHUD {
           <button class="iw-btn iw-btn--icon" data-el="soundBtn" aria-pressed="false" title="Sonido">Sonido</button>
           <button class="iw-btn iw-btn--icon" data-el="visitBtn" aria-expanded="false" hidden>Visita</button>
           <button class="iw-btn iw-btn--icon" data-el="a11yBtn" aria-expanded="false">Contenido en texto</button>
+          <button class="iw-btn iw-btn--icon iw-btn--exit" data-el="leaveBtn" aria-haspopup="dialog">Salir</button>
         </div>
       </header>
 
@@ -92,6 +93,7 @@ export class ExperienceHUD {
             <h2 data-el="detailTitle"></h2>
             <p class="iw-label__meta" data-el="detailMeta"></p>
             <p class="iw-label__dims" data-el="detailDims"></p>
+            <p class="iw-label__price" data-el="detailPrice" hidden></p>
             <div class="iw-label__more" data-el="labelMore" hidden>
               <p data-el="detailBody"></p>
               <p class="iw-label__credit" data-el="detailCredit" hidden></p>
@@ -148,6 +150,17 @@ export class ExperienceHUD {
         </div>
       </div>
 
+      <div class="iw-a11y iw-end" data-el="endVisit" hidden role="dialog" aria-modal="true" aria-labelledby="iw-end-title">
+        <div class="iw-a11y__panel iw-end__panel">
+          <h2 id="iw-end-title" data-el="endTitle">Salir del museo</h2>
+          <p data-el="endSummary"></p>
+          <div class="iw-end__actions">
+            <button class="iw-btn" data-el="endStay">Seguir visitando</button>
+            <button class="iw-btn iw-btn--primary" data-el="endLeave">Terminar la visita</button>
+          </div>
+        </div>
+      </div>
+
       <div class="iw-a11y" data-el="a11y" hidden role="dialog" aria-label="Contenido de la exposición en texto">
         <div class="iw-a11y__panel">
           <header>
@@ -171,6 +184,10 @@ export class ExperienceHUD {
     this.el.visitBtn?.addEventListener('click', () => this.toggleVisit());
     this.el.visitClose.addEventListener('click', () => this.toggleVisit(false));
     this.el.a11yBtn.addEventListener('click', () => this.toggleAccessibility());
+    this.el.leaveBtn.addEventListener('click', () => this.showEndVisit());
+    this.el.endStay.addEventListener('click', () => this.hideEndVisit());
+    this.el.endLeave.addEventListener('click', () => this._farewell());
+    this.runtime.bus.on(EVENTS.VISIT_END_REQUESTED, () => this.showEndVisit());
     this.el.a11yClose.addEventListener('click', () => this.toggleAccessibility(false));
     const route = this.runtime.store.routes[0];
     this.el.routeBtn.hidden = !route;
@@ -388,10 +405,15 @@ export class ExperienceHUD {
     document.body.dataset.focused = 'true';
     this.el.detailTitle.textContent = content.title || entity.id;
     this.el.detailMeta.textContent = [content.creator, content.year].filter(Boolean).join(', ');
+    // A product's display size is the size of its panel on the wall, not of
+    // the thing sold, so it is not printed as if it were a dimension.
+    const product = content.product || null;
     this.el.detailDims.textContent = [
       content.medium,
-      entity.size ? `${(entity.size[0] * 100).toFixed(0)} × ${(entity.size[1] * 100).toFixed(0)} cm` : null
+      entity.size && !product ? `${(entity.size[0] * 100).toFixed(0)} × ${(entity.size[1] * 100).toFixed(0)} cm` : null
     ].filter(Boolean).join(' · ');
+    this.el.detailPrice.hidden = !product;
+    this.el.detailPrice.textContent = product ? productPriceLine(product) : '';
     this.el.detailBody.textContent = content.description || entity.accessibility?.description || '';
 
     const credit = content.media?.credit;
@@ -552,6 +574,46 @@ export class ExperienceHUD {
     this.el.mapSvg.innerHTML = edges + nodes;
   }
 
+  /* == leaving ============================================================== */
+
+  /**
+   * The way out, from the exit door in the Vestíbulo or the «Salir» button
+   * anywhere. A visit must be able to end without closing the tab, and to end
+   * on purpose: nothing here is triggered by walking past.
+   */
+  showEndVisit() {
+    const state = this.runtime.state;
+    const works = this.runtime.store.entities.filter((e) => e.interaction?.focusable && !e.content?.product);
+    const seen = works.filter((e) => state.visitedEntityIds?.has(e.id)).length;
+    const rooms = state.visitedSpaceIds?.size || 1;
+    this.el.endTitle.textContent = 'Salir del museo';
+    this.el.endSummary.textContent = `Has recorrido ${rooms} ${rooms === 1 ? 'sala' : 'salas'} y has visto de cerca ${seen} de ${works.length} obras.`;
+    this.el.endStay.hidden = false;
+    this.el.endLeave.textContent = 'Terminar la visita';
+    this.el.endLeave.dataset.stage = 'confirm';
+    this.el.endVisit.hidden = false;
+    if (this.runtime.state.focusedEntityId) this.runtime.releaseFocus();
+    if (document.pointerLockElement) document.exitPointerLock?.();
+    this.el.endStay.focus();
+  }
+
+  hideEndVisit() {
+    this.el.endVisit.hidden = true;
+    document.getElementById('iw-canvas')?.focus?.({ preventScroll: true });
+  }
+
+  get endVisitOpen() { return !this.el.endVisit.hidden; }
+
+  _farewell() {
+    if (this.el.endLeave.dataset.stage === 'farewell') { location.reload(); return; }
+    this.el.endTitle.textContent = 'Gracias por tu visita';
+    this.el.endSummary.textContent = 'La visita ha terminado. Puedes volver a empezar desde el vestíbulo cuando quieras.';
+    this.el.endStay.hidden = true;
+    this.el.endLeave.textContent = 'Volver a empezar';
+    this.el.endLeave.dataset.stage = 'farewell';
+    this.el.endLeave.focus();
+  }
+
   /* == accessibility ======================================================== */
 
   /**
@@ -696,6 +758,7 @@ export class ExperienceHUD {
               <strong>${escapeHtml(entity.content?.title || entity.id)}</strong>
               <span>${escapeHtml([entity.content?.creator, entity.content?.year, entity.content?.medium].filter(Boolean).join(' · '))}</span>
               <p>${escapeHtml(entity.accessibility?.description || entity.content?.description || '')}</p>
+              ${entity.content?.product ? `<p class="iw-a11y__price">${escapeHtml(productPriceLine(entity.content.product))}</p>` : ''}
               ${entity.accessibility?.transcript ? `<p class="iw-a11y__transcript">Transcripción: ${escapeHtml(entity.accessibility.transcript)}</p>` : ''}
             </li>`)
           .join('');
@@ -722,6 +785,17 @@ const KIND_LABEL = {
   TEXT: 'Texto de sala',
   OBJECT_3D: 'Objeto'
 };
+
+/* -- shop ------------------------------------------------------------------ */
+
+/** «35 € · precio de demostración». The shop is a demonstration: nothing is sold. */
+export function productPriceLine(product) {
+  const price = Number(product?.price);
+  const amount = Number.isFinite(price)
+    ? new Intl.NumberFormat('es-ES', { style: 'currency', currency: product.currency || 'EUR', maximumFractionDigits: price % 1 ? 2 : 0 }).format(price)
+    : null;
+  return [amount, 'precio de demostración · tienda simulada, sin compra'].filter(Boolean).join(' · ');
+}
 
 /* -- map labels ----------------------------------------------------------- */
 

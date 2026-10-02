@@ -62,3 +62,23 @@ Cada decisión indica fecha, contexto, decisión y consecuencias. Las decisiones
 
 - **Contexto:** `qa/run-qa.mjs` depende de la estructura del monorepo, de mundos de demostración y de directorios de evidencias de cientos de MB. En la línea base completó 30/30 comprobaciones y no terminó.
 - **Decisión:** `tools/check-static.mjs` y `tests/museum-smoke.mjs` como suite canónica, ligera y ejecutable en CI.
+
+### GJR-009 · La tienda es una sala del museo
+**Fecha:** 2026-10-02
+
+- **Contexto:** se quería estudiar una tienda (reproducciones, libros, artículos) integrada en la visita y administrable desde el panel, sin sistemas paralelos.
+- **Decisión:** una sala `SHOP` del World con productos como entidades (`content.product`), administrados con los mismos mecanismos del Studio que las obras.
+- **Descartado:**
+  - una página separada: rompe la visita y duplica la administración;
+  - copiar una sala existente: duplica código. El World ya es declarativo y una sala nueva solo es datos.
+- **Límites:**
+  - es una tienda **simulada**: sin pagos, carrito ni datos;
+  - la publicación para todos los visitantes depende del backend (ROADMAP 2.1).
+
+### GJR-010 · Salida explícita y señales derivadas del grafo
+**Fecha:** 2026-10-02
+
+- **Decisión:**
+  - la visita tiene una salida (`END_VISIT`) en el Vestíbulo y el botón «Salir»;
+  - las señales verdes se calculan desde el World Graph: el camino más corto a la sala de la salida. Así nunca apuntan a una ruta inexistente.
+- **Límite:** es orientación de una experiencia virtual, no señalización de evacuación.

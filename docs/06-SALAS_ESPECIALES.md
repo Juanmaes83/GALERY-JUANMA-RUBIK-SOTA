@@ -72,6 +72,46 @@ Salidas siempre disponibles: botón-puente abajo a la izquierda (elevado para no
 - El panel del producto mezcla inglés y español.
 - Veredicto humano previo de la sala con la física real del donante: «KEEP FOR CONTINUATION» (2026-08-16), no visualmente final.
 
+## Tienda del museo
+
+**Decisión** ([GJR-009](08-DECISIONES.md)): la tienda es **una sala más del World**, no una página aparte ni una copia de código.
+
+- **Construcción:** `space.shop`, de tipo `SHOP`, situada al oeste del Vestíbulo. El Scene Kit la construye como cualquier sala (hueco de puerta, rótulo, luz) a partir de sus límites y portales.
+- **Integración automática:** aparece en el mapa, en «Contenido en texto», en el árbol del Studio y en la continuidad del avatar sin código específico.
+- **Recorrido:** no forma parte del recorrido comentado, para no alterar el recorrido principal.
+
+**Productos.** Son entidades del World con `subtype: "product"` y un bloque `content.product`:
+
+```json
+{ "category": "Reproducciones", "price": 35, "currency": "EUR", "visible": true, "order": 1, "demo": true }
+```
+
+- **Exposición:** los productos de pared (`ARTWORK`) se cuelgan enmarcados en los huecos que lista `space.metadata.shop.productSlots`. La réplica (`SCULPTURE`) va en su peana.
+- **Cartela y ficha:** muestran el precio con la marca «demostración». La ficha añade «precio de demostración · tienda simulada, sin compra».
+- **Imágenes:** son propias (`assets/shop/RIGHTS.md` y `assets/collection/RIGHTS.md`).
+
+**Administración desde el Studio.** Los productos son nodos del árbol, marcados como «Producto». Campos reales:
+
+| Campo | Dónde | Efecto en la visita |
+|---|---|---|
+| Nombre | Identidad · Título | Cartela, ficha, texto |
+| Autoría o marca | Identidad · Autoría | Cartela, ficha |
+| Imagen | Medios · Imagen (JPG, PNG, WebP) | Panel en la pared (**solo dura la sesión**; ver [04](04-STUDIO.md)) |
+| Categoría | Tienda · Categoría (Reproducciones, Libros, Papelería, Objetos) | Línea bajo el título |
+| Precio de demostración | Tienda · Precio (€) | Cartela y ficha, marcado como demostración |
+| Orden | Tienda · Orden | Los productos de pared ocupan los huecos por este orden |
+| Visibilidad | Tienda · Visible en la tienda | Un producto oculto sale del World: pared, ficha, hotspot y texto |
+| Descripción | Personalizar más · Texto curatorial | Ficha |
+
+**Flujo verificado** (`SHOP-STUDIO`): editar en el Studio → Guardar → Vista previa o Empezar → el producto aparece en la sala con su precio y su orden → su ficha lo muestra. Tras recargar como visitante, el cambio sigue ahí en ese mismo navegador.
+
+**Fuera de alcance, deliberadamente:**
+
+- pagos, carrito, envío, inventario o datos personales;
+- **carrito simulado:** se propone para una fase posterior. No hace falta para entender la tienda y añadiría estado y una interfaz que distrae de la visita;
+- crear productos nuevos desde el Studio. Igual que con las obras, hoy se añaden en el World; añadir y borrar piezas es la tarea 2.8 del ROADMAP;
+- publicar para todos los visitantes. Como el resto del Studio, depende del backend (ROADMAP fase 2).
+
 ## Contrato de sala anidada (resumen)
 
 - Una sala anidada se declara con `space.metadata.nestedRuntime` y `roomOrigin`.

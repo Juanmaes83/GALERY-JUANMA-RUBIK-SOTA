@@ -40,14 +40,20 @@
         "anchor.lobby.bienvenida",
         "anchor.lobby.door-gallery-a",
         "anchor.lobby.route-start",
-        "anchor.lobby.guide-welcome"
+        "anchor.lobby.guide-welcome",
+        "anchor.lobby.door-shop",
+        "anchor.lobby.arrive-from-shop",
+        "anchor.lobby.exit"
       ],
       "hotspotRefs": [
         "hotspot.lobby.route-start",
-        "hotspot.lobby.to-gallery-a"
+        "hotspot.lobby.to-gallery-a",
+        "hotspot.lobby.to-shop",
+        "hotspot.lobby.exit"
       ],
       "portalRefs": [
-        "portal.lobby-gallery-a"
+        "portal.lobby-gallery-a",
+        "portal.lobby-shop"
       ],
       "metadata": {
         "bench": [
@@ -329,6 +335,82 @@
       "metadata": {
         "temporaryExhibition": true,
         "labPurpose": "Wet Paint Flow + Van Gogh Crows capability graft"
+      }
+    },
+    {
+      "id": "space.shop",
+      "title": "Tienda del museo",
+      "type": "SHOP",
+      "bounds": {
+        "size": [
+          10,
+          4.2,
+          9
+        ],
+        "origin": [
+          -10.5,
+          0,
+          0
+        ]
+      },
+      "sceneProfile": "white-cube",
+      "lightingProfile": "museum-cove-soft",
+      "ambience": "ambience.lobby",
+      "defaultSpawnAnchorId": "anchor.shop.arrive-from-lobby",
+      "entityRefs": [
+        "entity.shop.lamina-horizonte",
+        "entity.shop.lamina-marea",
+        "entity.shop.lamina-noche",
+        "entity.shop.catalogo",
+        "entity.shop.postales",
+        "entity.shop.cuaderno",
+        "entity.shop.bolsa",
+        "entity.shop.replica-vasija",
+        "entity.shop.rotulo"
+      ],
+      "anchorRefs": [
+        "anchor.shop.door-lobby",
+        "anchor.shop.arrive-from-lobby",
+        "anchor.shop.wall-n1",
+        "anchor.shop.wall-n2",
+        "anchor.shop.wall-n3",
+        "anchor.shop.wall-w1",
+        "anchor.shop.wall-w2",
+        "anchor.shop.wall-s1",
+        "anchor.shop.wall-s2",
+        "anchor.shop.wall-s3",
+        "anchor.shop.plinth-1",
+        "anchor.shop.rotulo"
+      ],
+      "hotspotRefs": [
+        "hotspot.shop.lamina-horizonte",
+        "hotspot.shop.lamina-marea",
+        "hotspot.shop.lamina-noche",
+        "hotspot.shop.catalogo",
+        "hotspot.shop.postales",
+        "hotspot.shop.cuaderno",
+        "hotspot.shop.bolsa",
+        "hotspot.shop.replica-vasija",
+        "hotspot.shop.to-lobby"
+      ],
+      "portalRefs": [
+        "portal.shop-lobby"
+      ],
+      "metadata": {
+        "shop": {
+          "demo": true,
+          "currency": "EUR",
+          "productSlots": [
+            "anchor.shop.wall-n1",
+            "anchor.shop.wall-n2",
+            "anchor.shop.wall-n3",
+            "anchor.shop.wall-w1",
+            "anchor.shop.wall-w2",
+            "anchor.shop.wall-s1",
+            "anchor.shop.wall-s2",
+            "anchor.shop.wall-s3"
+          ]
+        }
       }
     }
   ],
@@ -1348,6 +1430,273 @@
         -5
       ],
       "spaceId": "space.gallery-b"
+    },
+    {
+      "id": "anchor.lobby.door-shop",
+      "spaceId": "space.lobby",
+      "kind": "WALL",
+      "position": [
+        -5.5,
+        0,
+        0
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "label": "Puerta a la tienda"
+    },
+    {
+      "id": "anchor.lobby.arrive-from-shop",
+      "spaceId": "space.lobby",
+      "kind": "SPAWN",
+      "position": [
+        -3.6,
+        0,
+        0
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "label": "Regreso desde la tienda"
+    },
+    {
+      "id": "anchor.shop.door-lobby",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -5.5,
+        0,
+        0
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "label": "Puerta al vestíbulo"
+    },
+    {
+      "id": "anchor.shop.arrive-from-lobby",
+      "spaceId": "space.shop",
+      "kind": "SPAWN",
+      "position": [
+        -7.4,
+        0,
+        0
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "label": "Entrada a la tienda"
+    },
+    {
+      "id": "anchor.shop.wall-n1",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -8.0,
+        1.5,
+        -4.5
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "extent": [
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "anchor.shop.wall-n2",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -10.5,
+        1.5,
+        -4.5
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "extent": [
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "anchor.shop.wall-n3",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -13.0,
+        1.5,
+        -4.5
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "extent": [
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "anchor.shop.wall-w1",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -15.5,
+        1.5,
+        -1.7
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "extent": [
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "anchor.shop.wall-w2",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -15.5,
+        1.5,
+        1.7
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "extent": [
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "anchor.shop.wall-s1",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -13.0,
+        1.5,
+        4.5
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "extent": [
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "anchor.shop.wall-s2",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -10.5,
+        1.5,
+        4.5
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "extent": [
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "anchor.shop.wall-s3",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -8.0,
+        1.5,
+        4.5
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "extent": [
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "anchor.shop.plinth-1",
+      "spaceId": "space.shop",
+      "kind": "PLINTH",
+      "position": [
+        -11.2,
+        0,
+        0
+      ],
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "label": "Peana central"
+    },
+    {
+      "id": "anchor.shop.rotulo",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "position": [
+        -15.5,
+        1.6,
+        0
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "extent": [
+        1.4,
+        1.0
+      ]
+    },
+    {
+      "id": "anchor.lobby.exit",
+      "spaceId": "space.lobby",
+      "kind": "WALL",
+      "position": [
+        3.6,
+        0,
+        4.5
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "label": "Salida del museo"
     }
   ],
   "entities": [
@@ -2114,6 +2463,448 @@
         "label": "Experimental",
         "description": "Slot reservado para futuras pruebas Living Art."
       }
+    },
+    {
+      "id": "entity.shop.lamina-horizonte",
+      "kind": "ARTWORK",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.wall-n1",
+      "size": [
+        1.2,
+        0.82,
+        0.04
+      ],
+      "content": {
+        "title": "Lámina «Horizonte interrumpido»",
+        "creator": "Reproducción · Amalia Serrat",
+        "year": "Edición 2026",
+        "medium": "Reproducciones",
+        "description": "Reproducción en papel de algodón de la obra de Amalia Serrat que abre la Galería A. Tirada numerada del museo.",
+        "product": {
+          "category": "Reproducciones",
+          "price": 35,
+          "currency": "EUR",
+          "visible": true,
+          "order": 1,
+          "demo": true
+        },
+        "media": {
+          "kind": "IMAGE",
+          "src": "../assets/collection/horizonte-interrumpido.jpg",
+          "aspect": 1.46,
+          "credit": "Fundación Arenas — tienda de demostración (imagen propia)",
+          "rights": "Obra propia. Generada por Escaparates Pro para la colección ficticia Fundación Arenas. Uso libre dentro del producto."
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 2.0,
+        "hotspotRefs": [
+          "hotspot.shop.lamina-horizonte"
+        ]
+      },
+      "accessibility": {
+        "label": "Lámina «Horizonte interrumpido». Producto de la tienda de demostración, 35 euros (precio ficticio).",
+        "description": "Reproducción en papel de algodón de la obra de Amalia Serrat que abre la Galería A. Tirada numerada del museo."
+      },
+      "representation": {
+        "profile": "framed-panel",
+        "hints": {
+          "composition": "field",
+          "palette": "umber",
+          "mount": "framed"
+        }
+      }
+    },
+    {
+      "id": "entity.shop.lamina-marea",
+      "kind": "ARTWORK",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.wall-n2",
+      "size": [
+        0.95,
+        0.95,
+        0.04
+      ],
+      "content": {
+        "title": "Lámina «Marea baja»",
+        "creator": "Reproducción · Teresa Miralles",
+        "year": "Edición 2026",
+        "medium": "Reproducciones",
+        "description": "Reproducción de la única pintura conservada de Teresa Miralles, expuesta en la Galería B.",
+        "product": {
+          "category": "Reproducciones",
+          "price": 35,
+          "currency": "EUR",
+          "visible": true,
+          "order": 2,
+          "demo": true
+        },
+        "media": {
+          "kind": "IMAGE",
+          "src": "../assets/collection/marea-baja.jpg",
+          "aspect": 1.0,
+          "credit": "Fundación Arenas — tienda de demostración (imagen propia)",
+          "rights": "Obra propia. Generada por Escaparates Pro para la colección ficticia Fundación Arenas. Uso libre dentro del producto."
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 2.0,
+        "hotspotRefs": [
+          "hotspot.shop.lamina-marea"
+        ]
+      },
+      "accessibility": {
+        "label": "Lámina «Marea baja». Producto de la tienda de demostración, 35 euros (precio ficticio).",
+        "description": "Reproducción de la única pintura conservada de Teresa Miralles, expuesta en la Galería B."
+      },
+      "representation": {
+        "profile": "framed-panel",
+        "hints": {
+          "composition": "field",
+          "palette": "verdigris",
+          "mount": "framed"
+        }
+      }
+    },
+    {
+      "id": "entity.shop.lamina-noche",
+      "kind": "ARTWORK",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.wall-n3",
+      "size": [
+        1.2,
+        0.82,
+        0.04
+      ],
+      "content": {
+        "title": "Lámina «Noche de invierno»",
+        "creator": "Reproducción · Jonás Vilar",
+        "year": "Edición 2026",
+        "medium": "Reproducciones",
+        "description": "Reproducción del fotograbado de Jonás Vilar de la Galería B.",
+        "product": {
+          "category": "Reproducciones",
+          "price": 30,
+          "currency": "EUR",
+          "visible": true,
+          "order": 3,
+          "demo": true
+        },
+        "media": {
+          "kind": "IMAGE",
+          "src": "../assets/collection/noche-de-invierno.jpg",
+          "aspect": 1.47,
+          "credit": "Fundación Arenas — tienda de demostración (imagen propia)",
+          "rights": "Obra propia. Generada por Escaparates Pro para la colección ficticia Fundación Arenas. Uso libre dentro del producto."
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 2.0,
+        "hotspotRefs": [
+          "hotspot.shop.lamina-noche"
+        ]
+      },
+      "accessibility": {
+        "label": "Lámina «Noche de invierno». Producto de la tienda de demostración, 30 euros (precio ficticio).",
+        "description": "Reproducción del fotograbado de Jonás Vilar de la Galería B."
+      },
+      "representation": {
+        "profile": "framed-panel",
+        "hints": {
+          "composition": "field",
+          "palette": "umber",
+          "mount": "framed"
+        }
+      }
+    },
+    {
+      "id": "entity.shop.catalogo",
+      "kind": "ARTWORK",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.wall-w1",
+      "size": [
+        0.6,
+        0.8,
+        0.04
+      ],
+      "content": {
+        "title": "Catálogo de la colección",
+        "creator": "Fundación Arenas",
+        "year": "Edición 2026",
+        "medium": "Libros",
+        "description": "Catálogo de la colección permanente, con las obras de las cuatro salas y textos de sala.",
+        "product": {
+          "category": "Libros",
+          "price": 28,
+          "currency": "EUR",
+          "visible": true,
+          "order": 4,
+          "demo": true
+        },
+        "media": {
+          "kind": "IMAGE",
+          "src": "../assets/shop/catalogo.jpg",
+          "aspect": 0.75,
+          "credit": "Fundación Arenas — tienda de demostración (imagen propia)",
+          "rights": "Obra propia. Imagen de producto generada para la tienda de demostración de la Fundación Arenas (ver assets/shop/RIGHTS.md). Uso libre dentro del producto."
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 2.0,
+        "hotspotRefs": [
+          "hotspot.shop.catalogo"
+        ]
+      },
+      "accessibility": {
+        "label": "Catálogo de la colección. Producto de la tienda de demostración, 28 euros (precio ficticio).",
+        "description": "Catálogo de la colección permanente, con las obras de las cuatro salas y textos de sala."
+      },
+      "representation": {
+        "profile": "framed-panel",
+        "hints": {
+          "composition": "field",
+          "palette": "umber",
+          "mount": "paper"
+        }
+      }
+    },
+    {
+      "id": "entity.shop.postales",
+      "kind": "ARTWORK",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.wall-w2",
+      "size": [
+        0.96,
+        0.72,
+        0.04
+      ],
+      "content": {
+        "title": "Juego de postales",
+        "creator": "Fundación Arenas",
+        "year": "Edición 2026",
+        "medium": "Papelería",
+        "description": "Seis postales con obras de la colección permanente.",
+        "product": {
+          "category": "Papelería",
+          "price": 8,
+          "currency": "EUR",
+          "visible": true,
+          "order": 5,
+          "demo": true
+        },
+        "media": {
+          "kind": "IMAGE",
+          "src": "../assets/shop/postales.jpg",
+          "aspect": 1.333,
+          "credit": "Fundación Arenas — tienda de demostración (imagen propia)",
+          "rights": "Obra propia. Imagen de producto generada para la tienda de demostración de la Fundación Arenas (ver assets/shop/RIGHTS.md). Uso libre dentro del producto."
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 2.0,
+        "hotspotRefs": [
+          "hotspot.shop.postales"
+        ]
+      },
+      "accessibility": {
+        "label": "Juego de postales. Producto de la tienda de demostración, 8 euros (precio ficticio).",
+        "description": "Seis postales con obras de la colección permanente."
+      },
+      "representation": {
+        "profile": "framed-panel",
+        "hints": {
+          "composition": "field",
+          "palette": "umber",
+          "mount": "paper"
+        }
+      }
+    },
+    {
+      "id": "entity.shop.cuaderno",
+      "kind": "ARTWORK",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.wall-s1",
+      "size": [
+        0.6,
+        0.8,
+        0.04
+      ],
+      "content": {
+        "title": "Cuaderno del museo",
+        "creator": "Fundación Arenas",
+        "year": "Edición 2026",
+        "medium": "Papelería",
+        "description": "Cuaderno de tapa dura con el monograma de la Fundación Arenas.",
+        "product": {
+          "category": "Papelería",
+          "price": 12,
+          "currency": "EUR",
+          "visible": true,
+          "order": 6,
+          "demo": true
+        },
+        "media": {
+          "kind": "IMAGE",
+          "src": "../assets/shop/cuaderno.jpg",
+          "aspect": 0.75,
+          "credit": "Fundación Arenas — tienda de demostración (imagen propia)",
+          "rights": "Obra propia. Imagen de producto generada para la tienda de demostración de la Fundación Arenas (ver assets/shop/RIGHTS.md). Uso libre dentro del producto."
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 2.0,
+        "hotspotRefs": [
+          "hotspot.shop.cuaderno"
+        ]
+      },
+      "accessibility": {
+        "label": "Cuaderno del museo. Producto de la tienda de demostración, 12 euros (precio ficticio).",
+        "description": "Cuaderno de tapa dura con el monograma de la Fundación Arenas."
+      },
+      "representation": {
+        "profile": "framed-panel",
+        "hints": {
+          "composition": "field",
+          "palette": "umber",
+          "mount": "paper"
+        }
+      }
+    },
+    {
+      "id": "entity.shop.bolsa",
+      "kind": "ARTWORK",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.wall-s2",
+      "size": [
+        0.8,
+        0.88,
+        0.04
+      ],
+      "content": {
+        "title": "Bolsa de tela",
+        "creator": "Fundación Arenas",
+        "year": "Edición 2026",
+        "medium": "Objetos",
+        "description": "Bolsa de algodón crudo con el nombre de la fundación.",
+        "product": {
+          "category": "Objetos",
+          "price": 15,
+          "currency": "EUR",
+          "visible": true,
+          "order": 7,
+          "demo": true
+        },
+        "media": {
+          "kind": "IMAGE",
+          "src": "../assets/shop/bolsa.jpg",
+          "aspect": 0.909,
+          "credit": "Fundación Arenas — tienda de demostración (imagen propia)",
+          "rights": "Obra propia. Imagen de producto generada para la tienda de demostración de la Fundación Arenas (ver assets/shop/RIGHTS.md). Uso libre dentro del producto."
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 2.0,
+        "hotspotRefs": [
+          "hotspot.shop.bolsa"
+        ]
+      },
+      "accessibility": {
+        "label": "Bolsa de tela. Producto de la tienda de demostración, 15 euros (precio ficticio).",
+        "description": "Bolsa de algodón crudo con el nombre de la fundación."
+      },
+      "representation": {
+        "profile": "framed-panel",
+        "hints": {
+          "composition": "field",
+          "palette": "umber",
+          "mount": "paper"
+        }
+      }
+    },
+    {
+      "id": "entity.shop.replica-vasija",
+      "kind": "SCULPTURE",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.plinth-1",
+      "size": [
+        0.36,
+        0.52,
+        0.36
+      ],
+      "content": {
+        "title": "Réplica de la «Vasija de arenas»",
+        "creator": "Reproducción · Teresa Miralles",
+        "year": "Edición 2026",
+        "medium": "Objetos",
+        "description": "Réplica a escala reducida de la vasija de Teresa Miralles que se expone en la Galería A.",
+        "product": {
+          "category": "Objetos",
+          "price": 95,
+          "currency": "EUR",
+          "visible": true,
+          "order": 8,
+          "demo": true
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 2.4,
+        "hotspotRefs": [
+          "hotspot.shop.replica-vasija"
+        ]
+      },
+      "accessibility": {
+        "label": "Réplica de la «Vasija de arenas». Producto de la tienda de demostración, 95 euros (precio ficticio).",
+        "description": "Réplica a escala reducida de la vasija de Teresa Miralles que se expone en la Galería A."
+      },
+      "representation": {
+        "profile": "plinth-vessel-premium-v1",
+        "hints": {
+          "plinthHeight": 0.9
+        }
+      }
+    },
+    {
+      "id": "entity.shop.rotulo",
+      "kind": "TEXT",
+      "subtype": "wall-panel",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.rotulo",
+      "size": [
+        1.4,
+        1.0,
+        0.02
+      ],
+      "content": {
+        "title": "Tienda del museo",
+        "creator": "Fundación Arenas",
+        "year": "Demostración",
+        "medium": "Precios ficticios",
+        "description": "Esta tienda es una demostración: muestra productos y precios ficticios. No se realizan compras ni se piden datos personales."
+      },
+      "interaction": {
+        "focusable": false,
+        "hotspotRefs": []
+      },
+      "accessibility": {
+        "label": "Rótulo de la tienda del museo",
+        "description": "Tienda de demostración: productos y precios ficticios; no se realizan compras."
+      }
     }
   ],
   "hotspots": [
@@ -2541,6 +3332,192 @@
         "target": "portal.gallery-b-itinerant"
       },
       "accessibilityLabel": "Ir a la Sala Itinerante — Wet Paint"
+    },
+    {
+      "id": "hotspot.shop.lamina-horizonte",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.lamina-horizonte",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.lamina-horizonte"
+      },
+      "accessibilityLabel": "Ver de cerca Lámina «Horizonte interrumpido»"
+    },
+    {
+      "id": "hotspot.shop.lamina-marea",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.lamina-marea",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.lamina-marea"
+      },
+      "accessibilityLabel": "Ver de cerca Lámina «Marea baja»"
+    },
+    {
+      "id": "hotspot.shop.lamina-noche",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.lamina-noche",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.lamina-noche"
+      },
+      "accessibilityLabel": "Ver de cerca Lámina «Noche de invierno»"
+    },
+    {
+      "id": "hotspot.shop.catalogo",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.catalogo",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.catalogo"
+      },
+      "accessibilityLabel": "Ver de cerca Catálogo de la colección"
+    },
+    {
+      "id": "hotspot.shop.postales",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.postales",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.postales"
+      },
+      "accessibilityLabel": "Ver de cerca Juego de postales"
+    },
+    {
+      "id": "hotspot.shop.cuaderno",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.cuaderno",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.cuaderno"
+      },
+      "accessibilityLabel": "Ver de cerca Cuaderno del museo"
+    },
+    {
+      "id": "hotspot.shop.bolsa",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.bolsa",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.bolsa"
+      },
+      "accessibilityLabel": "Ver de cerca Bolsa de tela"
+    },
+    {
+      "id": "hotspot.shop.replica-vasija",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.replica-vasija",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.replica-vasija"
+      },
+      "accessibilityLabel": "Ver de cerca Réplica de la «Vasija de arenas»"
+    },
+    {
+      "id": "hotspot.lobby.to-shop",
+      "spaceId": "space.lobby",
+      "anchorId": "anchor.lobby.door-shop",
+      "type": "PORTAL",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.1
+      },
+      "triggerDistance": 2.1,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "ACTIVATE_PORTAL",
+        "target": "portal.lobby-shop"
+      },
+      "accessibilityLabel": "Entrar en la tienda del museo"
+    },
+    {
+      "id": "hotspot.shop.to-lobby",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.door-lobby",
+      "type": "PORTAL",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.1
+      },
+      "triggerDistance": 2.1,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "ACTIVATE_PORTAL",
+        "target": "portal.shop-lobby"
+      },
+      "accessibilityLabel": "Volver al vestíbulo"
+    },
+    {
+      "id": "hotspot.lobby.exit",
+      "spaceId": "space.lobby",
+      "anchorId": "anchor.lobby.exit",
+      "type": "ACTION",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.2
+      },
+      "triggerDistance": 2.2,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "END_VISIT"
+      },
+      "accessibilityLabel": "Salir del museo"
     }
   ],
   "portals": [
@@ -2663,6 +3640,30 @@
       "returnPolicy": "RETURN_TO_SOURCE",
       "prefetchPolicy": "ON_APPROACH",
       "accessibilityLabel": "Paso abierto de la Sala Itinerante a la Galería B"
+    },
+    {
+      "id": "portal.lobby-shop",
+      "fromSpaceId": "space.lobby",
+      "toSpaceId": "space.shop",
+      "sourceAnchorId": "anchor.lobby.door-shop",
+      "destinationSpawnId": "anchor.shop.arrive-from-lobby",
+      "transitionBehaviour": "CONTINUOUS",
+      "representationHint": "DOOR",
+      "prefetchPolicy": "ON_APPROACH",
+      "returnPolicy": "RETURN_TO_SOURCE",
+      "accessibilityLabel": "Puerta del vestíbulo a la tienda del museo"
+    },
+    {
+      "id": "portal.shop-lobby",
+      "fromSpaceId": "space.shop",
+      "toSpaceId": "space.lobby",
+      "sourceAnchorId": "anchor.shop.door-lobby",
+      "destinationSpawnId": "anchor.lobby.arrive-from-shop",
+      "transitionBehaviour": "CONTINUOUS",
+      "representationHint": "DOOR",
+      "prefetchPolicy": "EAGER",
+      "returnPolicy": "RETURN_TO_SOURCE",
+      "accessibilityLabel": "Puerta de la tienda al vestíbulo"
     }
   ],
   "chapters": [

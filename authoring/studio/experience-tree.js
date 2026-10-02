@@ -68,13 +68,15 @@ export function buildExperienceTree(world, config) {
       // project nobody had touched.
       const changed = ['title', 'creator', 'year', 'medium', 'description'].some(
         (f) => authored[f] != null && authored[f] !== '' && authored[f] !== entity.content?.[f]
-      ) || Boolean(authored.image) || Boolean(authored.video);
+      ) || Boolean(authored.image) || Boolean(authored.video)
+        || Object.values(authored.product || {}).some((v) => v !== null && v !== undefined);
       return {
         kind: NODE.ENTITY,
         id: entity.id,
         entityKind: entity.kind,
         label: title,
-        sublabel: KIND_LABEL[entity.kind] || entity.kind,
+        sublabel: entity.content?.product ? 'Producto' : KIND_LABEL[entity.kind] || entity.kind,
+        isProduct: Boolean(entity.content?.product),
         spaceId: space.id,
         slots: SLOTS_FOR_KIND[entity.kind] || [],
         editedAt: EDITED_ELSEWHERE[entity.kind] || null,

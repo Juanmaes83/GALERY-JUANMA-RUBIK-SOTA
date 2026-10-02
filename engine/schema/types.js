@@ -84,7 +84,10 @@ export const ACTION = Object.freeze({
   ACTIVATE_PORTAL: 'ACTIVATE_PORTAL',
   START_ROUTE: 'START_ROUTE',
   TRIGGER_STORY: 'TRIGGER_STORY',
-  SET_STATE: 'SET_STATE'
+  SET_STATE: 'SET_STATE',
+  // The visitor asks to leave the museum. The engine only announces it; what
+  // leaving means (a farewell, a summary, a restart) belongs to the app.
+  END_VISIT: 'END_VISIT'
 });
 
 /**

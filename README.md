@@ -7,6 +7,7 @@ Un museo web en 3D de varias salas que se recorre en primera persona o con avata
 > - **Avatar**: alojado en el repositorio y navegable en las seis salas según las pruebas automáticas. **Pendiente de validación visual humana.**
 > - **Marble Bust 01** pendiente del veredicto visual humano KEEP o ADJUST.
 > - **Sala Breeze** integrada (Breeze Studio PRO V4.1, requiere WebGPU). **No validada**: falta la prueba en una GPU real. Licencias de la Venus, Poly Haven y Fabric Lace **pendientes**.
+> - **Tienda del museo** (sala nueva, simulada: sin compra), administrable desde el Studio; **salida** de la visita y **señales verdes** hacia ella en todas las salas.
 > - Lo que se personaliza en el Studio **solo se guarda en el navegador del autor**; todavía no hay publicación.
 
 Todo el contenido de la Fundación Arenas es ficticio.
@@ -49,6 +50,7 @@ CI: `.github/workflows/test.yml` ejecuta `npm test` en cada PR.
 | Mirar o girar | Ratón (o `←` `→`) | Arrastrar en la mitad derecha |
 | Activar lo cercano (obra o puerta) | `E` o `Enter` | Tocar el aviso «Entrar en…» / «Observar de cerca…» |
 | Salir del detalle o del recorrido | `Esc` | «Volver a la sala» |
+| Terminar la visita | Puerta «Salida» del Vestíbulo (`E`) o botón «Salir» | Tocar «Salir» |
 | Mapa | `M` | Botón «Mapa» (la barra de botones se desliza en horizontal) |
 | Recorrido comentado | `G` | Botón «Recorrido comentado» |
 | En detalle: obra anterior o siguiente / acercar | `←` `→` / rueda | Flechas laterales / `−` `+` |
@@ -58,6 +60,7 @@ CI: `.github/workflows/test.yml` ejecuta `npm test` en cada PR.
 | Sala | Estado |
 |---|---|
 | Vestíbulo · Galería A (4 obras, *Vasija de arenas*, **Marble Bust 01**) · Galería B (2 obras y proyección) · Archivo (sala de escucha) · Itinerante **Wet Paint** | Operativas |
+| **Tienda del museo** (junto al Vestíbulo): 8 productos de demostración con fichas y precios ficticios | Operativa; simulada, sin compra. Administrable desde el Studio ([06](docs/06-SALAS_ESPECIALES.md#tienda-del-museo)) |
 | **Breeze**: tela y viento sobre escultura, con Breeze Studio PRO y WebGPU | Integrada, **no validada en GPU real**. Sin WebGPU, o si la GPU detiene la simulación, la sala lo explica y ofrece salida ([06](docs/06-SALAS_ESPECIALES.md)) |
 
 ## Documentación

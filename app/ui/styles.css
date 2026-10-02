@@ -231,6 +231,7 @@ kbd {
 .iw-label h2 { margin: 0 0 0.35rem; font: 400 1.32rem/1.25 var(--iw-serif); text-wrap: balance; }
 .iw-label__meta { margin: 0 0 0.5rem; font: italic 400 0.86rem/1.4 var(--iw-serif); color: #cfc8bc; }
 .iw-label__dims { margin: 0; font-size: 0.7rem; letter-spacing: 0.06em; color: var(--iw-ink-dim); }
+.iw-label__price { margin: 0.4rem 0 0; font-size: 0.72rem; letter-spacing: 0.04em; color: #d9c9a5; }
 .iw-label__more { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--iw-line); }
 .iw-label__more p { margin: 0 0 0.6rem; font-size: 0.82rem; line-height: 1.7; color: #d5cfc4; }
 .iw-label__credit { font-size: 0.68rem !important; color: var(--iw-ink-dim) !important; }
@@ -384,6 +385,13 @@ body[data-focused="true"] .iw-topbar__mark { opacity: 0.32; }
 .iw-a11y__keys { list-style: none; margin: 0; padding: 0; }
 .iw-a11y__keys li { display: flex; gap: 1rem; align-items: baseline; }
 .iw-a11y__keys em { font-style: normal; color: var(--iw-ink-dim); font-size: 0.82rem; }
+
+/* -- leaving -------------------------------------------------------------- */
+.iw-end { display: grid; place-items: center; }
+.iw-end__panel { max-width: 30rem; height: auto; }
+.iw-end__panel p { margin: 0.8rem 0 1.6rem; line-height: 1.6; color: #cfc9be; }
+.iw-end__actions { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: flex-end; }
+.iw-btn--exit { border-color: rgba(11, 122, 62, 0.75); }
 
 /* -- responsive ----------------------------------------------------------- */
 

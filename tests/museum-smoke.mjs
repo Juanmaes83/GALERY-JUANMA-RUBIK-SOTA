@@ -99,6 +99,25 @@ try {
     const broken = invariants.results.filter((r) => !r.pass).map((r) => r.id);
     check('INVARIANTS', 'Invariantes arquitectónicas', invariants.ok, broken.length ? broken.join(', ') : `${invariants.results.length} comprobadas`);
 
+    // Museum shop: a room of the museum, reached from the Vestíbulo and left the same way.
+    const shopActive = await travel(page, 'portal.lobby-shop');
+    const shop = await page.evaluate(async () => {
+      const rt = window.__IW.runtime;
+      const products = rt.store.entitiesOf('space.shop').filter((e) => e.content?.product);
+      rt.focusEntity('entity.shop.catalogo');
+      await new Promise((r) => setTimeout(r, 2500));
+      const price = window.__IW.hud.el.detailPrice.textContent;
+      rt.releaseFocus();
+      window.__IW.hud.renderAccessibilityOutline?.();
+      const text = window.__IW.hud.el.a11yBody.textContent;
+      return { products: products.length, price, inText: /Catálogo de la colección/.test(text) && /precio de demostración/.test(text) };
+    });
+    check('SHOP-ROOM', 'La tienda del museo se visita desde el Vestíbulo', shopActive === 'space.shop' && shop.products === 8, `${shopActive} · ${shop.products} productos`);
+    check('SHOP-SHEET', 'La ficha de producto muestra el precio marcado como demostración (sin compra)', /demostración/.test(shop.price) && /sin compra/.test(shop.price), shop.price);
+    check('SHOP-TEXT', 'El catálogo también está en «Contenido en texto», con precio de demostración', shop.inText);
+    const shopBack = await travel(page, 'portal.shop-lobby');
+    check('SHOP-EXIT', 'Se vuelve de la tienda al Vestíbulo', shopBack === 'space.lobby', shopBack);
+
     const journey = [
       ['portal.lobby-gallery-a', 'space.gallery-a'],
       ['portal.gallery-a-archive', 'space.archive'],
@@ -197,6 +216,81 @@ try {
     await page.close();
   }
 
+  /* 1c. Orientation: outline, exit signs on real routes, the way out --------- */
+  {
+    const { page, consoleErrors } = await openMuseum();
+    await page.evaluate(() => window.__IW.hud.el.enter.click());
+    await travel(page, 'portal.lobby-gallery-a');
+    // After a crossing the camera belongs to the crossing until it lands.
+    const explore = () => page.waitForFunction(() => window.__IW.runtime.camera.report().owner === 'EXPLORE', null, { timeout: 30000 }).catch(() => {});
+    await explore();
+    const outline = await page.evaluate(async () => {
+      const rt = window.__IW.runtime; const id = 'entity.artwork.estudio-de-figura';
+      const place = (d) => { const a = rt.sceneKit.poseForAnchor(rt.store.require(id).anchorId); rt.explore.placeAt([a.position[0] + a.normal[0] * d, 0, a.position[2] + a.normal[2] * d], [-a.normal[0], 0, -a.normal[2]]); };
+      const read = () => { const rec = rt.sceneKit._entityIndex.get(id); let glow = false; rec?.object.traverse((n) => { if (n.isMesh && n.material === rec.frameGlow) glow = true; }); return { nearest: rt.proximity.nearestHotspot?.entityId || null, outlined: rt.sceneKit.nearestEntityId, glow }; };
+      rt.explore.placeAt([0, 0, -10], [1, 0, -0.6]); await new Promise((r) => setTimeout(r, 1200)); const far = read();
+      place(2.0); await new Promise((r) => setTimeout(r, 1200)); const near = read();
+      rt.focusEntity(id); await new Promise((r) => setTimeout(r, 1500)); const focused = read();
+      rt.releaseFocus();
+      return { far, near, focused };
+    });
+    check('WORK-OUTLINE', 'Se resalta solo la obra que nombra el aviso, la de enfrente aunque haya otra en la esquina; nada con la ficha abierta',
+      outline.far.outlined !== 'entity.artwork.estudio-de-figura' && outline.far.outlined === outline.far.nearest && outline.near.outlined === 'entity.artwork.estudio-de-figura' && outline.near.nearest === outline.near.outlined && outline.near.glow && !outline.focused.outlined,
+      JSON.stringify(outline));
+
+    // Every exit sign stands by the doorway that starts the shortest route to
+    // the room with the exit, and following the signs reaches the exit.
+    const signs = [];
+    for (const [portal, space] of [['portal.gallery-a-gallery-b', 'space.gallery-b'], ['portal.gallery-b-itinerant', 'space.itinerant-wet-paint'], ['portal.itinerant-gallery-b', 'space.gallery-b'], ['portal.gallery-b-gallery-a', 'space.gallery-a'], ['portal.gallery-a-archive', 'space.archive'], ['portal.archive-gallery-a', 'space.gallery-a'], ['portal.gallery-a-lobby', 'space.lobby'], ['portal.lobby-shop', 'space.shop']]) {
+      await travel(page, portal);
+      signs.push(await page.evaluate((sp) => ({ space: sp, ...(window.__IW.runtime.sceneKit.wayfindingReport()[sp] || {}) }), space));
+    }
+    const graphOk = await page.evaluate((rows) => {
+      const store = window.__IW.runtime.store;
+      const exitRooms = new Set(store.hotspots.filter((h) => h.action?.type === 'END_VISIT').map((h) => h.spaceId));
+      const dist = (from) => { const seen = new Map([[from, 0]]); const q = [from]; while (q.length) { const h = q.shift(); if (exitRooms.has(h)) return seen.get(h); for (const p of store.portalsOf(h)) if (!seen.has(p.toSpaceId)) { seen.set(p.toSpaceId, seen.get(h) + 1); q.push(p.toSpaceId); } } return Infinity; };
+      return rows.map((r) => {
+        if (exitRooms.has(r.space)) return { space: r.space, ok: (r.exitDoors || []).length > 0 && !r.sign };
+        const portal = r.sign && store.get(r.sign.portalId);
+        return { space: r.space, ok: Boolean(portal) && portal.fromSpaceId === r.space && dist(portal.toSpaceId) === dist(r.space) - 1 };
+      });
+    }, signs);
+    check('EXIT-SIGNS', 'Cada señal de salida apunta a la puerta que acerca a la salida (ruta comprobada en el grafo)', graphOk.every((g) => g.ok), JSON.stringify(graphOk.filter((g) => !g.ok).length ? graphOk : graphOk.map((g) => g.space.replace('space.', ''))));
+    // Follow the signs from the shop's neighbour (Archivo) to the exit room.
+    let here = 'space.archive'; const path = [here];
+    await travel(page, 'portal.shop-lobby'); await travel(page, 'portal.lobby-gallery-a'); await travel(page, 'portal.gallery-a-archive');
+    for (let hop = 0; hop < 6 && here !== 'space.lobby'; hop += 1) {
+      const next = await page.evaluate((sp) => window.__IW.runtime.sceneKit.wayfindingReport()[sp]?.sign?.portalId || null, here);
+      if (!next) break;
+      here = await travel(page, next); path.push(here);
+    }
+    check('EXIT-ROUTE', 'Siguiendo las señales se llega a la sala con la salida', here === 'space.lobby', path.join(' → '));
+
+    // The way out: E at the exit door asks first; Esc keeps visiting; «Salir» works from anywhere.
+    await explore();
+    const exitFlow = await page.evaluate(async () => {
+      const rt = window.__IW.runtime; const hud = window.__IW.hud;
+      const a = rt.store.require('anchor.lobby.exit');
+      rt.explore.placeAt([a.position[0], 0, a.position[2] - 1.2], [0, 0, 1]);
+      await new Promise((r) => setTimeout(r, 1200));
+      const prompt = hud.el.prompt.hidden ? null : hud.el.prompt.textContent.trim();
+      return { prompt };
+    });
+    await page.keyboard.press('KeyE');
+    await page.waitForTimeout(400);
+    const dialog = await page.evaluate(() => ({ open: window.__IW.hud.endVisitOpen, text: window.__IW.hud.el.endSummary.textContent }));
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    const closed = await page.evaluate(() => !window.__IW.hud.endVisitOpen);
+    await page.locator('[data-el="leaveBtn"]').click();
+    await page.locator('[data-el="endLeave"]').click();
+    const farewell = await page.evaluate(() => ({ open: window.__IW.hud.endVisitOpen, title: window.__IW.hud.el.endTitle.textContent, button: window.__IW.hud.el.endLeave.textContent }));
+    check('EXIT-DOOR', 'La puerta de salida del Vestíbulo pide confirmación con E y Esc permite seguir', /Salir del museo/.test(exitFlow.prompt || '') && dialog.open && closed, `${exitFlow.prompt} · ${dialog.text}`);
+    check('EXIT-FAREWELL', '«Salir» → «Terminar la visita» despide y ofrece volver a empezar', farewell.open && /Gracias/.test(farewell.title) && /Volver a empezar/.test(farewell.button), JSON.stringify(farewell));
+    check('ORIENTATION CONSOLE', 'Sin errores de consola', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
+    await page.close();
+  }
+
   /* 2. Marble Bust 01: GLB and forced fallback ------------------------------ */
   for (const [query, expected] of [['?state=museum:marble-bust-detail', 'GLB'], ['?state=museum:marble-bust-detail&glbStone=fallback', 'FALLBACK']]) {
     const { page, consoleErrors } = await openMuseum(query);
@@ -246,6 +340,14 @@ try {
     await ready();
     const restored = await page.locator('[data-bind="institution.claim"]').first().inputValue().catch(() => null);
     check('STUDIO-RELOAD', 'La edición sobrevive a la recarga', restored === claim, restored);
+
+    // A product edited in the Studio reaches the visitor's shop: price, order
+    // and visibility are applied from the saved project.
+    await page.locator('#st .st-nodebtn[data-node="entity.shop.lamina-marea"]').first().click();
+    await page.locator('#st [data-bind="entities.entity.shop.lamina-marea.product.price"]').fill('42');
+    await page.locator('#st [data-bind="entities.entity.shop.lamina-marea.product.order"]').fill('0');
+    await page.locator('#st .st-nodebtn[data-node="entity.shop.postales"]').first().click();
+    await page.locator('#st [data-bind="entities.entity.shop.postales.product.visible"]').uncheck();
 
     // Replacing a file: while the new one loads, the slot must already describe
     // it, never the previous record (whose asset has just been released).
@@ -302,6 +404,12 @@ try {
     await page.waitForTimeout(1500);
     const kept = await page.evaluate(() => String(window.__IW.runtime.store.get('entity.artwork.horizonte-interrumpido')?.content?.media?.src || ''));
     const authoredErrors = consoleErrors.slice(before).filter((e) => /authored:/.test(e));
+    const shopAfter = await page.evaluate(() => {
+      const st = window.__IW.runtime.store; const m = st.get('entity.shop.lamina-marea');
+      return { price: m?.content?.product?.price, anchor: m?.anchorId, postales: Boolean(st.get('entity.shop.postales')), postalesHotspot: Boolean(st.get('hotspot.shop.postales')) };
+    });
+    check('SHOP-STUDIO', 'Precio, orden y visibilidad editados en el Studio llegan a la tienda del visitante tras recargar',
+      shopAfter.price === 42 && shopAfter.anchor === 'anchor.shop.wall-n1' && !shopAfter.postales && !shopAfter.postalesHotspot, JSON.stringify(shopAfter));
     check('STALE-UPLOAD', 'Tras recargar, un archivo de otra sesión no rompe la obra: se ve el original', /horizonte-interrumpido\.jpg$/.test(kept) && authoredErrors.length === 0,
       `${kept}${authoredErrors.length ? ` · ${authoredErrors[0]}` : ''}`);
     check('STUDIO-CONSOLE', 'Sin errores de consola en el Studio', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
@@ -320,7 +428,7 @@ try {
     check('AVATAR-READY', 'El avatar se monta desde el repositorio y la entrada se habilita', mounted && label === 'Entrar con mi avatar', label);
     if (mounted) {
       await page.evaluate(() => window.__IW.hud.el.enter.click());
-      const route = ['portal.gallery-a-lobby', 'portal.lobby-gallery-a', 'portal.gallery-a-archive', 'portal.archive-gallery-a',
+      const route = ['portal.gallery-a-lobby', 'portal.lobby-shop', 'portal.shop-lobby', 'portal.lobby-gallery-a', 'portal.gallery-a-archive', 'portal.archive-gallery-a',
         'portal.gallery-a-gallery-b', 'portal.gallery-b-itinerant', 'portal.itinerant-gallery-b', 'portal.gallery-b-breeze', 'portal.breeze-gallery-b'];
       for (const id of route) {
         const active = await travel(page, id);

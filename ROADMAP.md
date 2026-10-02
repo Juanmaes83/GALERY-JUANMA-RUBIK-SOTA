@@ -37,6 +37,28 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 
 ---
 
+## MVP visitable y presentable (definición, 2026-10-02)
+
+**El MVP es esto:** una persona abre el museo desde **un enlace** y entiende cómo empezar. Elige primera persona o avatar, recorre las salas principales, consulta las obras y sale o vuelve sin quedar bloqueada, con teclado y con pantalla táctil.
+
+| Prioridad | Qué | Problema que resuelve | Impacto para el visitante | Esfuerzo | Dependencia | Estado |
+|---|---|---|---|---|---|---|
+| **Necesario** | Preview pública por enlace (Vercel, sin build, salida `.`) | Hoy solo se ve en local | Sin enlace no hay MVP que enseñar | Bajo | Crear o conectar el proyecto en Vercel | ⏳ autorización |
+| **Necesario** | Validar en un **navegador con GPU real**: avatar en las 7 salas, Breeze y móvil | SwiftShader no prueba WebGPU ni el rendimiento real | Breeze y avatar no se pueden presentar como validados sin esto | Bajo (una sesión) | Preview | ⏳ |
+| **Necesario** | Salida de la visita, señales hacia ella y resaltado de la obra cercana | El visitante no sabía cómo terminar ni qué obra abría E | Orientación y control | — | — | ✅ (A-39 a A-42) |
+| **Necesario** | Puertas táctiles y avatar con el pulgar | En móvil no se podía cruzar ni mover el avatar | Móvil usable | — | — | ✅ (A-20 a A-27) |
+| **Necesario** | Licencias de Venus, Poly Haven y Fabric Lace | No verificables desde este entorno | Bloquea publicar Breeze | Bajo | Consulta en navegador | ⛔ pendiente |
+| Recomendado | Avatar ≤ 5 MB (hoy 30 MB y sin caché) | Entrada lenta con avatar | Tiempo de espera | Medio | Herramienta glTF | ○ |
+| Recomendado | Wet Paint bajo demanda (A-14) | 660 KB y un contexto WebGL para todos | Arranque y memoria en móvil | Medio | — | ○ |
+| Recomendado | Panel de Breeze en español (A-17) | Mezcla de idiomas | Coherencia | Bajo | Producto donante | ○ |
+| Recomendado | Galería B más legible al llegar desde Breeze | Se llega mirando a la zona más oscura | Orientación | Bajo | Validación visual | ○ |
+| Posterior | Publicación real y medios durables (fase 2) | Lo personalizado solo vive en el navegador del autor | Clave para vender el Studio | Alto | **Decisión de backend** (2.1) | ⏳ |
+| Posterior | Carrito **simulado** en la tienda | Demostrar un flujo comercial | Bajo para la visita | Medio | Diseño | ○ |
+| Posterior | Crear o borrar obras y productos desde el Studio (2.8) | Hoy se añaden en el World | Autonomía del cliente | Alto | Plantillas de sala | ○ |
+| Bloqueado | Veredictos humanos (Marble Bust 01, Studio fase 2, bloque 2B) | — | — | — | Juanma | ⏳ |
+
+**¿La tienda en el MVP?** Sí, como **sala simulada**, porque ya funciona con el Studio y no altera el recorrido principal. Quedan para después de la publicación real el carrito simulado y la edición durable de imágenes de producto.
+
 ## Fase 0 — Repositorio canónico operativo · *ahora*
 
 | # | Tarea | Estado |

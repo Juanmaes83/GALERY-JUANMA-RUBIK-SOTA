@@ -146,11 +146,13 @@ export async function boot() {
     explore: runtime.explore,
     focus: runtime.focus,
     onActivate: () => {
+      if (hud.endVisitOpen) return;
       if (runtime.state.mode === EXPERIENCE_MODE.GUIDED) return;
       if (runtime.state.focusedEntityId) runtime.releaseFocus();
       else runtime.activateNearest();
     },
     onEscape: () => {
+      if (hud.endVisitOpen) return hud.hideEndVisit();
       if (hud.mapOpen) return hud.toggleMap(false);
       if (!hud.el.a11y.hidden) return hud.toggleAccessibility(false);
       if (runtime.state.mode === EXPERIENCE_MODE.GUIDED) return runtime.exitRoute();
@@ -178,6 +180,18 @@ export async function boot() {
   });
   // The proximity prompt is a button too (touch has no E key): same action.
   hud.onActivate = () => input.callbacks.onActivate?.();
+
+  // The work the prompt names is outlined, so «E · Observar de cerca …» is never
+  // ambiguous between two works in range. Nothing is outlined while a work is
+  // open or while the guided route holds the camera.
+  const outlineNearest = () => {
+    const hotspot = runtime.proximity.nearestHotspot;
+    const quiet = runtime.state.focusedEntityId || runtime.state.mode === EXPERIENCE_MODE.GUIDED;
+    sceneKit.setNearestEntity?.(quiet ? null : hotspot?.entityId || null);
+  };
+  runtime.bus.on(EVENTS.WORLD_STATE_CHANGED, outlineNearest);
+  runtime.bus.on(EVENTS.ENTITY_FOCUSED, outlineNearest);
+  runtime.bus.on(EVENTS.ENTITY_FOCUS_LEFT, outlineNearest);
 
   // Input belongs to the visitor only while the visitor owns the camera.
   runtime.bus.on(EVENTS.CAMERA_AUTHORITY_CHANGED, ({ to }) => {

@@ -208,6 +208,26 @@ function normaliseBreeze(b) {
   };
 }
 
+export const PRODUCT_CATEGORIES = Object.freeze({
+  Reproducciones: 'Reproducciones', Libros: 'Libros', 'Papelería': 'Papelería', Objetos: 'Objetos'
+});
+
+/**
+ * A museum-shop product's commercial facts, authored in the Studio. Each field
+ * is null until the author takes it over, so the world's own record shows
+ * through. Prices are demonstration figures: the shop sells nothing.
+ */
+function normaliseProduct(p) {
+  if (!p) return null;
+  const price = p.price === null || p.price === '' || p.price === undefined ? null : Math.max(0, Math.min(num(p.price, 0), 99999));
+  const order = p.order === null || p.order === '' || p.order === undefined ? null : Math.round(num(p.order, 0));
+  return {
+    category: PRODUCT_CATEGORIES[p.category] ? p.category : null,
+    price, order,
+    visible: p.visible === true || p.visible === false ? p.visible : null
+  };
+}
+
 function normaliseEntity(e) {
   return {
     title: e?.title ?? null, creator: e?.creator ?? null, year: e?.year ?? null, medium: e?.medium ?? null,
@@ -219,6 +239,7 @@ function normaliseEntity(e) {
       label: text(e?.accessibility?.label, 240), description: text(e?.accessibility?.description, 1000), transcript: text(e?.accessibility?.transcript, 3000)
     },
     presentation: normalisePresentation(e?.presentation),
+    ...(e?.product ? { product: normaliseProduct(e.product) } : {}),
     ...(e?.breeze ? { breeze: normaliseBreeze(e.breeze) } : {})
   };
 }
@@ -384,8 +405,43 @@ export function applyConfigToWorld(world, config, resolveMedia = () => null) {
     const { width, height, depth } = authored.sizeCm;
     if (width > 0 && height > 0) entity.size = depth > 0 ? [width/100,height/100,depth/100] : [width/100,height/100];
     entity.accessibility = { ...(entity.accessibility || {}), ...authored.accessibility };
+    if (authored.product && content.product) {
+      const merged = { ...content.product };
+      for (const key of ['category', 'price', 'order', 'visible']) if (authored.product[key] !== null) merged[key] = authored.product[key];
+      // The category is what the wall label and the sheet print under the title.
+      if (authored.product.category && !authored.medium) content.medium = authored.product.category;
+      content.product = merged;
+    }
   }
+  arrangeShops(next);
   return next;
+}
+
+/**
+ * The shop shows what the Studio says is visible, in the order it says. A
+ * hidden product leaves the world (with its hotspot), so no wall, sheet, map
+ * count or text version shows it. Visible wall products take the room's
+ * product slots in authored order; floor pieces keep their own plinth.
+ */
+function arrangeShops(world) {
+  for (const space of world.spaces || []) {
+    const slots = space.metadata?.shop?.productSlots;
+    if (!Array.isArray(slots)) continue;
+    const products = (world.entities || []).filter((e) => e.spaceId === space.id && e.content?.product);
+    const hidden = new Set(products.filter((e) => e.content.product.visible === false).map((e) => e.id));
+    if (hidden.size) {
+      const hiddenHotspots = new Set((world.hotspots || []).filter((h) => hidden.has(h.entityId)).map((h) => h.id));
+      world.entities = world.entities.filter((e) => !hidden.has(e.id));
+      world.hotspots = (world.hotspots || []).filter((h) => !hiddenHotspots.has(h.id));
+      space.entityRefs = (space.entityRefs || []).filter((id) => !hidden.has(id));
+      space.hotspotRefs = (space.hotspotRefs || []).filter((id) => !hiddenHotspots.has(id));
+    }
+    const wall = products
+      .filter((e) => !hidden.has(e.id) && e.kind === 'ARTWORK')
+      .map((e, index) => ({ e, index, order: Number.isFinite(Number(e.content.product.order)) ? Number(e.content.product.order) : 1e6 + index }))
+      .sort((a, b) => a.order - b.order || a.index - b.index);
+    wall.forEach(({ e }, i) => { if (slots[i]) e.anchorId = slots[i]; });
+  }
 }
 
 export function exportConfigJSON(config) { return JSON.stringify(normaliseConfig(config), null, 2); }

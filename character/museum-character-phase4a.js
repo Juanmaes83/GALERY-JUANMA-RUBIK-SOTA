@@ -248,7 +248,8 @@ export async function mountMuseumCharacterPhase4A({ runtime, sceneKit = runtime?
 
     motion.update(frameDt);
     root.updateMatrixWorld(true);
-    runtime.proximity.update(frameDt, [root.position.x, groundY + runtime.explore.eyeHeight, root.position.z]);
+    runtime.proximity.update(frameDt, [root.position.x, groundY + runtime.explore.eyeHeight, root.position.z],
+      [Math.sin(root.rotation.y), 0, Math.cos(root.rotation.y)]);
     previousMoving = forward !== 0;
     previousTurn = turn;
   }

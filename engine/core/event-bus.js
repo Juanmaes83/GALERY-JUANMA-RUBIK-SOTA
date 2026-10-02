@@ -52,7 +52,9 @@ export const EVENTS = Object.freeze({
   QUALITY_TIER_CHANGED: 'quality:tier-changed',
 
   ASSET_READY: 'asset:ready',
-  ASSET_ERROR: 'asset:error'
+  ASSET_ERROR: 'asset:error',
+
+  VISIT_END_REQUESTED: 'visit:end-requested'
 });
 
 const KNOWN = new Set(Object.values(EVENTS));

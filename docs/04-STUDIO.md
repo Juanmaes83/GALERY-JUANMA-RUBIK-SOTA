@@ -68,8 +68,22 @@ Las salas especiales tienen controles nativos:
 
 ## Qué edita y qué no
 
-- **Sí:** textos, metadatos, medios de obras **existentes**, presentación física, accesibilidad, artistas, documentos, idiomas, información del visitante, luz y proyección, ritmo del recorrido, avatar, y los recursos y destinos comerciales.
-- **No:** crear o borrar obras o salas, mover anclajes ni cambiar la arquitectura 3D. Eso se hace en el World (ver [03](03-MUNDO_Y_CONTENIDO.md)).
+- **Sí:** textos, metadatos, medios de obras **existentes**, presentación física, accesibilidad, artistas, documentos, idiomas, información del visitante, luz y proyección, ritmo del recorrido, avatar, recursos y destinos comerciales, y los **productos de la tienda** (ver [06](06-SALAS_ESPECIALES.md#tienda-del-museo)).
+- **No:** crear o borrar obras, productos o salas, cambiar una obra de sala, moverla de posición o cambiar la arquitectura 3D. Eso se hace en el World (ver [03](03-MUNDO_Y_CONTENIDO.md)). El orden de los productos sí se edita: reasigna los huecos de la tienda.
+
+Campos reales de una obra, comprobados en el código (`authoring/experience-config.js`, `normaliseEntity`):
+
+| Campo | Editable | Llega a la visita |
+|---|---|---|
+| Título, autoría, año, técnica, texto curatorial | ✅ | Cartela 3D, ficha y «Contenido en texto» |
+| Imagen o vídeo | ✅ (uno de los dos) | Pared; **solo durante la sesión** del Studio |
+| Medidas (cm) | ✅ (Personalizar más) | Tamaño en la pared |
+| Accesibilidad (etiqueta, descripción, transcripción) | ✅ | Texto y lectores de pantalla |
+| Montaje (enmarcado, papel, sin marco) | ✅ | Presentación |
+| Artista y documentos vinculados | ✅ | Ficha y fichas de artista |
+| Proyección (encaje, brillo, derrame, reflejo, bucle) | ✅ solo en proyecciones | Sala |
+| Wet Paint (fuente y efecto) | ✅ solo en la Itinerante | Cuadro de la sala (persiste en el navegador) |
+| Sala y posición | ❌ | Se fijan en el World |
 
 ## Persistencia: cómo guarda
 
@@ -103,6 +117,10 @@ Esa es la **brecha principal del producto**:
 - que el Studio monta las seis áreas;
 - que el Avatar Studio está listo;
 - que una edición se guarda y sobrevive a la recarga;
+- que, al sustituir un archivo, la ranura sigue al archivo nuevo, y que el consejo de códec es coherente;
+- que guardar no se confunde con aplicar;
+- que un archivo de otra sesión no rompe la obra;
+- que precio, orden y visibilidad de un producto llegan a la tienda del visitante (`SHOP-STUDIO`);
 - que no hay errores de consola.
 
 La auditoría visual humana de la fase 2 sigue **pendiente**, como en el origen.

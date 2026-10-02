@@ -21,7 +21,7 @@ import {
   normaliseConfig, exportConfigJSON, MEDIA_SLOT, SLOTS_FOR_KIND, SLOT_MEDIA
 } from '../experience-config.js';
 import { buildCatalogue, slotsAccepting, CATEGORY, CATEGORY_LABEL } from './media-catalogue.js';
-import { PACING, TRANSITION_LABEL, PROGRAMME_TYPE, PROJECTION_FIT } from '../experience-config.js';
+import { PACING, TRANSITION_LABEL, PROGRAMME_TYPE, PROJECTION_FIT, PRODUCT_CATEGORIES } from '../experience-config.js';
 
 /**
  * What each slot is called on the panel. The name says the destination *and* the
@@ -315,6 +315,32 @@ export class StudioShell {
       };
     }
     return this.config.entities[id];
+  }
+
+  _productDraft(id) {
+    const draft = this._entityDraft(id);
+    if (!draft.product) draft.product = { category: null, price: null, order: null, visible: null };
+    return draft.product;
+  }
+
+  /** The product block of a museum-shop piece: what the shop label and sheet print. */
+  _productEditor(node, entity) {
+    const own = this.config.entities[node.id]?.product || {};
+    const src = entity.content.product;
+    const value = (key) => (own[key] ?? src[key]);
+    const number = (label, key, hint, step) => `
+      <label class="st-f">
+        <span class="st-l">${esc(label)}${own[key] == null ? ' <em class="st-inh">del registro</em>' : ''}</span>
+        ${hint ? `<span class="st-h">${esc(hint)}</span>` : ''}
+        <input type="number" min="0" step="${step}" data-bind="entities.${esc(node.id)}.product.${key}" data-num="1" value="${esc(value(key) ?? '')}">
+      </label>`;
+    return this._group('Tienda', `
+      <p class="st-note">Tienda de demostración: los precios son ficticios y la visita no permite comprar ni pide datos.</p>
+      ${this._selectField('Categoría', `entities.${node.id}.product.category`, value('category'), PRODUCT_CATEGORIES)}
+      ${number('Precio de demostración (€)', 'price', 'Se muestra en la cartela y en la ficha, marcado como demostración', '0.5')}
+      ${number('Orden en la tienda', 'order', 'Los productos de pared ocupan los huecos de la sala por este orden', '1')}
+      ${this._toggle('Visible en la tienda', `entities.${node.id}.product.visible`, value('visible') !== false)}
+    `);
   }
 
   _roomDraft(id) {
@@ -976,7 +1002,7 @@ export class StudioShell {
         <header class="st-edtop">
           <div>
             <p class="st-eyebrow">${esc(
-    node.kind === NODE.ENTITY ? (KIND_NOUN[node.entityKind] || 'Pieza') : NODE_NOUN[node.kind] || 'Editor')}</p>
+    node.kind === NODE.ENTITY ? (node.isProduct ? 'Producto' : KIND_NOUN[node.entityKind] || 'Pieza') : NODE_NOUN[node.kind] || 'Editor')}</p>
             <h2>${esc(node.label)}</h2>
           </div>
           ${node.kind === NODE.ENTITY || node.kind === NODE.ROOM
@@ -1078,6 +1104,7 @@ export class StudioShell {
         ${this._field('Título', `entities.${node.id}.title`, d.title, { inherited: src.title })}
         ${this._field('Autoría', `entities.${node.id}.creator`, d.creator, { inherited: src.creator })}
       `)}
+      ${src.product ? this._productEditor(node, entity) : ''}
       ${slots.length ? this._group('Medios', `
         <p class="st-note">${esc(SLOT_CHOICE_NOTE[node.entityKind] || '')}</p>
         ${slots.map((slot) => {
@@ -1518,6 +1545,14 @@ export class StudioShell {
       if (parts[parts.length - 2] === 'projection') {
         const id = parts.slice(1, -2).join('.');
         this._projectionDraft(id)[field] = value;
+        return;
+      }
+      // `entities.<id>.product.<field>`: false and 0 are values here (a hidden
+      // product, a free item, first place), so nothing is coerced to null
+      // except an emptied number field.
+      if (parts[parts.length - 2] === 'product') {
+        const id = parts.slice(1, -2).join('.');
+        this._productDraft(id)[field] = value === '' || (typeof value === 'number' && Number.isNaN(value)) ? null : value;
         return;
       }
       this._entityDraft(parts.slice(1, -1).join('.'))[field] = value || null;

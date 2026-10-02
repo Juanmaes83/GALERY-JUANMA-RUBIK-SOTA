@@ -428,6 +428,16 @@ export function labelTexture(content, { width = 512, dark = false, mark = null }
   ctx.fillStyle = dim;
   ctx.fillText(content.medium || '', pad, y);
 
+  // A product in the museum shop carries its (demonstration) price, as a shop
+  // label would, and says on the wall itself that nothing is for sale.
+  const price = Number(content.product?.price);
+  if (Number.isFinite(price)) {
+    y += width * 0.062;
+    ctx.fillStyle = ink;
+    ctx.font = `600 ${Math.round(width * 0.046)}px 'Helvetica Neue', Arial, sans-serif`;
+    ctx.fillText(`${price % 1 ? price.toFixed(2).replace('.', ',') : price} € · demostración`, pad, y);
+  }
+
   ctx.strokeStyle = dark ? '#38332d' : '#d5cec2';
   ctx.lineWidth = 2;
   ctx.beginPath();

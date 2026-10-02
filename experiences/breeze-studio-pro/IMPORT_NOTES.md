@@ -51,6 +51,21 @@ Esta nota no declara ninguna licencia que no figure en ellos.
 | Fabric Lace 038 (3dtextures.me) | Acredita la fuente. No indica la licencia | Pendiente de verificación documental |
 | Corset, BoomBox y Lantern (Khronos glTF Sample Assets) | Declara **CC0 1.0** | Según `CREDITS.md` |
 
+### Registro de verificación (2026-10-01)
+
+| Asset | Fuente consultada | Resultado |
+|---|---|---|
+| Código de Breeze | `raw.githubusercontent.com/holtsetio/breeze/main/LICENSE` (repositorio original) | ✅ **MIT, © 2025 Niklas Niehus**. Coincide con el `LICENSE` importado |
+| Corset, BoomBox y Lantern | `raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/{Corset,BoomBox,Lantern}/LICENSE.md` | ✅ **CC0 1.0** para los archivos del modelo (fuente primaria) |
+| Venus de Milo | `sketchfab.com/3d-models/venus-de-milo-903aa69c782a46619615e6df382c8045` y `api.sketchfab.com/v3/models/…` | ⛔ **No verificable desde este entorno**: el proxy de red bloquea ambos dominios. Sigue **pendiente** |
+| HDRI Qwantani Noon, Piazza Martin Lutero y Ninomaru Teien | `polyhaven.com/license` y `api.polyhaven.com/info/…` | ⛔ Dominios bloqueados. Sigue **pendiente** de verificación documental |
+| Fabric Lace 038 | `3dtextures.me/2024/06/21/fabric-lace-038/` | ⛔ Dominio bloqueado. Sigue **pendiente** |
+| `CREDITS.md` del repositorio original | `raw.githubusercontent.com/holtsetio/breeze/main/CREDITS.md` | Idéntico al importado. Acredita a los autores, pero **no indica licencias** de los assets anteriores |
+
+**Cómo cerrarlo:** desde un navegador con acceso, abre las tres páginas de los assets pendientes y anota la licencia exacta que muestra cada una. Si alguna no permite la redistribución, sustituye el asset antes de fusionar en `main`.
+
+Las texturas de pétalo y hoja originales **no están** en el repositorio. Los modos «Sakura Petals» y «Autumn Leaves» usan las texturas propias de sustitución descritas arriba. El panel de créditos del bundle sigue nombrando a los autores originales de esas dos texturas: es un texto del producto que no se ha modificado (no altera ningún derecho).
+
 ## Integración en el museo
 
 Hecho en esta rama (commit de integración posterior a la importación):

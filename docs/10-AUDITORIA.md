@@ -65,6 +65,12 @@ Estados:
 | A-36 | Studio · Medios | Al recargar, las referencias `authored:` de otra sesión se pasaban al cargador como URL: un error CORS por obra y un sustituto generado en la pared. El Studio, además, las mostraba como «En el proyecto» | ✅ la sala conserva el original; la ranura dice «Archivo no disponible» y Validar lo avisa sin bloquear · `STALE-UPLOAD`. La persistencia real de medios sigue pendiente (ROADMAP 2.2) |
 | A-37 | Avatar · Rendimiento | Confirmado en el recorrido grabado: con pocos FPS, el avatar avanzaba 0,16–0,31 m en ~6 s de teclas (≈5 % de su velocidad). El paso de locomoción recortaba **cada fotograma** a 0,05 s | ✅ subpasos de 0,05 s (la colisión sigue resolviéndose fina) hasta el `maxDelta` del reloj (0,5 s) · `AVATAR-PACE-LOW-FPS` con la CPU frenada 6× |
 | A-38 | Wet Paint | 2 de cada 8 fotogramas capturados de la transición eran blancos: el lienzo WebGL del motor se copiaba entre el borrado y el dibujo. Cada bucle parpadeaba en blanco ~300 ms, y un visitante podía ver un cuadro vacío («03 — Living» en la grabación) | ✅ las copias planas se descartan; verificado con dos cuadros: 0 fotogramas blancos |
+| A-39 | Orientación | No había forma de **terminar la visita**: ni salida en el espacio ni botón | ✅ puerta «Salida» en el Vestíbulo (`END_VISIT`, con confirmación) y botón «Salir» en cualquier sala · `EXIT-DOOR`, `EXIT-FAREWELL` |
+| A-40 | Orientación | Ninguna indicación de por dónde se sale desde cada sala | ✅ señales verdes derivadas del grafo, junto a la puerta correcta y sin tapar obras · `EXIT-SIGNS`, `EXIT-ROUTE` |
+| A-41 | **Obras** | En una esquina, delante de *Estudio de figura, IV*, el aviso y la tecla E abrían *División tercera* (la vecina de la otra pared estaba a 1,76 m). La cercanía se medía sin mirar hacia dónde mira el visitante | ✅ se prioriza la obra de enfrente; `WORK-OUTLINE` falla sin la corrección |
+| A-42 | Obras | No se distinguía qué obra abriría E | ✅ marco cálido y filete en la obra que nombra el aviso, o anillo en el suelo si es exenta; nada se resalta con la ficha abierta |
+| A-43 | Tienda | La tienda del museo no existía | ✅ sala `SHOP` con 8 productos administrables desde el Studio (categoría, precio de demostración, orden y visibilidad, además de los campos comunes) · `SHOP-*` |
+| A-44 | Contenido | La doc 03 decía «Viento sobre mármol (dominio público)» y «Breeze no migrada» | ✅ corregido: licencias pendientes e integración real |
 
 ## Detalle
 
@@ -176,4 +182,40 @@ Grabadas con Playwright y Chromium SwiftShader (render por CPU): el tiempo real 
 | Breeze | PASS **solo el aviso sin WebGPU y la salida** | PASS (avatar aparcado) | NO PROBADO |
 
 **Breeze y el avatar no están validados.** Falta la prueba visual en una GPU real y la revisión humana. El recorrido comentado se inició, pero sus paradas no quedaron verificadas: **NO PROBADO**.
+
+## Misión 2 (2026-10-02): experiencia, orientación y tienda
+
+### Estado de las funciones
+
+| Función | Estado | Evidencia |
+|---|---|---|
+| 7 salas visitables (más la tienda) | Operativas | `ROOM-*`, `SHOP-ROOM` |
+| Primera persona (POV) | Operativa | Recorrido grabado; `MOBILE-DOOR-TAP` |
+| Avatar en tercera persona | Implementado; **validación humana pendiente** | `AVATAR <sala>` en las 7 salas, incluida la tienda |
+| Ficha de obra (abrir, recorrer, cerrar) | Operativa | `FOCUS`, `MOBILE-DETAIL-FRAMING`, `WORK-OUTLINE` |
+| Panel: textos y metadatos → visita | Operativo, persiste en el navegador del autor | `STUDIO-RELOAD`, `SHOP-STUDIO` |
+| Panel: imágenes y vídeos → visita | Operativo **solo durante la sesión** | `STALE-UPLOAD` (sin backend) |
+| Breeze | Integrado; aviso sin WebGPU y salida verificados; **no validado en GPU real** | `BREEZE-*` |
+| Tienda | Operativa y simulada | `SHOP-*` |
+| Salida y señales | Operativas | `EXIT-*` |
+| Publicación para todos los visitantes | **Ausente**, bloqueada por la decisión de backend | ROADMAP 2.1 |
+| Recorrido comentado | Operativo según `npm test` (ruta y cámara); paradas no revisadas visualmente en esta misión | — |
+
+### Validación de la misión (`npm test`: 72/72 OK, 2026-10-02)
+
+| Criterio | Resultado | Evidencia |
+|---|---|---|
+| Las salas principales abren y se navega entre ellas | **PASS** | `ROOM-*`, `SHOP-ROOM`, `SHOP-EXIT` |
+| El avatar y la vista subjetiva recorren las salas | **PASS** (automático) · 👁 humana pendiente | `AVATAR <sala>`, recorridos grabados |
+| La ficha se abre y se cierra | **PASS** | `FOCUS`, `EXIT-DOOR` (Esc) |
+| Los datos de la obra son los de la configuración | **PASS** | `SHOP-SHEET`, `STUDIO-RELOAD`, `npm run check` (texto = cartela) |
+| Los cambios en el panel persisten y llegan a la visita | **PASS** en el navegador del autor · publicación: **NO DISPONIBLE** | `SHOP-STUDIO` |
+| Breeze carga, permite volver y avisa sin WebGPU | **PASS** sin WebGPU · **NO PROBADO** con GPU real | `BREEZE-NOTICE`, `BREEZE-EXIT` |
+| Se puede visitar y abandonar la tienda | **PASS** | `SHOP-ROOM`, `SHOP-EXIT` |
+| Los productos del panel aparecen en la sala y en su ficha | **PASS** | `SHOP-STUDIO`, `SHOP-SHEET` |
+| La compra se identifica como ficticia | **PASS** (no hay compra; cartela, ficha y rótulo lo dicen) | `SHOP-SHEET` |
+| Las señales llevan a rutas reales | **PASS** | `EXIT-SIGNS`, `EXIT-ROUTE` |
+| Sin errores críticos, recursos rotos ni regresiones | **PASS** | `NO-CONSOLE-ERRORS`, `NO-BROKEN-REQUESTS` y consola por sección |
+| Móvil | **PASS** en POV y avatar (Galería A y tienda por portal) · **NO PROBADO** en un teléfono real | Sección «Phone» |
+| Licencias de Venus, Poly Haven y Fabric Lace | **NO PROBADO**: dominios bloqueados en el entorno | `IMPORT_NOTES.md` |
 

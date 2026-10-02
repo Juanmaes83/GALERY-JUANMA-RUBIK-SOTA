@@ -199,6 +199,10 @@ export class Runtime {
         const { hotspotId, state } = action.params || {};
         if (hotspotId && state) this.state.setHotspotState(hotspotId, state);
         return true;
+      })
+      .register(ACTION.END_VISIT, (action, context) => {
+        this.bus.emit(EVENTS.VISIT_END_REQUESTED, { source: context?.source || 'HOTSPOT', spaceId: this.state.activeSpaceId });
+        return true;
       });
   }
 
@@ -741,7 +745,9 @@ export class Runtime {
     // two things it holds are both things that stay wrong silently: the
     // atmosphere would freeze mid-blend, and two rooms would stay resident.
     if (this._crossingHolds && !this.crossing.isCrossing) this._releaseCrossingHolds();
-    this.proximity.update(dt, pose.position);
+    this.proximity.update(dt, pose.position, pose.target
+      ? [pose.target[0] - pose.position[0], 0, pose.target[2] - pose.position[2]]
+      : null);
     this.sceneKit.update(dt, this.clock.elapsed);
     this.onFrame?.(pose, dt);
     return pose;
