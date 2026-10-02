@@ -211,7 +211,7 @@ function normaliseBreeze(b) {
 }
 
 export const PRODUCT_CATEGORIES = Object.freeze({
-  Reproducciones: 'Reproducciones', Libros: 'Libros', 'Papelería': 'Papelería', Objetos: 'Objetos'
+  Reproducciones: 'Reproducciones', Libros: 'Libros', 'Papelería': 'Papelería', Objetos: 'Objetos', 'Música': 'Música'
 });
 
 /**

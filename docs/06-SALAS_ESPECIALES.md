@@ -86,7 +86,38 @@ Salidas siempre disponibles: botón-puente abajo a la izquierda (elevado para no
 { "category": "Reproducciones", "price": 35, "currency": "EUR", "visible": true, "order": 1, "demo": true }
 ```
 
-- **Exposición:** los productos de pared (`ARTWORK`) se cuelgan enmarcados en los huecos que lista `space.metadata.shop.productSlots`. La réplica (`SCULPTURE`) va en su peana.
+- **Disposición** (misión 5, según `docs/referencias/mision5-tienda-referencia.jpg`):
+  - al entrar, una línea frontal con el mostrador en el centro y dos vitrinas a cada lado;
+  - detrás del mostrador, la zona de la dependienta, con la peana de la réplica tras un cordón, el rótulo «Tienda de la Fundación» entre dos cuadros y un cuadro nocturno en la pared derecha;
+  - junto a la entrada, una vitrina en cada pared lateral;
+  - la sala mide 7,5 × 9 m, con 3,1 m de pared bajo la cubierta con lucernarios.
+- **Mobiliario** (`scene-kits/museum/shop-fixtures.js`, declarado en `space.metadata.shop.fixtures`):
+  - **6 vitrinas** de arce claro (veta procedural) con base de dos cajones, cuatro baldas de vidrio con canto verde y fondo mentolado. Cada una va surtida por tema, como en la referencia:
+    - láminas enmarcadas y catálogos;
+    - cerámica y láminas;
+    - libros;
+    - figuras y discos;
+    - papelería;
+    - objetos.
+  - **Mostrador** con marco de arce y frente claro: caja registradora con visor, datáfono, teléfono, bandeja de postales y posavasos, y una pila de libros y catálogos.
+  - **Dependienta** detrás del mostrador: polo beige con logotipo, pelo castaño con flequillo, una mano abierta hacia el mostrador. Es decorado: no se mueve, no habla y no tiene aviso ni ficha.
+  - **Cuadros, cordón y sombras de contacto** bajo cada mueble.
+  - Es **decorado**: lo único a la venta son las entidades con `content.product`.
+- **Exposición de productos:**
+  - los planos (`ARTWORK`) ocupan los huecos de `space.metadata.shop.productSlots`. Cada hueco es una caja de 0,40 × 0,32 m en una balda: el producto se apoya en ella y el precio cuelga del canto como etiqueta, así que cualquier producto cabe en cualquier hueco al reordenarlos en el Studio;
+  - los 3D (`OBJECT_3D` con `representation.profile: "shop-display"`) los construye el Scene Kit: el tablero de llaveros sobre el mostrador, las figuras y el soporte de discos. Su ancla marca el centro visual, que es lo que encuadra la vista de detalle;
+  - las existencias de cada vitrina dejan libre el sitio de sus productos. Si un producto se oculta, su hueco se rellena.
+- **Productos (11):**
+  - 3 láminas, catálogo, postales, cuaderno, bolsa y réplica;
+  - y, desde la misión 5, **llaveros**, **figuras de madera** y **vinilo «Sala de escucha»** (categoría nueva, «Música»).
+  - Todos son de demostración, con ficha, precio ficticio, hotspot y edición en el Studio.
+  - La réplica está tras el cordón: se elige mirándola desde la mitad derecha del mostrador (radio de 3,4 m).
+- **Recorrido y colisiones:**
+  - el visitante se detiene en el borde de cada vitrina y del mostrador (`SHOP-COLLIDE`);
+  - no pasa detrás del mostrador;
+  - cada producto se elige con E desde donde puede estar (`SHOP-SELECT`);
+  - unas 55 llamadas de dibujo y 9 000 triángulos (`SHOP-COST`).
+- **Anclas montadas en mueble:** las de los huecos llevan `"surface": "FIXTURE"`. El Scene Kit no las proyecta sobre la pared como al resto de anclas `WALL`; si lo hiciera, el producto quedaría detrás del fondo del mueble.
 - **Cartela y ficha:** muestran el precio con la marca «demostración». La ficha añade «precio de demostración · tienda simulada, sin compra».
 - **Imágenes:** son propias (`assets/shop/RIGHTS.md` y `assets/collection/RIGHTS.md`).
 
@@ -96,10 +127,10 @@ Salidas siempre disponibles: botón-puente abajo a la izquierda (elevado para no
 |---|---|---|
 | Nombre | Identidad · Título | Cartela, ficha, texto |
 | Autoría o marca | Identidad · Autoría | Cartela, ficha |
-| Imagen | Medios · Imagen (JPG, PNG, WebP) | Panel en la pared (**solo dura la sesión**; ver [04](04-STUDIO.md)) |
+| Imagen | Medios · Imagen (JPG, PNG, WebP) | Panel del expositor (**solo dura la sesión**; ver [04](04-STUDIO.md)) |
 | Categoría | Tienda · Categoría (Reproducciones, Libros, Papelería, Objetos) | Línea bajo el título |
 | Precio de demostración | Tienda · Precio (€) | Cartela y ficha, marcado como demostración |
-| Orden | Tienda · Orden | Los productos de pared ocupan los huecos por este orden |
+| Orden | Tienda · Orden | Los productos de pared ocupan los expositores por este orden: norte (3), sur (3) y este (2) |
 | Visibilidad | Tienda · Visible en la tienda | Un producto oculto sale del World: pared, ficha, hotspot y texto |
 | Descripción | Personalizar más · Texto curatorial | Ficha |
 

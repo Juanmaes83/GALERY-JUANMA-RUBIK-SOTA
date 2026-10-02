@@ -7,9 +7,9 @@
 | Colección | Cantidad | Qué es |
 |---|---:|---|
 | `spaces` | 7 | Salas, con sus referencias a anclajes, entidades, hotspots y portales |
-| `anchors` | 76 | Referencias espaciales (DÓNDE): llegadas, muros, peanas, puertas, posiciones de guía |
-| `entities` | 27 | Obras, esculturas, proyección, audio, textos e instalaciones (QUÉ) |
-| `hotspots` | 37 | Disparadores de proximidad (CUÁNDO) con una Action (`FOCUS_ENTITY`, `ACTIVATE_PORTAL`, `PLAY_MEDIA`, `START_ROUTE`) |
+| `anchors` | 78 | Referencias espaciales (DÓNDE): llegadas, muros, peanas, puertas, posiciones de guía |
+| `entities` | 30 | Obras, esculturas, proyección, audio, textos e instalaciones (QUÉ) |
+| `hotspots` | 40 | Disparadores de proximidad (CUÁNDO) con una Action (`FOCUS_ENTITY`, `ACTIVATE_PORTAL`, `PLAY_MEDIA`, `START_ROUTE`) |
 | `portals` | 12 | Conexiones entre salas (por dónde se pasa), con transición, precarga y política de retorno |
 | `chapters` | 4 | Capítulos del recorrido |
 | `storySteps` | 40 | Beats del recorrido |

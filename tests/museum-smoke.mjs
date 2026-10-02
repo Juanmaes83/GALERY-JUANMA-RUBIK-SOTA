@@ -149,9 +149,67 @@ try {
       const text = window.__IW.hud.el.a11yBody.textContent;
       return { products: products.length, price, inText: /Catálogo de la colección/.test(text) && /precio de demostración/.test(text) };
     });
-    check('SHOP-ROOM', 'La tienda del museo se visita desde el Vestíbulo', shopActive === 'space.shop' && shop.products === 8, `${shopActive} · ${shop.products} productos`);
+    check('SHOP-ROOM', 'La tienda del museo se visita desde el Vestíbulo', shopActive === 'space.shop' && shop.products === 11, `${shopActive} · ${shop.products} productos`);
     check('SHOP-SHEET', 'La ficha de producto muestra el precio marcado como demostración (sin compra)', /demostración/.test(shop.price) && /sin compra/.test(shop.price), shop.price);
     check('SHOP-TEXT', 'El catálogo también está en «Contenido en texto», con precio de demostración', shop.inText);
+    // A shop, as in docs/referencias/mision5-tienda-referencia.jpg: glass
+    // vitrines, a counter with its till, the shop assistant, framed prints and a
+    // roped plinth. Each flat product stands in a vitrine slot and each 3D
+    // product in its display; walking into furniture stops at its edge; every
+    // product is chosen with E from where a visitor can stand.
+    const fit = await page.evaluate(async () => {
+      const rt = window.__IW.runtime; const e = rt.explore; const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const space = rt.store.require('space.shop');
+      const fixtures = space.metadata.shop?.fixtures || [];
+      const groups = [];
+      rt.sceneKit._spaces.get('space.shop')?.group.traverse((o) => { if (o.userData?.shopFixture) groups.push(o.userData); });
+      const count = (t) => groups.filter((g) => g.shopFixture === t).length;
+      const vitrines = fixtures.filter((f) => f.type === 'VITRINE');
+      const products = rt.store.entitiesOf('space.shop').filter((x) => x.content?.product);
+      const inside = (p) => vitrines.some((f) => {
+        const a = rt.store.get(p.anchorId).position; const th = Math.atan2(f.normal[0], f.normal[2]);
+        const dx = a[0] - f.position[0]; const dz = a[2] - f.position[1];
+        const lx = Math.cos(th) * dx - Math.sin(th) * dz; const lz = Math.sin(th) * dx + Math.cos(th) * dz;
+        return Math.abs(lx) <= 0.62 && lz > 0 && lz < 0.42;
+      });
+      const misplaced = products.filter((p) => p.kind === 'ARTWORK' && !inside(p)).map((p) => p.id);
+      const collide = [];
+      for (const f of fixtures.filter((x) => x.type === 'VITRINE' || x.type === 'COUNTER')) {
+        const n = f.normal;
+        e.position[0] = f.position[0] + n[0] * 1.6; e.position[2] = f.position[1] + n[2] * 1.6; e.yaw = Math.atan2(-n[0], -n[2]);
+        e.input.forward = 1; await wait(1800); e.input.forward = 0; await wait(150);
+        const d = Math.abs(n[0]) > 0.5 ? (e.position[0] - f.position[0]) * n[0] : (e.position[2] - f.position[1]) * n[2];
+        collide.push(+d.toFixed(2));
+      }
+      // Behind the counter is the assistant's side: a visitor walking at it stops.
+      e.position[0] = -8.2; e.position[2] = 0.1; e.yaw = -Math.PI / 2; e.input.forward = 1; await wait(2500); e.input.forward = 0; await wait(150);
+      const counterStop = +e.position[0].toFixed(2);
+      const picked = [];
+      for (const p of products) {
+        const a = rt.store.get(p.anchorId); const n = a.normal || [1, 0, 0];
+        if (p.id.endsWith('replica-vasija')) {
+          // Behind the rope: chosen facing it from the right half of the counter.
+          e.position[0] = -8.85; e.position[2] = -0.6; e.yaw = -Math.PI / 2;
+        } else {
+          e.position[0] = a.position[0] + n[0] * 0.95; e.position[2] = a.position[2] + n[2] * 0.95;
+          e.yaw = Math.atan2(-n[0], -n[2]);
+        }
+        await wait(800);
+        const want = `hotspot.shop.${p.id.replace('entity.shop.', '')}`;
+        picked.push(rt.proximity.nearestHotspot?.id === want ? null : `${p.id}→${rt.proximity.nearestHotspot?.id || 'nada'}`);
+      }
+      const info = window.__IW.renderHost.renderer.info.render;
+      return { vitrines: count('VITRINE'), counter: count('COUNTER'), assistant: count('ASSISTANT'), frames: count('WALL_FRAME'), products: products.length,
+        displays: products.filter((p) => p.representation?.profile === 'shop-display').length, misplaced, collide, counterStop, notPicked: picked.filter(Boolean), calls: info.calls, triangles: info.triangles };
+    });
+    check('SHOP-FIXTURES', 'Como en la referencia: 6 vitrinas, mostrador, dependienta, 3 cuadros; cada producto plano en su vitrina y 3 productos en 3D',
+      fit.vitrines === 6 && fit.counter === 1 && fit.assistant === 1 && fit.frames === 3 && fit.products === 11 && fit.displays === 3 && fit.misplaced.length === 0,
+      JSON.stringify({ vitrinas: fit.vitrines, mostrador: fit.counter, dependienta: fit.assistant, cuadros: fit.frames, productos: fit.products, en3d: fit.displays, fuera: fit.misplaced }));
+    check('SHOP-COLLIDE', 'Al caminar hacia una vitrina o el mostrador el visitante se detiene en su borde; detrás del mostrador no se pasa',
+      fit.collide.length === 7 && fit.collide.every((d) => d > 0.6 && d < 1.5) && fit.counterStop > -9.3, `${fit.collide.join(', ')} · mostrador: x=${fit.counterStop}`);
+    check('SHOP-SELECT', 'Cada producto se elige con E desde donde puede estar el visitante (la réplica, desde el mostrador)', fit.notPicked.length === 0, fit.notPicked.join(', ') || `${fit.products} de ${fit.products}`);
+    check('SHOP-COST', 'La tienda amueblada sigue siendo ligera (llamadas de dibujo y triángulos)', fit.calls < 220 && fit.triangles < 120000, `${fit.calls} llamadas · ${fit.triangles} triángulos`);
+
     const shopBack = await travel(page, 'portal.shop-lobby');
     check('SHOP-EXIT', 'Se vuelve de la tienda al Vestíbulo', shopBack === 'space.lobby', shopBack);
 
@@ -590,7 +648,7 @@ try {
       return { price: m?.content?.product?.price, anchor: m?.anchorId, postales: Boolean(st.get('entity.shop.postales')), postalesHotspot: Boolean(st.get('hotspot.shop.postales')) };
     });
     check('SHOP-STUDIO', 'Precio, orden y visibilidad editados en el Studio llegan a la tienda del visitante tras recargar',
-      shopAfter.price === 42 && shopAfter.anchor === 'anchor.shop.wall-n1' && !shopAfter.postales && !shopAfter.postalesHotspot, JSON.stringify(shopAfter));
+      shopAfter.price === 42 && shopAfter.anchor === 'anchor.shop.vitrina-1' && !shopAfter.postales && !shopAfter.postalesHotspot, JSON.stringify(shopAfter));
     check('STALE-UPLOAD', 'Tras recargar, un archivo de otra sesión no rompe la obra: se ve el original', /horizonte-interrumpido\.jpg$/.test(kept) && authoredErrors.length === 0,
       `${kept}${authoredErrors.length ? ` · ${authoredErrors[0]}` : ''}`);
     check('STUDIO-CONSOLE', 'Sin errores de consola en el Studio', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));

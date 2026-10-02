@@ -31,6 +31,10 @@ import {
   buildGlbSculptureInstallation, buildLabel, buildPitchedRoof, buildPlinth, buildProjection, buildRoomShell,
   buildPremiumVesselInstallation, buildSkylightDaylight, buildThreshold, buildVessel, disposeObject
 } from './builders.js';
+import {
+  buildVitrine, buildCounter, buildWallFrame, buildShopAssistant, buildShopDisplay, createShopMaterials,
+  placeFixture, fixtureFootprint, worldToFixture, VITRINE, LEVELS, SLOT_BOX
+} from './shop-fixtures.js';
 import { buildExitDoor, buildExitSign, buildNearHalo, firstStepTowards, placeExitSign } from './wayfinding.js';
 import { GUIDE_DESIGNS, buildGuideFigure, buildVisitorFigure, guideMaterials } from './guide.js';
 import { MARBLE_BUST_PROFILE, MuseumModelAssets } from './model-assets.js';
@@ -132,7 +136,9 @@ export class MuseumSceneKit extends SceneKit {
     for (const anchor of ctx.store.anchorsOf(space.id)) {
       const normal = anchor.normal ? vec3.normalize(anchor.normal) : [0, 0, 1];
       this._anchorPoses.set(anchor.id, {
-        position: anchor.kind === 'WALL'
+        // A wall anchor is pulled onto the wall's surface, except one mounted on
+        // furniture (a shop unit's back panel), which sits in front of the wall.
+        position: anchor.kind === 'WALL' && anchor.surface !== 'FIXTURE'
           ? projectOntoWallSurface(anchor.position, normal, space.bounds)
           : [...anchor.position],
         normal
@@ -317,8 +323,10 @@ export class MuseumSceneKit extends SceneKit {
       );
     }
 
+    // One set of shop materials per build: shared by the 3D products and the fixtures.
+    const shopMats = space.metadata?.shop?.fixtures ? createShopMaterials(rng.fork('shop-materials')) : null;
     for (const entity of ctx.store.entitiesOf(space.id)) {
-      const built = this._buildEntity(entity, { space, profile, materials, rng, ctx, media, models });
+      const built = this._buildEntity(entity, { space, profile, materials, rng, ctx, media, models, shopMats });
       if (!built) continue;
       group.add(built.object);
       entities.set(entity.id, built.object);
@@ -370,9 +378,16 @@ export class MuseumSceneKit extends SceneKit {
       blockers.push(boxAround([bench.position.x, bench.position.z], 1.0, 0.35));
     }
 
+    // Shop furniture: counter, back cabinet and stocked wall units (set dressing;
+    // the products are the entities hung in the units' feature bays).
+    if (space.metadata?.shop?.fixtures) {
+      for (const blocker of this._buildShopFixtures(space, ctx.store, rng, group, shopMats, materials)) blockers.push(blocker);
+    }
+
     // Barrier lines are derived from where the work actually hangs, not authored
-    // by hand: move a painting and the rope follows it.
-    if (profile.barrier?.enabled !== false) {
+    // by hand: move a painting and the rope follows it. Not in a shop: there the
+    // goods are meant to be approached, and a rope says the opposite.
+    if (profile.barrier?.enabled !== false && !space.metadata?.shop) {
       for (const line of this._barrierLinesFor(space, ctx.store, profile)) {
         group.add(buildBarrierLine({
           from: line.from, to: line.to, material: materials.post, ropeMaterial: materials.rope
@@ -536,6 +551,71 @@ export class MuseumSceneKit extends SceneKit {
     return resolved;
   }
 
+  /* == shop ================================================================= */
+
+  /**
+   * Build the fixtures declared in `space.metadata.shop.fixtures` and return
+   * their collision boxes. A wall unit whose slot holds no product (hidden in
+   * the Studio, or more slots than products) is shelved and stocked in full
+   * rather than left with an empty bay.
+   */
+  _buildShopFixtures(space, store, rng, group, mats, roomMaterials) {
+    const entities = store.entitiesOf(space.id);
+    const blockers = [];
+    space.metadata.shop.fixtures.forEach((f, index) => {
+      const frng = rng.fork(`shop-fixture-${index}`);
+      if (f.type === 'ROPE') {
+        const from = [f.from[0], 0, f.from[1]];
+        const to = [f.to[0], 0, f.to[1]];
+        group.add(buildBarrierLine({ from, to, material: roomMaterials.post, ropeMaterial: roomMaterials.rope }));
+        blockers.push({
+          min: [Math.min(from[0], to[0]) - 0.15, 0, Math.min(from[2], to[2]) - 0.15],
+          max: [Math.max(from[0], to[0]) + 0.15, 3, Math.max(from[2], to[2]) + 0.15]
+        });
+        return;
+      }
+      let built;
+      let footprint = null;
+      if (f.type === 'VITRINE') {
+        // The products in this vitrine, by level, so its stock leaves them room.
+        const reserved = [];
+        for (const e of entities) {
+          if (!e.content?.product) continue;
+          const anchor = store.get(e.anchorId);
+          if (!anchor) continue;
+          const [lx, ly, lz] = worldToFixture(f.position, f.normal, anchor.position);
+          if (Math.abs(lx) > VITRINE.width / 2 || lz < 0 || lz > VITRINE.depth) continue;
+          const level = LEVELS.reduce((best, y, i) => (ly >= y - 0.02 ? i : best), 0);
+          const display = e.representation?.profile === 'shop-display';
+          reserved.push({ level, x: lx, width: display ? 0.66 : SLOT_BOX.width });
+        }
+        built = buildVitrine({ theme: f.theme, reserved, rng: frng, mats });
+        built.group.userData.reserved = reserved.length;
+        footprint = [VITRINE.width, VITRINE.depth];
+      } else if (f.type === 'COUNTER') {
+        built = buildCounter({ length: f.width, depth: f.depth, rng: frng, mats });
+        footprint = [f.width, f.depth];
+      } else if (f.type === 'WALL_FRAME') {
+        built = buildWallFrame({ size: f.size, kind: f.kind, rng: frng, mats });
+      } else if (f.type === 'ASSISTANT') {
+        built = buildShopAssistant({ mats });
+      } else return;
+      placeFixture(built.group, f.position, f.normal, f.y || 0);
+      built.group.userData.shopFixture = f.type;
+      built.group.userData.fixtureId = f.id || null;
+      group.add(built.group);
+      if (f.type === 'ASSISTANT') {
+        blockers.push({ min: [f.position[0] - 0.28, 0, f.position[1] - 0.28], max: [f.position[0] + 0.28, 3, f.position[1] + 0.28] });
+      } else if (footprint) {
+        const box = fixtureFootprint(f.position, f.normal, footprint[0], footprint[1]);
+        // A hand's breadth of margin, so the visitor never clips into a shelf edge.
+        box.min[0] -= 0.05; box.min[2] -= 0.05; box.max[0] += 0.05; box.max[2] += 0.05;
+        blockers.push(box);
+      }
+    });
+    return blockers;
+  }
+
   /* == barriers ============================================================= */
 
   /**
@@ -626,7 +706,7 @@ export class MuseumSceneKit extends SceneKit {
 
   /* == entities ============================================================= */
 
-  _buildEntity(entity, { space, profile, materials, rng, ctx, media, models }) {
+  _buildEntity(entity, { space, profile, materials, rng, ctx, media, models, shopMats }) {
     const anchor = this._anchorPoses.get(entity.anchorId);
     if (!anchor) return null;
     const hints = entity.representation?.hints || {};
@@ -655,9 +735,16 @@ export class MuseumSceneKit extends SceneKit {
         });
         const group = new THREE.Group();
         group.add(work);
+        // A product in a vitrine slot stands on the shelf: bottom-aligned in the
+        // slot's box, whatever its proportions.
+        if (hints.slot) work.position.y = -(hints.slot.height - h) / 2;
 
         const label = buildLabel({ texture: labelTexture(entity.content, { dark, width: Math.round(512 * ctx.quality.textureScale) || 256 }) });
-        label.position.set(w / 2 + 0.2, -0.06, 0.004);
+        // In a shop the label is a price tag on the shelf's edge.
+        if (hints.labelOffset) {
+          label.position.set(...hints.labelOffset);
+          label.scale.setScalar(hints.labelScale ?? 1);
+        } else label.position.set(w / 2 + 0.2, -0.06, 0.004);
         group.add(label);
 
         this._orient(group, anchor);
@@ -666,6 +753,23 @@ export class MuseumSceneKit extends SceneKit {
 
       case ENTITY_KIND.SCULPTURE:
       case ENTITY_KIND.OBJECT_3D: {
+        if (entity.representation?.profile === 'shop-display' && shopMats) {
+          // A 3D shop product (keyrings, figures, records) in its own display.
+          // The anchor marks the product's visual centre, which is what the
+          // close-up frames; the display stands below it on its shelf or counter.
+          const display = buildShopDisplay(hints.display, { rng: rng.fork(entity.id), mats: shopMats });
+          const holder = new THREE.Group();
+          display.group.position.y = -entity.size[1] / 2;
+          holder.add(display.group);
+          if (hints.labelOffset) {
+            const tag = buildLabel({ texture: labelTexture(entity.content, { dark, width: 384 }) });
+            tag.position.set(...hints.labelOffset);
+            tag.scale.setScalar(hints.labelScale ?? 1);
+            holder.add(tag);
+          }
+          this._orient(holder, anchor);
+          return { object: holder, lit: false };
+        }
         if (entity.representation?.profile === MARBLE_BUST_PROFILE) {
           const installation = buildGlbSculptureInstallation({
             model: models?.get(MARBLE_BUST_PROFILE) || null,

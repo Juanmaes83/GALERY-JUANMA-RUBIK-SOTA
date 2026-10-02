@@ -40,6 +40,7 @@ Sin navegador: inventario de la audioguía (24 pistas, sin productos), textos ba
 | Consola | Sin errores de consola |
 | Marble Bust 01 | Modo `GLB` y modo `FALLBACK` forzado, ambos con foco correcto |
 | Studio | Monta las 6 áreas, Avatar Studio listo, guardar y recargar conserva la edición, sin errores |
+| Tienda | Sala y 11 productos, ficha con precio de demostración y texto; mobiliario de la referencia (vitrinas, mostrador, dependienta, cuadros) con cada producto en su sitio; colisión con vitrinas y mostrador, sin paso detrás; selección de los 11 productos; coste de dibujo acotado; salida |
 | Audioguía | Sin reproducción automática ni descargas al entrar; panel y estados sin audio; teclado; pieza sonora aparte; en el Studio, subida con duración, idioma e inventario; como visitante, reproducir, pausar con Enter, avanzar, volumen, detener, una sola pista, pausa al cerrar la ficha y al cambiar de sala; tras recargar, texto conservado y audio caducado; móvil. En SwiftShader se deja de dibujar mientras se prueba el audio (ver [11](11-AUDIOGUIA.md)) |
 | Avatar | Avatar en todas las salas (con el GLB del repositorio) |
 

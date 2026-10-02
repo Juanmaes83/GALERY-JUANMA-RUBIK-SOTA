@@ -55,6 +55,7 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 | Recomendado | Panel de Breeze en español (A-17) | Mezcla de idiomas | Coherencia | Bajo | Producto donante | ○ |
 | Recomendado | Galería B más legible al llegar desde Breeze | Se llega mirando a la zona más oscura | Orientación | Bajo | Validación visual | ○ |
 | Posterior | Publicación real y medios durables (fase 2) | Lo personalizado solo vive en el navegador del autor | Clave para vender el Studio | Alto | **Decisión de backend** (2.1) | ⏳ |
+| Recomendado | Tienda fiel a la referencia: mostrador con caja, datáfono, teléfono y llaveros, vitrinas de arce y vidrio, dependienta, cuadros y cordón; llaveros, figuras y discos como productos | Parecía una galería | Credibilidad de la sala comercial | — | — | ✅ misión 5 (A-57, A-58), en rama propia · 👁 revisión visual |
 | Posterior | Carrito **simulado** en la tienda | Demostrar un flujo comercial | Bajo para la visita | Medio | Diseño | ○ |
 | Posterior | Crear o borrar obras y productos desde el Studio (2.8) | Hoy se añaden en el World | Autonomía del cliente | Alto | Plantillas de sala | ○ |
 | Bloqueado | Veredictos humanos (Marble Bust 01, Studio fase 2, bloque 2B) | — | — | — | Juanma | ⏳ |

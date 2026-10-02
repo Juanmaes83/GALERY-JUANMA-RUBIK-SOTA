@@ -647,12 +647,12 @@
       "type": "SHOP",
       "bounds": {
         "size": [
-          10,
-          4.2,
+          7.5,
+          3.1,
           9
         ],
         "origin": [
-          -10.5,
+          -9.25,
           0,
           0
         ]
@@ -670,19 +670,24 @@
         "entity.shop.cuaderno",
         "entity.shop.bolsa",
         "entity.shop.replica-vasija",
+        "entity.shop.llaveros",
+        "entity.shop.figuras",
+        "entity.shop.discos",
         "entity.shop.rotulo"
       ],
       "anchorRefs": [
         "anchor.shop.door-lobby",
         "anchor.shop.arrive-from-lobby",
-        "anchor.shop.wall-n1",
-        "anchor.shop.wall-n2",
-        "anchor.shop.wall-n3",
-        "anchor.shop.wall-w1",
-        "anchor.shop.wall-w2",
-        "anchor.shop.wall-s1",
-        "anchor.shop.wall-s2",
-        "anchor.shop.wall-s3",
+        "anchor.shop.vitrina-1",
+        "anchor.shop.vitrina-2",
+        "anchor.shop.vitrina-3",
+        "anchor.shop.vitrina-4",
+        "anchor.shop.vitrina-5",
+        "anchor.shop.vitrina-6",
+        "anchor.shop.vitrina-7",
+        "anchor.shop.mostrador-llaveros",
+        "anchor.shop.vitrina-figuras",
+        "anchor.shop.vitrina-discos",
         "anchor.shop.plinth-1",
         "anchor.shop.rotulo"
       ],
@@ -695,6 +700,9 @@
         "hotspot.shop.cuaderno",
         "hotspot.shop.bolsa",
         "hotspot.shop.replica-vasija",
+        "hotspot.shop.llaveros",
+        "hotspot.shop.figuras",
+        "hotspot.shop.discos",
         "hotspot.shop.to-lobby"
       ],
       "portalRefs": [
@@ -705,15 +713,214 @@
           "demo": true,
           "currency": "EUR",
           "productSlots": [
-            "anchor.shop.wall-n1",
-            "anchor.shop.wall-n2",
-            "anchor.shop.wall-n3",
-            "anchor.shop.wall-w1",
-            "anchor.shop.wall-w2",
-            "anchor.shop.wall-s1",
-            "anchor.shop.wall-s2",
-            "anchor.shop.wall-s3"
-          ]
+            "anchor.shop.vitrina-1",
+            "anchor.shop.vitrina-2",
+            "anchor.shop.vitrina-3",
+            "anchor.shop.vitrina-4",
+            "anchor.shop.vitrina-5",
+            "anchor.shop.vitrina-6",
+            "anchor.shop.vitrina-7"
+          ],
+          "fixtures": [
+            {
+              "type": "VITRINE",
+              "id": "S-ext",
+              "position": [
+                -9.9,
+                3.1
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ],
+              "theme": "prints"
+            },
+            {
+              "type": "VITRINE",
+              "id": "S-int",
+              "position": [
+                -9.9,
+                1.88
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ],
+              "theme": "ceramics"
+            },
+            {
+              "type": "VITRINE",
+              "id": "N-int",
+              "position": [
+                -9.9,
+                -1.88
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ],
+              "theme": "books"
+            },
+            {
+              "type": "VITRINE",
+              "id": "N-ext",
+              "position": [
+                -9.9,
+                -3.1
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ],
+              "theme": "figurines"
+            },
+            {
+              "type": "VITRINE",
+              "id": "S-pared",
+              "position": [
+                -7.2,
+                4.21
+              ],
+              "normal": [
+                0,
+                0,
+                -1
+              ],
+              "theme": "objects"
+            },
+            {
+              "type": "VITRINE",
+              "id": "N-pared",
+              "position": [
+                -7.2,
+                -4.21
+              ],
+              "normal": [
+                0,
+                0,
+                1
+              ],
+              "theme": "stationery"
+            },
+            {
+              "type": "COUNTER",
+              "position": [
+                -9.9,
+                0.0
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ],
+              "width": 2.4,
+              "depth": 0.7
+            },
+            {
+              "type": "ASSISTANT",
+              "position": [
+                -10.4,
+                -0.85
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ]
+            },
+            {
+              "type": "WALL_FRAME",
+              "position": [
+                -12.71,
+                1.85
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ],
+              "y": 1.55,
+              "size": [
+                0.95,
+                0.62
+              ],
+              "kind": "landscape"
+            },
+            {
+              "type": "WALL_FRAME",
+              "position": [
+                -12.71,
+                -1.85
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ],
+              "y": 1.55,
+              "size": [
+                0.95,
+                0.62
+              ],
+              "kind": "landscape"
+            },
+            {
+              "type": "WALL_FRAME",
+              "position": [
+                -11.6,
+                -4.21
+              ],
+              "normal": [
+                0,
+                0,
+                1
+              ],
+              "y": 1.6,
+              "size": [
+                0.75,
+                0.95
+              ],
+              "kind": "night"
+            },
+            {
+              "type": "ROPE",
+              "from": [
+                -10.5,
+                -0.75
+              ],
+              "to": [
+                -10.5,
+                0.75
+              ]
+            },
+            {
+              "type": "ROPE",
+              "from": [
+                -10.5,
+                0.75
+              ],
+              "to": [
+                -11.6,
+                0.75
+              ]
+            },
+            {
+              "type": "ROPE",
+              "from": [
+                -10.5,
+                -0.75
+              ],
+              "to": [
+                -11.6,
+                -0.75
+              ]
+            }
+          ],
+          "note": "Mobiliario según docs/referencias/mision5-tienda-referencia.jpg: vitrinas de arce y vidrio, mostrador con caja, datáfono, teléfono y bandeja, dependienta, cuadros y cordón. Solo decorado: lo único a la venta son las entidades con content.product."
         }
       }
     }
@@ -1800,70 +2007,14 @@
       "label": "Entrada a la tienda"
     },
     {
-      "id": "anchor.shop.wall-n1",
+      "id": "anchor.shop.vitrina-1",
       "spaceId": "space.shop",
       "kind": "WALL",
+      "surface": "FIXTURE",
       "position": [
-        -8.0,
-        1.5,
-        -4.5
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "extent": [
-        1.8,
-        1.8
-      ]
-    },
-    {
-      "id": "anchor.shop.wall-n2",
-      "spaceId": "space.shop",
-      "kind": "WALL",
-      "position": [
-        -10.5,
-        1.5,
-        -4.5
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "extent": [
-        1.8,
-        1.8
-      ]
-    },
-    {
-      "id": "anchor.shop.wall-n3",
-      "spaceId": "space.shop",
-      "kind": "WALL",
-      "position": [
-        -13.0,
-        1.5,
-        -4.5
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "extent": [
-        1.8,
-        1.8
-      ]
-    },
-    {
-      "id": "anchor.shop.wall-w1",
-      "spaceId": "space.shop",
-      "kind": "WALL",
-      "position": [
-        -15.5,
-        1.5,
-        -1.7
+        -9.865,
+        1.812,
+        3.37
       ],
       "normal": [
         1,
@@ -1871,18 +2022,20 @@
         0
       ],
       "extent": [
-        1.8,
-        1.8
-      ]
+        0.4,
+        0.32
+      ],
+      "label": "Vitrina S-ext · balda 3"
     },
     {
-      "id": "anchor.shop.wall-w2",
+      "id": "anchor.shop.vitrina-2",
       "spaceId": "space.shop",
       "kind": "WALL",
+      "surface": "FIXTURE",
       "position": [
-        -15.5,
-        1.5,
-        1.7
+        -9.865,
+        1.432,
+        2.83
       ],
       "normal": [
         1,
@@ -1890,18 +2043,104 @@
         0
       ],
       "extent": [
-        1.8,
-        1.8
-      ]
+        0.4,
+        0.32
+      ],
+      "label": "Vitrina S-ext · balda 2"
     },
     {
-      "id": "anchor.shop.wall-s1",
+      "id": "anchor.shop.vitrina-3",
       "spaceId": "space.shop",
       "kind": "WALL",
+      "surface": "FIXTURE",
       "position": [
-        -13.0,
-        1.5,
-        4.5
+        -9.865,
+        1.432,
+        1.62
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "extent": [
+        0.4,
+        0.32
+      ],
+      "label": "Vitrina S-int · balda 2"
+    },
+    {
+      "id": "anchor.shop.vitrina-4",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "surface": "FIXTURE",
+      "position": [
+        -9.865,
+        1.432,
+        -2.15
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "extent": [
+        0.4,
+        0.32
+      ],
+      "label": "Vitrina N-int · balda 2"
+    },
+    {
+      "id": "anchor.shop.vitrina-5",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "surface": "FIXTURE",
+      "position": [
+        -9.865,
+        0.672,
+        2.14
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "extent": [
+        0.4,
+        0.32
+      ],
+      "label": "Vitrina S-int · balda 0"
+    },
+    {
+      "id": "anchor.shop.vitrina-6",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "surface": "FIXTURE",
+      "position": [
+        -7.45,
+        1.432,
+        -4.175
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "extent": [
+        0.4,
+        0.32
+      ],
+      "label": "Vitrina N-pared · balda 2"
+    },
+    {
+      "id": "anchor.shop.vitrina-7",
+      "spaceId": "space.shop",
+      "kind": "WALL",
+      "surface": "FIXTURE",
+      "position": [
+        -7.45,
+        1.432,
+        4.175
       ],
       "normal": [
         0,
@@ -1909,54 +2148,65 @@
         -1
       ],
       "extent": [
-        1.8,
-        1.8
-      ]
+        0.4,
+        0.32
+      ],
+      "label": "Vitrina S-pared · balda 2"
     },
     {
-      "id": "anchor.shop.wall-s2",
+      "id": "anchor.shop.mostrador-llaveros",
       "spaceId": "space.shop",
-      "kind": "WALL",
+      "kind": "FREE",
       "position": [
-        -10.5,
-        1.5,
-        4.5
+        -9.48,
+        1.14,
+        1.02
       ],
       "normal": [
+        1,
         0,
-        0,
-        -1
+        0
       ],
-      "extent": [
-        1.8,
-        1.8
-      ]
+      "label": "Mostrador · llaveros"
     },
     {
-      "id": "anchor.shop.wall-s3",
+      "id": "anchor.shop.vitrina-figuras",
       "spaceId": "space.shop",
-      "kind": "WALL",
+      "kind": "FREE",
       "position": [
-        -8.0,
-        1.5,
-        4.5
+        -9.87,
+        1.782,
+        -2.82
       ],
       "normal": [
+        1,
         0,
-        0,
-        -1
+        0
       ],
-      "extent": [
-        1.8,
-        1.8
-      ]
+      "label": "Vitrina N-ext · figuras"
+    },
+    {
+      "id": "anchor.shop.vitrina-discos",
+      "spaceId": "space.shop",
+      "kind": "FREE",
+      "position": [
+        -9.87,
+        1.072,
+        -3.38
+      ],
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "label": "Vitrina N-ext · discos"
     },
     {
       "id": "anchor.shop.plinth-1",
       "spaceId": "space.shop",
       "kind": "PLINTH",
       "position": [
-        -11.2,
+        -10.95,
         0,
         0
       ],
@@ -1972,7 +2222,7 @@
       "spaceId": "space.shop",
       "kind": "WALL",
       "position": [
-        -15.5,
+        -13.0,
         1.6,
         0
       ],
@@ -2773,11 +3023,11 @@
       "kind": "ARTWORK",
       "subtype": "product",
       "spaceId": "space.shop",
-      "anchorId": "anchor.shop.wall-n1",
+      "anchorId": "anchor.shop.vitrina-1",
       "size": [
-        1.2,
-        0.82,
-        0.04
+        0.4,
+        0.274,
+        0.02
       ],
       "content": {
         "title": "Lámina «Horizonte interrumpido»",
@@ -2803,7 +3053,7 @@
       },
       "interaction": {
         "focusable": true,
-        "focusDistance": 2.0,
+        "focusDistance": 1.0,
         "hotspotRefs": [
           "hotspot.shop.lamina-horizonte"
         ]
@@ -2817,7 +3067,16 @@
         "hints": {
           "composition": "field",
           "palette": "umber",
-          "mount": "framed"
+          "mount": "framed",
+          "slot": {
+            "height": 0.32
+          },
+          "labelOffset": [
+            0,
+            -0.2,
+            0.34
+          ],
+          "labelScale": 0.5
         }
       }
     },
@@ -2826,11 +3085,11 @@
       "kind": "ARTWORK",
       "subtype": "product",
       "spaceId": "space.shop",
-      "anchorId": "anchor.shop.wall-n2",
+      "anchorId": "anchor.shop.vitrina-2",
       "size": [
-        0.95,
-        0.95,
-        0.04
+        0.32,
+        0.32,
+        0.02
       ],
       "content": {
         "title": "Lámina «Marea baja»",
@@ -2856,7 +3115,7 @@
       },
       "interaction": {
         "focusable": true,
-        "focusDistance": 2.0,
+        "focusDistance": 1.0,
         "hotspotRefs": [
           "hotspot.shop.lamina-marea"
         ]
@@ -2870,7 +3129,16 @@
         "hints": {
           "composition": "field",
           "palette": "verdigris",
-          "mount": "framed"
+          "mount": "framed",
+          "slot": {
+            "height": 0.32
+          },
+          "labelOffset": [
+            0,
+            -0.2,
+            0.34
+          ],
+          "labelScale": 0.5
         }
       }
     },
@@ -2879,11 +3147,11 @@
       "kind": "ARTWORK",
       "subtype": "product",
       "spaceId": "space.shop",
-      "anchorId": "anchor.shop.wall-n3",
+      "anchorId": "anchor.shop.vitrina-3",
       "size": [
-        1.2,
-        0.82,
-        0.04
+        0.4,
+        0.272,
+        0.02
       ],
       "content": {
         "title": "Lámina «Noche de invierno»",
@@ -2909,7 +3177,7 @@
       },
       "interaction": {
         "focusable": true,
-        "focusDistance": 2.0,
+        "focusDistance": 1.0,
         "hotspotRefs": [
           "hotspot.shop.lamina-noche"
         ]
@@ -2923,7 +3191,16 @@
         "hints": {
           "composition": "field",
           "palette": "umber",
-          "mount": "framed"
+          "mount": "framed",
+          "slot": {
+            "height": 0.32
+          },
+          "labelOffset": [
+            0,
+            -0.2,
+            0.34
+          ],
+          "labelScale": 0.5
         }
       }
     },
@@ -2932,11 +3209,11 @@
       "kind": "ARTWORK",
       "subtype": "product",
       "spaceId": "space.shop",
-      "anchorId": "anchor.shop.wall-w1",
+      "anchorId": "anchor.shop.vitrina-4",
       "size": [
-        0.6,
-        0.8,
-        0.04
+        0.24,
+        0.32,
+        0.02
       ],
       "content": {
         "title": "Catálogo de la colección",
@@ -2962,7 +3239,7 @@
       },
       "interaction": {
         "focusable": true,
-        "focusDistance": 2.0,
+        "focusDistance": 1.0,
         "hotspotRefs": [
           "hotspot.shop.catalogo"
         ]
@@ -2976,7 +3253,16 @@
         "hints": {
           "composition": "field",
           "palette": "umber",
-          "mount": "paper"
+          "mount": "paper",
+          "slot": {
+            "height": 0.32
+          },
+          "labelOffset": [
+            0,
+            -0.2,
+            0.34
+          ],
+          "labelScale": 0.5
         }
       }
     },
@@ -2985,11 +3271,11 @@
       "kind": "ARTWORK",
       "subtype": "product",
       "spaceId": "space.shop",
-      "anchorId": "anchor.shop.wall-w2",
+      "anchorId": "anchor.shop.vitrina-5",
       "size": [
-        0.96,
-        0.72,
-        0.04
+        0.4,
+        0.3,
+        0.02
       ],
       "content": {
         "title": "Juego de postales",
@@ -3015,7 +3301,7 @@
       },
       "interaction": {
         "focusable": true,
-        "focusDistance": 2.0,
+        "focusDistance": 1.0,
         "hotspotRefs": [
           "hotspot.shop.postales"
         ]
@@ -3029,7 +3315,16 @@
         "hints": {
           "composition": "field",
           "palette": "umber",
-          "mount": "paper"
+          "mount": "paper",
+          "slot": {
+            "height": 0.32
+          },
+          "labelOffset": [
+            0,
+            -0.2,
+            0.34
+          ],
+          "labelScale": 0.5
         }
       }
     },
@@ -3038,11 +3333,11 @@
       "kind": "ARTWORK",
       "subtype": "product",
       "spaceId": "space.shop",
-      "anchorId": "anchor.shop.wall-s1",
+      "anchorId": "anchor.shop.vitrina-6",
       "size": [
-        0.6,
-        0.8,
-        0.04
+        0.24,
+        0.32,
+        0.02
       ],
       "content": {
         "title": "Cuaderno del museo",
@@ -3068,7 +3363,7 @@
       },
       "interaction": {
         "focusable": true,
-        "focusDistance": 2.0,
+        "focusDistance": 1.0,
         "hotspotRefs": [
           "hotspot.shop.cuaderno"
         ]
@@ -3082,7 +3377,16 @@
         "hints": {
           "composition": "field",
           "palette": "umber",
-          "mount": "paper"
+          "mount": "paper",
+          "slot": {
+            "height": 0.32
+          },
+          "labelOffset": [
+            0,
+            -0.2,
+            0.34
+          ],
+          "labelScale": 0.5
         }
       }
     },
@@ -3091,11 +3395,11 @@
       "kind": "ARTWORK",
       "subtype": "product",
       "spaceId": "space.shop",
-      "anchorId": "anchor.shop.wall-s2",
+      "anchorId": "anchor.shop.vitrina-7",
       "size": [
-        0.8,
-        0.88,
-        0.04
+        0.291,
+        0.32,
+        0.02
       ],
       "content": {
         "title": "Bolsa de tela",
@@ -3121,7 +3425,7 @@
       },
       "interaction": {
         "focusable": true,
-        "focusDistance": 2.0,
+        "focusDistance": 1.0,
         "hotspotRefs": [
           "hotspot.shop.bolsa"
         ]
@@ -3135,7 +3439,16 @@
         "hints": {
           "composition": "field",
           "palette": "umber",
-          "mount": "paper"
+          "mount": "paper",
+          "slot": {
+            "height": 0.32
+          },
+          "labelOffset": [
+            0,
+            -0.2,
+            0.34
+          ],
+          "labelScale": 0.5
         }
       }
     },
@@ -3167,7 +3480,7 @@
       },
       "interaction": {
         "focusable": true,
-        "focusDistance": 2.4,
+        "focusDistance": 2.2,
         "hotspotRefs": [
           "hotspot.shop.replica-vasija"
         ]
@@ -3184,6 +3497,156 @@
       }
     },
     {
+      "id": "entity.shop.llaveros",
+      "kind": "OBJECT_3D",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.mostrador-llaveros",
+      "size": [
+        0.3,
+        0.38,
+        0.12
+      ],
+      "content": {
+        "title": "Llaveros de la colección",
+        "creator": "Fundación Arenas",
+        "year": "Edición 2026",
+        "medium": "Objetos",
+        "description": "Ocho llaveros esmaltados con detalles de obras de la colección.",
+        "product": {
+          "category": "Objetos",
+          "price": 9,
+          "currency": "EUR",
+          "visible": true,
+          "order": 9,
+          "demo": true
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 1.1,
+        "hotspotRefs": [
+          "hotspot.shop.llaveros"
+        ]
+      },
+      "accessibility": {
+        "label": "Llaveros de la colección. Producto de la tienda de demostración, 9 euros (precio ficticio).",
+        "description": "Ocho llaveros esmaltados con detalles de obras de la colección."
+      },
+      "representation": {
+        "profile": "shop-display",
+        "hints": {
+          "display": "keyrings",
+          "labelOffset": [
+            0.24,
+            -0.16,
+            0.1
+          ],
+          "labelScale": 0.5
+        }
+      }
+    },
+    {
+      "id": "entity.shop.figuras",
+      "kind": "OBJECT_3D",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.vitrina-figuras",
+      "size": [
+        0.62,
+        0.26,
+        0.2
+      ],
+      "content": {
+        "title": "Figuras de madera pintadas a mano",
+        "creator": "Taller de la Fundación",
+        "year": "Edición 2026",
+        "medium": "Objetos",
+        "description": "Figuras de madera inspiradas en los retratos de la colección, pintadas a mano. Se venden por unidades.",
+        "product": {
+          "category": "Objetos",
+          "price": 24,
+          "currency": "EUR",
+          "visible": true,
+          "order": 10,
+          "demo": true
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 1.1,
+        "hotspotRefs": [
+          "hotspot.shop.figuras"
+        ]
+      },
+      "accessibility": {
+        "label": "Figuras de madera pintadas a mano. Producto de la tienda de demostración, 24 euros (precio ficticio).",
+        "description": "Figuras de madera inspiradas en los retratos de la colección, pintadas a mano. Se venden por unidades."
+      },
+      "representation": {
+        "profile": "shop-display",
+        "hints": {
+          "display": "figurines",
+          "labelOffset": [
+            0,
+            -0.175,
+            0.34
+          ],
+          "labelScale": 0.5
+        }
+      }
+    },
+    {
+      "id": "entity.shop.discos",
+      "kind": "OBJECT_3D",
+      "subtype": "product",
+      "spaceId": "space.shop",
+      "anchorId": "anchor.shop.vitrina-discos",
+      "size": [
+        0.62,
+        0.36,
+        0.3
+      ],
+      "content": {
+        "title": "Vinilo «Sala de escucha»",
+        "creator": "Archivo sonoro de la Fundación",
+        "year": "Edición 2026",
+        "medium": "Música",
+        "description": "Edición en vinilo de las grabaciones del Archivo sonoro, con la cinta que se escucha en la sala del Archivo.",
+        "product": {
+          "category": "Música",
+          "price": 22,
+          "currency": "EUR",
+          "visible": true,
+          "order": 11,
+          "demo": true
+        }
+      },
+      "interaction": {
+        "focusable": true,
+        "focusDistance": 1.1,
+        "hotspotRefs": [
+          "hotspot.shop.discos"
+        ]
+      },
+      "accessibility": {
+        "label": "Vinilo «Sala de escucha». Producto de la tienda de demostración, 22 euros (precio ficticio).",
+        "description": "Edición en vinilo de las grabaciones del Archivo sonoro, con la cinta que se escucha en la sala del Archivo."
+      },
+      "representation": {
+        "profile": "shop-display",
+        "hints": {
+          "display": "records",
+          "labelOffset": [
+            0,
+            -0.22499999999999998,
+            0.34
+          ],
+          "labelScale": 0.5
+        }
+      }
+    },
+    {
       "id": "entity.shop.rotulo",
       "kind": "TEXT",
       "subtype": "wall-panel",
@@ -3195,7 +3658,7 @@
         0.02
       ],
       "content": {
-        "title": "Tienda del museo",
+        "title": "Tienda de la Fundación",
         "creator": "Fundación Arenas",
         "year": "Demostración",
         "medium": "Precios ficticios",
@@ -3780,9 +4243,9 @@
       "type": "INFO",
       "interactionVolume": {
         "shape": "SPHERE",
-        "radius": 2.0
+        "radius": 3.4
       },
-      "triggerDistance": 2.0,
+      "triggerDistance": 3.4,
       "visualPolicy": "NEAR",
       "action": {
         "type": "FOCUS_ENTITY",
@@ -3806,6 +4269,57 @@
         "target": "portal.lobby-shop"
       },
       "accessibilityLabel": "Entrar en la tienda del museo"
+    },
+    {
+      "id": "hotspot.shop.llaveros",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.llaveros",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.llaveros"
+      },
+      "accessibilityLabel": "Ver de cerca Llaveros de la colección"
+    },
+    {
+      "id": "hotspot.shop.figuras",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.figuras",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.figuras"
+      },
+      "accessibilityLabel": "Ver de cerca Figuras de madera pintadas a mano"
+    },
+    {
+      "id": "hotspot.shop.discos",
+      "spaceId": "space.shop",
+      "entityId": "entity.shop.discos",
+      "type": "INFO",
+      "interactionVolume": {
+        "shape": "SPHERE",
+        "radius": 2.0
+      },
+      "triggerDistance": 2.0,
+      "visualPolicy": "NEAR",
+      "action": {
+        "type": "FOCUS_ENTITY",
+        "target": "entity.shop.discos"
+      },
+      "accessibilityLabel": "Ver de cerca Vinilo «Sala de escucha»"
     },
     {
       "id": "hotspot.shop.to-lobby",

@@ -83,6 +83,8 @@ Estados:
 | A-54 | Audioguía · Accesibilidad | Cada play o pausa redibujaba el panel y el foco del teclado se perdía; al terminar una pista, el botón decía «Reanudar» | ✅ el foco vuelve al mismo control; al terminar, la pista vuelve al principio |
 | A-55 | Audioguía · Móvil | «Cerrar» medía 31 px de alto en el móvil (mínimo 44 px) | ✅ todos los botones del panel a 44 px · `AUDIOGUIDE-MOBILE` |
 | A-56 | Entorno de prueba | En SwiftShader, dibujar cada fotograma satura el hilo principal y un `<audio>` no pasa de `readyState 0`; con el bucle parado, la misma pista suena | 📋 no es un fallo del museo. La prueba deja de dibujar mientras comprueba el audio · 👁 reproducción en GPU real pendiente |
+| A-57 | Tienda | La tienda era una galería: fotos de productos enmarcadas en las paredes y cuerdas de museo. Sin mostrador, sin muebles ni existencias | ✅ misión 5, según la referencia: vitrinas de arce y vidrio, mostrador con caja, datáfono, teléfono, llaveros y bandeja, dependienta, cuadros y cordón; 3 productos nuevos · `SHOP-FIXTURES`, `SHOP-COLLIDE`, `SHOP-SELECT` · 👁 revisión visual humana |
+| A-58 | Escena · Anclas | Toda ancla `WALL` a menos de 1 m de la pared se proyectaba sobre su superficie: un producto montado en un mueble quedaba detrás del fondo del mueble, invisible | ✅ las anclas con `surface: "FIXTURE"` no se proyectan · `SHOP-FIXTURES` |
 
 ## Detalle
 
@@ -382,3 +384,67 @@ Defectos encontrados al probar la propia misión, todos corregidos antes del com
 | Teclado y móvil | **PASS** en Chromium y en emulación 390 × 844 · **NO PROBADO** en un teléfono real | `AUDIOGUIDE-KEYBOARD-OPEN`, `AUDIOGUIDE-KEYBOARD`, `AUDIOGUIDE-MOBILE` |
 | Sin errores de consola | **PASS** | `AUDIOGUIDE-VISITOR-CONSOLE`, `AUDIOGUIDE-STUDIO-CONSOLE` |
 | Reproducción en un navegador con GPU real | 👁 **pendiente** de revisión humana (A-56) | — |
+
+## Misión 5 (2026-10-02): la tienda como tienda
+
+Rama propia (`mision5/tienda-del-museo`), separada de la PR #2 para revisarla aparte. Referencia: `docs/referencias/mision5-tienda-referencia.jpg` (recortada sin la barra del navegador).
+
+**Antes:** una sala blanca con siete fotos de producto enmarcadas en las paredes, una peana y una cuerda de museo.
+
+**Primera versión (descartada tras la revisión de Juanma):** muebles grandes de roble anaranjado junto a las paredes y el mostrador al fondo. Comparada con la referencia, fallaba en todo esto:
+
+- no había dependienta;
+- faltaban las categorías de llaveros, figuras y discos;
+- la disposición y la proporción de los muebles no coincidían;
+- los materiales no eran los de la referencia;
+- no había cuadros en la pared del fondo ni cordón.
+
+**Versión entregada:** reproduce la composición de la referencia. Se comparó de lado a lado con la imagen en cada iteración (`audit/comparar-*.jpg`).
+
+| Elemento de la referencia | En la tienda |
+|---|---|
+| Mostrador claro en primer plano | ✅ marco de arce, frente claro |
+| Caja registradora con visor | ✅ |
+| Datáfono | ✅ |
+| Tablero de llaveros | ✅ **producto** «Llaveros de la colección» |
+| Bandeja de postales y posavasos | ✅ |
+| Pila de libros azules | ✅ |
+| Teléfono | ✅ en el lado de la dependienta (no se ve en la referencia, pero estaba en el encargo) |
+| Dependienta con polo beige y logotipo, mano abierta | ✅ figura procedural |
+| Vitrinas de arce y vidrio con cajones, dos por lado | ✅ 4 frontales y 2 laterales |
+| Láminas enmarcadas | ✅ 3 **productos** y otras de decorado |
+| Cerámica de terracota | ✅ |
+| Libros y catálogos | ✅ el catálogo es **producto** |
+| Figuras pintadas | ✅ **producto** «Figuras de madera» |
+| Discos en soporte escalonado | ✅ **producto** «Vinilo "Sala de escucha"» |
+| Peana con vasija tras un cordón | ✅ la réplica (**producto**) |
+| Rótulo «Tienda de la Fundación» entre dos cuadros | ✅ |
+| Cuadro en la pared derecha | ✅ |
+| Techo con lucernario | ✅ cubierta con lucernarios y pared más baja (3,1 m) |
+
+**Diferencias que quedan:**
+
+- el campo de visión de la cámara es más estrecho que el de la imagen. Desde la entrada se ven enteras las vitrinas interiores; las exteriores, al girar o acercarse;
+- la dependienta y las figuras son geometría procedural sencilla, no un modelo esculpido;
+- las texturas son procedurales (veta, cubiertas, láminas): no hay fotografías.
+
+### Defectos encontrados al desarrollarla
+
+- **A-58:** toda ancla `WALL` a menos de 1 m de la pared se proyectaba sobre ella, y el producto quedaba detrás del fondo del mueble. Corregido con `surface: "FIXTURE"`.
+- **Figuras y discos:** estaban en la misma vertical y E siempre elegía las figuras. Ahora están separados en horizontal.
+- **Réplica:** el mostrador le quitaba E. Se acercó la peana y se reordenó el mostrador; el motor de proximidad no se tocó.
+- **Vista de detalle de los productos 3D:** se cortaban, porque el ancla estaba en la base. El ancla marca ahora el centro visual.
+
+### Validación de la misión 5
+
+| Requisito | Resultado | Evidencia |
+|---|---|---|
+| Elementos de la referencia en 3D, incluida la dependienta | **PASS** | `SHOP-FIXTURES`; comparaciones con la imagen |
+| Productos con sus identificadores, fichas y personalización; 3 nuevos | **PASS** | `SHOP-ROOM` (11), `SHOP-SHEET`, `SHOP-TEXT`, `SHOP-STUDIO` |
+| Precios de demostración, sin compra ni datos personales | **PASS** | `SHOP-SHEET` |
+| Colisiones y zona del personal | **PASS**: se para a 0,82 m de cada vitrina y a 1,1 m del mostrador | `SHOP-COLLIDE` |
+| Selección de cada producto | **PASS**: 11 de 11 | `SHOP-SELECT` |
+| Rendimiento | **PASS**: unas 55 llamadas y 9 000 triángulos | `SHOP-COST` |
+| Avatar, móvil y otras salas | Ver `npm test` | `AVATAR shop`, `MOBILE-*` |
+
+`SHOP-FIXTURES` y `SHOP-COLLIDE` fallan sobre el código anterior (`eaa54b3`) y pasan ahora.
