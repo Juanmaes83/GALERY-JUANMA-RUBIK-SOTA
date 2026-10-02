@@ -11,6 +11,7 @@ Este repositorio es el **canónico** del museo de la Fundación Arenas desde el 
 | [05 · Personaje y avatar](05-PERSONAJE_AVATAR.md) | Character 2027: capas, parámetros, asset, Avatar Studio y acciones |
 | [06 · Salas especiales](06-SALAS_ESPECIALES.md) | Wet Paint (itinerante) y Breeze (instalación), y el contrato de sala anidada |
 | [07 · Calidad y pruebas](07-CALIDAD_Y_PRUEBAS.md) | Pruebas automáticas, estados deterministas, invariantes y puertas humanas |
+| [11 · Audioguía](11-AUDIOGUIA.md) | Bienvenida, salas y obras: modelo de contenido, edición en el Studio, reglas del reproductor, pruebas y lo que falta (no hay grabaciones) |
 | [08 · Decisiones](08-DECISIONES.md) | Registro de decisiones de este repositorio |
 | [09 · Fuentes](09-FUENTES.md) | Trazabilidad con la documentación y los commits del repositorio madre |
 | [EXTRACTION_AUDIT](EXTRACTION_AUDIT.md) | Auditoría de la extracción inicial e inventario justificado |

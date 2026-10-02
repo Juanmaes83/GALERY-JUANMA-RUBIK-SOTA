@@ -78,6 +78,11 @@ Estados:
 | A-49 | **Avatar · Interacción** | Con avatar, lo cercano se medía desde la cámara (3 m detrás), no desde el avatar: el aviso y E nombraban lo que estaba cerca de la cámara | ✅ una sola fuente por fotograma: el cuerpo del avatar · `AVATAR-PROXIMITY-BODY` |
 | A-50 | **Avatar · Breeze** | Con avatar, dentro de Breeze ni E ni el aviso salían de la sala: la proximidad se medía desde la cámara que seguía encuadrando el avatar aparcado en la Galería B. Solo funcionaba el botón-puente | ✅ aparcado, se mide desde donde el cruce dejó al visitante · `AVATAR-BREEZE-E` |
 | A-51 | **Avatar · Fluidez** | La cámara se quedaba quieta y daba saltos (42 de 43 fotogramas quieta, 38 recolocaciones en 2 s) y el avatar pasaba de 0 a velocidad máxima en un fotograma | ✅ cámara que sigue al avatar 1:1, avatar con aceleración, giro suave y colisión deslizante · `AVATAR-CAMERA-FOLLOW`, `AVATAR-EASE`, `AVATAR-DT-INDEPENDENT` · 👁 falta la revisión visual en una GPU real |
+| A-52 | Studio · Audio | La duración de un audio subido salía vacía: se leía después de descargar el elemento de prueba, y eso la devuelve como `NaN` | ✅ se lee antes · `AUDIOGUIDE-STUDIO-UPLOAD` |
+| A-53 | Audioguía · Teclado | Enter en «Pausar» llegaba también al atajo E/Enter del museo: pausaba y activaba lo que hubiera cerca | ✅ los controles de la audioguía no propagan Enter ni Espacio · `AUDIOGUIDE-KEYBOARD` |
+| A-54 | Audioguía · Accesibilidad | Cada play o pausa redibujaba el panel y el foco del teclado se perdía; al terminar una pista, el botón decía «Reanudar» | ✅ el foco vuelve al mismo control; al terminar, la pista vuelve al principio |
+| A-55 | Audioguía · Móvil | «Cerrar» medía 31 px de alto en el móvil (mínimo 44 px) | ✅ todos los botones del panel a 44 px · `AUDIOGUIDE-MOBILE` |
+| A-56 | Entorno de prueba | En SwiftShader, dibujar cada fotograma satura el hilo principal y un `<audio>` no pasa de `readyState 0`; con el bucle parado, la misma pista suena | 📋 no es un fallo del museo. La prueba deja de dibujar mientras comprueba el audio · 👁 reproducción en GPU real pendiente |
 
 ## Detalle
 
@@ -342,3 +347,38 @@ Las pruebas nuevas, ejecutadas sobre el código anterior (`a2e0cc5`), **fallan**
 | 8. Puerta u obra según proximidad y orientación | **PASS** | `tests/proximity.test.mjs`, `AVATAR-PROXIMITY-BODY` |
 | 9. Entrada, salida, navegación y selección en POV, avatar y móvil | **PASS** en emulación móvil 390 × 844 · **NO PROBADO** en un teléfono real | Suite completa, `MOBILE-*` |
 | 10. Las pruebas nuevas fallan antes y pasan después; sin regresiones | **PASS** | Ver arriba |
+
+**Verificación remota del preview de la misión 3** (`b73bc1f`, despliegue de staging en el proyecto solo-preview): la suite completa contra la URL pública, en un Vercel Sandbox de 8 vCPU, terminó con **93 OK y 0 fallos** (`SMOKE_EXIT=0`). Sigue siendo Chromium con render por software: 👁 la revisión visual en una GPU real sigue pendiente.
+
+## Misión 4 (2026-10-02): audioguía
+
+Bienvenida, 7 introducciones de sala y 16 cápsulas de obra, editables en el Studio y con un reproductor único para el visitante. El diseño, el modelo y las reglas están en [11-AUDIOGUIA](11-AUDIOGUIA.md).
+
+**Lo que hay y lo que no:**
+
+- **Hay:** el sistema completo y 24 borradores de texto compuestos con datos que ya existían (cartelas, fichas, salidas), todos marcados como borrador.
+- **No hay ninguna grabación.** No se ha generado audio sintético ni silencioso para aparentar contenido. Cada pista dice «Pendiente de audio» y muestra su transcripción.
+- Los audios subidos en el Studio duran solo la sesión, como el resto de subidas, y el editor lo dice. Al recargar, la pista se declara «Audio no disponible».
+
+Defectos encontrados al probar la propia misión, todos corregidos antes del commit: A-52 a A-55. A-56 es una limitación del entorno de prueba.
+
+### Validación de la misión 4
+
+`npm test`: `npm run check` OK, `tests/proximity.test.mjs` 5/5, `tests/audioguide.test.mjs` 19/19 y `tests/museum-smoke.mjs` **106/106** (las 88 anteriores y las 18 `AUDIOGUIDE-*`), en Chromium headless con SwiftShader, 2026-10-02.
+
+| Requisito | Resultado | Evidencia |
+|---|---|---|
+| Inventario completo (bienvenida, salas, obras; sin productos) | **PASS** | `INVENTORY`, `NO-PRODUCTS`, `AUDIOGUIDE-STUDIO-INVENTORY` |
+| Studio: título, idioma, guion, transcripción, audio, duración, créditos, derechos, estado, orden | **PASS** | `AUDIOGUIDE-STUDIO-UPLOAD`, `AUDIOGUIDE-STUDIO-LOCALE` |
+| La asociación sobrevive a la recarga | **PASS** para el texto; el audio se declara caducado, de forma honesta | `PERSIST`, `AUDIOGUIDE-PERSIST`, `AUDIOGUIDE-STALE-VISITOR` |
+| Sin mezcla entre obras ni idiomas | **PASS** | `LOCALE-ISOLATION`, `ITEM-ISOLATION`, `AUDIOGUIDE-STUDIO-LOCALE` |
+| Reproducir, pausar, reanudar, buscar, volumen y detener | **PASS** | `AUDIOGUIDE-PLAY`, `AUDIOGUIDE-KEYBOARD`, `AUDIOGUIDE-CONTROLS` |
+| Una pista nueva detiene la anterior | **PASS** | `AUDIOGUIDE-ONE-TRACK` |
+| Sin reproducción automática ni descargas al entrar | **PASS** | `AUDIOGUIDE-NO-AUTOPLAY` |
+| Pausa al cerrar la ficha y al cambiar de sala, con aviso | **PASS** | `AUDIOGUIDE-SHEET-CLOSE`, `AUDIOGUIDE-ROOM-CHANGE` |
+| No se mezcla con el ambiente ni con la narración | **PASS**: el ambiente baja al sonar y la voz sintética se calla | `AUDIOGUIDE-PLAY` (ducked) |
+| Transcripción y estado sin audio | **PASS** | `AUDIOGUIDE-PANEL`, `PENDING`, `STALE` |
+| La pieza sonora del Archivo se distingue de su cápsula | **PASS** | `AUDIOGUIDE-SOUND-PIECE` |
+| Teclado y móvil | **PASS** en Chromium y en emulación 390 × 844 · **NO PROBADO** en un teléfono real | `AUDIOGUIDE-KEYBOARD-OPEN`, `AUDIOGUIDE-KEYBOARD`, `AUDIOGUIDE-MOBILE` |
+| Sin errores de consola | **PASS** | `AUDIOGUIDE-VISITOR-CONSOLE`, `AUDIOGUIDE-STUDIO-CONSOLE` |
+| Reproducción en un navegador con GPU real | 👁 **pendiente** de revisión humana (A-56) | — |

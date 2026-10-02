@@ -61,6 +61,7 @@ CI: `.github/workflows/test.yml` ejecuta `npm test` en cada PR.
 |---|---|
 | Vestíbulo · Galería A (4 obras, *Vasija de arenas*, **Marble Bust 01**) · Galería B (2 obras y proyección) · Archivo (sala de escucha) · Itinerante **Wet Paint** | Operativas |
 | **Tienda del museo** (junto al Vestíbulo): 8 productos de demostración con fichas y precios ficticios | Operativa; simulada, sin compra. Administrable desde el Studio ([06](docs/06-SALAS_ESPECIALES.md#tienda-del-museo)) |
+| **Audioguía**: bienvenida, 7 introducciones de sala y 16 cápsulas de obra, editables en el Studio | Funcional, con transcripción. **Sin grabaciones todavía:** cada pista dice «Pendiente de audio». Los audios subidos en el Studio solo duran la sesión ([11](docs/11-AUDIOGUIA.md)) |
 | **Breeze**: tela y viento sobre escultura, con Breeze Studio PRO y WebGPU | Integrada, **no validada en GPU real**. Sin WebGPU, o si la GPU detiene la simulación, la sala lo explica y ofrece salida ([06](docs/06-SALAS_ESPECIALES.md)) |
 
 ## Documentación
@@ -76,6 +77,8 @@ Todo el proyecto está documentado en [docs/](docs/README.md):
 7. [Calidad y pruebas](docs/07-CALIDAD_Y_PRUEBAS.md)
 8. [Decisiones](docs/08-DECISIONES.md)
 9. [Fuentes](docs/09-FUENTES.md)
+10. [Auditoría E2E](docs/10-AUDITORIA.md)
+11. [Audioguía](docs/11-AUDIOGUIA.md)
 
 También están la [auditoría de extracción](docs/EXTRACTION_AUDIT.md) y el [ROADMAP](ROADMAP.md).
 

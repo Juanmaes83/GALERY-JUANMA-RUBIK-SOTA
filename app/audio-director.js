@@ -30,6 +30,7 @@ export class AudioDirector {
     this.volume = 0.7;
     this.currentCue = null;
     this.speaking = false;
+    this.ducked = false;
 
     this._ctx = null;
     this._master = null;
@@ -107,8 +108,16 @@ export class AudioDirector {
   _applyGain(base = null) {
     if (!this._ctx) return;
     const tone = ROOM_TONES[this.currentCue] || ROOM_TONES['ambience.gallery'];
-    const target = this.muted ? 0 : (base ?? tone.gain) * this.volume;
+    // Under the audioguide's narration the room tone drops to a quarter, so a
+    // voice is never mixed with the ambience at full level.
+    const target = this.muted ? 0 : (base ?? tone.gain) * this.volume * (this.ducked ? 0.25 : 1);
     this._master.gain.setTargetAtTime(target, this._ctx.currentTime, 0.6);
+  }
+
+  /** Lower the room tone while a narrated track plays; restore it after. */
+  duck(on) {
+    this.ducked = Boolean(on);
+    this._applyGain();
   }
 
   setMuted(muted) {

@@ -15,6 +15,8 @@
 | `storySteps` | 40 | Beats del recorrido |
 | `routes` | 1 | `route.comentado` |
 
+`metadata.audioguide` guarda los textos base de la audioguía: bienvenida, 7 salas y 16 obras, en español, todos en borrador y sin audio ([11-AUDIOGUIA](11-AUDIOGUIA.md)).
+
 Vocabulario: **ANCHOR = DÓNDE · HOTSPOT = DISPARO · ACTION = QUÉ · PORTAL = CONEXIÓN · STORY STEP = ORQUESTACIÓN.**
 
 El validador (`engine/schema/validate.js`) aplica las invariantes al cargar. Un World inválido no arranca y muestra su error.

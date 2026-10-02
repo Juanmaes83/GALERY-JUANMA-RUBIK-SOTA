@@ -22,6 +22,10 @@ npm test        # check + Chromium (Playwright, SwiftShader)
 
 Sin navegador: qué hotspot elige E cuando hay una puerta y una obra cerca (de frente, de lado, de espaldas, anclas a distinta altura). La geometría es la de la puerta de Breeze cuando la tecla abría la ficha de *Marea baja*.
 
+### `tests/audioguide.test.mjs`
+
+Sin navegador: inventario de la audioguía (24 pistas, sin productos), textos base, ningún audio declarado que no exista, herencia, aislamiento entre idiomas y entre obras, persistencia y estados. Ver [11-AUDIOGUIA](11-AUDIOGUIA.md).
+
 ### `tests/museum-smoke.mjs`
 
 | Grupo | Qué demuestra |
@@ -36,7 +40,8 @@ Sin navegador: qué hotspot elige E cuando hay una puerta y una obra cerca (de f
 | Consola | Sin errores de consola |
 | Marble Bust 01 | Modo `GLB` y modo `FALLBACK` forzado, ambos con foco correcto |
 | Studio | Monta las 6 áreas, Avatar Studio listo, guardar y recargar conserva la edición, sin errores |
-| Avatar | Solo informativo: depende del host remoto |
+| Audioguía | Sin reproducción automática ni descargas al entrar; panel y estados sin audio; teclado; pieza sonora aparte; en el Studio, subida con duración, idioma e inventario; como visitante, reproducir, pausar con Enter, avanzar, volumen, detener, una sola pista, pausa al cerrar la ficha y al cambiar de sala; tras recargar, texto conservado y audio caducado; móvil. En SwiftShader se deja de dibujar mientras se prueba el audio (ver [11](11-AUDIOGUIA.md)) |
+| Avatar | Avatar en todas las salas (con el GLB del repositorio) |
 
 **Limitaciones:**
 

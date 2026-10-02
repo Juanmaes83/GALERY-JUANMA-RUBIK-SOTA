@@ -597,6 +597,223 @@ try {
     await context.close();
   }
 
+  /* 3b. Audioguide: visitor panel, Studio slice, one track, reload, phone ---- */
+  {
+    // A short tone, generated here: a test fixture, never shipped as content.
+    const wav = (seconds, hz) => {
+      const rate = 8000; const n = rate * seconds; const b = Buffer.alloc(44 + n * 2);
+      b.write('RIFF', 0); b.writeUInt32LE(36 + n * 2, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
+      b.writeUInt32LE(rate, 24); b.writeUInt32LE(rate * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(n * 2, 40);
+      for (let i = 0; i < n; i++) b.writeInt16LE(Math.round(Math.sin((2 * Math.PI * hz * i) / rate) * 6000), 44 + i * 2);
+      return b;
+    };
+    const guide = (page) => page.evaluate(() => {
+      const panel = document.getElementById('iw-guide');
+      const toggle = panel?.querySelector('[data-guide="toggle"]');
+      return {
+        ...(window.__IW_AUDIOGUIDE?.report() || {}),
+        hidden: panel?.hidden ?? null,
+        title: panel?.querySelector('[data-guide="title"]')?.textContent || null,
+        status: panel?.querySelector('[data-guide="status"]')?.dataset.status || null,
+        toggle: toggle ? toggle.textContent.trim() : null,
+        transcript: (panel?.querySelector('.iw-guide__transcript p')?.textContent || '').length,
+        own: Boolean(panel?.querySelector('.iw-guide__own')),
+        focusedEntity: window.__IW.runtime.state.focusedEntityId,
+        space: window.__IW.runtime.state.activeSpaceId,
+        ducked: Boolean(window.__IW.audio?.ducked)
+      };
+    });
+
+    // The visitor, with the museum as it ships: nothing to play yet, and saying so.
+    {
+      const { page, consoleErrors } = await openMuseum('');
+      const mediaRequests = [];
+      page.on('request', (req) => { if (['media'].includes(req.resourceType()) || /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac)(\?|$)/i.test(req.url())) mediaRequests.push(req.url()); });
+      await page.evaluate(() => window.__IW.hud.el.enter.click());
+      await page.waitForTimeout(1500);
+      const idle = await guide(page);
+      check('AUDIOGUIDE-NO-AUTOPLAY', 'Al entrar no suena nada ni se descarga audio: no existe reproductor hasta pulsar Reproducir',
+        idle.players === 0 && idle.playing === false && idle.hidden === true && mediaRequests.length === 0, JSON.stringify({ players: idle.players, mediaRequests }));
+
+      // Keyboard: the top bar button opens the panel, and Enter does not also
+      // activate the nearest hotspot.
+      await page.locator('[data-el="guideBtn"]').focus();
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(300);
+      const open = await guide(page);
+      check('AUDIOGUIDE-PANEL', 'La audioguía abre la bienvenida: estado «pendiente de audio», transcripción y ningún botón de reproducir sin archivo',
+        open.hidden === false && open.selected === 'welcome' && open.status === 'PENDING_AUDIO' && open.toggle === null && open.transcript > 40 && open.players === 0,
+        JSON.stringify(open));
+      check('AUDIOGUIDE-KEYBOARD-OPEN', 'Con el teclado: Enter abre el panel y deja el foco en él, sin activar lo que haya cerca',
+        open.focusedEntity === null && await page.evaluate(() => document.getElementById('iw-guide').contains(document.activeElement)), JSON.stringify({ focusedEntity: open.focusedEntity }));
+
+      // A sound piece keeps its own sound apart from the narrated capsule.
+      for (const id of ['portal.lobby-gallery-a', 'portal.gallery-a-archive']) await travel(page, id);
+      await page.evaluate(() => window.__IW.runtime.focusEntity('entity.audio.sala-de-escucha'));
+      await page.waitForFunction(() => window.__IW.runtime.state.focusedEntityId === 'entity.audio.sala-de-escucha', null, { timeout: 15000 }).catch(() => {});
+      const sheetLabel = await page.evaluate(() => { const b = document.querySelector('[data-el="detailGuide"]'); return b && !b.hidden ? b.textContent.trim() : null; });
+      await press(page.locator('[data-el="detailGuide"]'));
+      await page.waitForTimeout(300);
+      const piece = await guide(page);
+      check('AUDIOGUIDE-SOUND-PIECE', 'La pieza sonora del Archivo muestra su sonido propio aparte de la cápsula narrada',
+        sheetLabel === 'Cápsula (texto)' && piece.selected === 'work:entity.audio.sala-de-escucha' && piece.own && piece.toggle === null,
+        JSON.stringify({ sheetLabel, selected: piece.selected, own: piece.own }));
+      check('AUDIOGUIDE-VISITOR-CONSOLE', 'Sin errores de consola en la audioguía del visitante', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
+      await page.close();
+    }
+
+    // The Studio vertical slice: attach audio, preview it as the visitor, reload.
+    {
+      const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      const page = await context.newPage();
+      const consoleErrors = [];
+      page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+      page.on('pageerror', (error) => consoleErrors.push(String(error)));
+      const studioReady = () => page.waitForFunction(() => window.__IW?.ready === true && window.__IW_STUDIO, null, { timeout: 120000 });
+      await page.goto(`${BASE}/index.html?authoring=1`);
+      await studioReady();
+      const work = 'work:entity.artwork.horizonte-interrumpido';
+      const room = 'room:space.gallery-a';
+      const editor = () => page.evaluate(() => ({
+        status: document.querySelector('#st [data-guide-status]')?.dataset.guideStatus || null,
+        duration: document.querySelector('#st [data-bind$="|durationS"]')?.value ?? null,
+        file: document.querySelector('#st [data-slot="AUDIOGUIDE_AUDIO"] .st-filename')?.textContent.trim() || null,
+        title: document.querySelector('#st [data-bind$="|title"]')?.value ?? null
+      }));
+      const attach = async (node, name, hz) => {
+        await press(page.locator(`#st .st-nodebtn[data-node="${node}"]`).first());
+        await page.locator('#st [data-media="AUDIOGUIDE_AUDIO"]').setInputFiles({ name, mimeType: 'audio/wav', buffer: wav(20, hz) });
+        await page.waitForFunction(() => document.querySelector('#st [data-guide-status]')?.dataset.guideStatus === 'AVAILABLE_SESSION', null, { timeout: 20000 }).catch(() => {});
+        return editor();
+      };
+      await press(page.locator('#st .st-nodebtn[data-node="entity.artwork.horizonte-interrumpido"]').first());
+      await page.locator(`#st [data-bind="audioguide|${work}|es|title"]`).fill('Cápsula de prueba');
+      const w = await attach('entity.artwork.horizonte-interrumpido', 'capsula.wav', 440);
+      check('AUDIOGUIDE-STUDIO-UPLOAD', 'El Studio acepta un audio, mide su duración y la pista pasa a «disponible en este navegador»',
+        w.status === 'AVAILABLE_SESSION' && w.duration === '20' && w.file === 'capsula.wav', JSON.stringify(w));
+      await page.locator('#st [data-guide-locale]').selectOption('en');
+      const en = await editor();
+      await page.locator('#st [data-guide-locale]').selectOption('es');
+      check('AUDIOGUIDE-STUDIO-LOCALE', 'El audio pertenece a un idioma: en inglés la misma obra sigue sin archivo',
+        en.status !== 'AVAILABLE_SESSION' && en.file === 'Ningún archivo seleccionado', JSON.stringify(en));
+      const r = await attach('space.gallery-a', 'sala.wav', 330);
+      await press(page.locator('#st [data-domain="visitor"]').first());
+      const inventory = await page.evaluate(() => ({
+        items: document.querySelectorAll('#st [data-guide-inventory] [data-guide-item]').length,
+        ready: [...document.querySelectorAll('#st [data-guide-inventory] [data-guide-state="AVAILABLE_SESSION"]')].length
+      }));
+      check('AUDIOGUIDE-STUDIO-INVENTORY', 'El inventario del Studio lista las 24 pistas y cuáles tienen audio',
+        inventory.items === 24 && inventory.ready === 2 && r.status === 'AVAILABLE_SESSION', JSON.stringify({ ...inventory, room: r.status }));
+
+      await press(page.locator('#st [data-act="save"]').first());
+      await page.waitForTimeout(500);
+      await press(page.locator('#st [data-act="start"]').first());
+      await page.waitForFunction(() => !document.body.dataset.studio && window.__IW?.ready === true && window.__IW_AUDIOGUIDE, null, { timeout: 240000 });
+      await page.waitForTimeout(800);
+      await page.evaluate(() => window.__IW.hud.el.enter.click());
+      await page.waitForTimeout(800);
+      // SwiftShader: drawing a WebGL frame on the CPU starves the main thread
+      // and the <audio> element never gets past loading (readyState 0). The loop
+      // keeps running, so events and room changes are real; only drawing stops.
+      await page.evaluate(() => { window.__IW.renderHost.render = () => {}; window.__IW.runtime.sceneKit.renderPortalPass = () => {}; });
+      await travel(page, 'portal.lobby-gallery-a');
+      await page.evaluate(() => window.__IW.runtime.focusEntity('entity.artwork.horizonte-interrumpido'));
+      await page.waitForFunction(() => window.__IW.runtime.state.focusedEntityId === 'entity.artwork.horizonte-interrumpido', null, { timeout: 15000 }).catch(() => {});
+      const listen = await page.evaluate(() => document.querySelector('[data-el="detailGuide"]')?.textContent.trim());
+      await press(page.locator('[data-el="detailGuide"]'));
+      const before = await guide(page);
+      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      const playing = await page.waitForFunction(() => (window.__IW_AUDIOGUIDE.report().currentTime || 0) > 0.5, null, { timeout: 20000 }).then(() => true).catch(() => false);
+      const g1 = await guide(page);
+      check('AUDIOGUIDE-PLAY', 'La cápsula se abre desde la ficha, suena al pulsar Reproducir y baja el ambiente',
+        listen === 'Escuchar cápsula' && before.players === 0 && playing && g1.playingRef === work && g1.ducked, JSON.stringify({ listen, players: before.players, t: g1.currentTime, ducked: g1.ducked }));
+
+      // Enter on the focused button pauses, and only pauses.
+      await page.locator('#iw-guide [data-guide="toggle"]').focus();
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(400);
+      const g2 = await guide(page);
+      check('AUDIOGUIDE-KEYBOARD', 'Con el teclado: Enter en «Pausar» pausa, conserva el foco y no activa nada más',
+        g2.playing === false && g2.toggle === 'Reanudar' && g2.focusedEntity === 'entity.artwork.horizonte-interrumpido'
+          && await page.evaluate(() => document.activeElement?.dataset?.guide === 'toggle'), JSON.stringify({ playing: g2.playing, toggle: g2.toggle }));
+
+      // Seek, volume, stop.
+      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await page.waitForTimeout(500);
+      const t0 = (await guide(page)).currentTime;
+      await press(page.locator('#iw-guide [data-guide="fwd"]'));
+      const t1 = (await guide(page)).currentTime;
+      await page.locator('#iw-guide [data-guide="volume"]').fill('0.5');
+      const volume = await page.evaluate(() => document.querySelector('audio[data-audioguide]')?.volume);
+      await press(page.locator('#iw-guide [data-guide="stop"]'));
+      const g3 = await guide(page);
+      check('AUDIOGUIDE-CONTROLS', 'Avanzar 10 s, volumen y Detener (vuelve al principio)',
+        t1 - t0 > 8 && volume === 0.5 && g3.playing === false && g3.currentTime === 0 && g3.toggle === 'Reproducir', JSON.stringify({ t0, t1, volume, stop: g3.currentTime }));
+
+      // Closing the sheet pauses that work's capsule, with a notice.
+      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await page.waitForTimeout(500);
+      await page.evaluate(() => window.__IW.runtime.releaseFocus());
+      await page.waitForTimeout(500);
+      const g4 = await guide(page);
+      check('AUDIOGUIDE-SHEET-CLOSE', 'Cerrar la ficha pausa la cápsula de esa obra y lo dice', g4.playing === false && /cerrar la ficha/.test(g4.notice), g4.notice);
+
+      // One narration at a time: the room introduction stops the capsule.
+      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await page.waitForTimeout(500);
+      await press(page.locator(`#iw-guide [data-guide="select"][data-ref="${room}"]`));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await page.waitForTimeout(800);
+      const g5 = await guide(page);
+      const players = await page.evaluate(() => [...document.querySelectorAll('audio')].filter((a) => !a.paused).length);
+      check('AUDIOGUIDE-ONE-TRACK', 'Una pista nueva detiene la anterior: un único reproductor y una sola voz',
+        g5.playingRef === room && g5.playing && g5.players === 1 && players === 1, JSON.stringify({ playingRef: g5.playingRef, players: g5.players, sounding: players }));
+
+      await travel(page, 'portal.gallery-a-lobby');
+      const g6 = await guide(page);
+      check('AUDIOGUIDE-ROOM-CHANGE', 'Cambiar de sala pausa la pista, con aviso', g6.playing === false && /cambiar de sala/.test(g6.notice) && !g6.ducked, g6.notice);
+
+      // Reload: the text survives; the file was this session's and is reported gone.
+      await page.goto(`${BASE}/index.html?authoring=1`);
+      await studioReady();
+      await press(page.locator('#st .st-nodebtn[data-node="entity.artwork.horizonte-interrumpido"]').first());
+      const reloaded = await editor();
+      check('AUDIOGUIDE-PERSIST', 'Tras recargar, el texto sigue y el audio de otra sesión se declara no disponible',
+        reloaded.title === 'Cápsula de prueba' && reloaded.status === 'STALE_AUDIO' && reloaded.duration === '20', JSON.stringify(reloaded));
+      await page.goto(`${BASE}/index.html`);
+      await page.waitForFunction(() => window.__IW?.ready === true && window.__IW_AUDIOGUIDE, null, { timeout: 120000 });
+      await page.evaluate(() => window.__IW.hud.el.enter.click());
+      await page.evaluate(() => window.__IW_AUDIOGUIDE.open('work:entity.artwork.horizonte-interrumpido'));
+      await page.waitForTimeout(300);
+      const stale = await guide(page);
+      check('AUDIOGUIDE-STALE-VISITOR', 'El visitante ve «audio no disponible» y la transcripción, sin botón ni petición a un archivo inexistente',
+        stale.status === 'STALE_AUDIO' && stale.toggle === null && stale.transcript > 0 && !consoleErrors.some((e) => /authored:|blob:/.test(e)), JSON.stringify({ status: stale.status, toggle: stale.toggle }));
+      check('AUDIOGUIDE-STUDIO-CONSOLE', 'Sin errores de consola en el flujo Studio → visitante de la audioguía', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
+      await context.close();
+    }
+
+    // Phone: the panel fits under the top bar, inside the gutters, with touch targets.
+    {
+      const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
+      const page = await context.newPage();
+      await page.goto(`${BASE}/index.html`, { waitUntil: 'load' });
+      await page.waitForFunction(() => window.__IW?.ready === true && window.__IW_AUDIOGUIDE, null, { timeout: 180000 });
+      await page.evaluate(() => window.__IW.hud.el.enter.click());
+      await page.waitForTimeout(800);
+      await page.locator('[data-el="guideBtn"]').tap();
+      await page.waitForTimeout(300);
+      const fit = await page.evaluate(() => {
+        const p = document.getElementById('iw-guide').getBoundingClientRect();
+        const bar = document.querySelector('.iw-topbar')?.getBoundingClientRect();
+        const targets = [...document.querySelectorAll('#iw-guide button')].map((b) => Math.round(b.getBoundingClientRect().height));
+        return { left: Math.round(p.left), right: Math.round(innerWidth - p.right), top: Math.round(p.top), bottom: Math.round(p.bottom), barBottom: Math.round(bar?.bottom || 0), minTarget: Math.min(...targets), scrollX: document.documentElement.scrollWidth - innerWidth };
+      });
+      check('AUDIOGUIDE-MOBILE', 'En el móvil el panel cabe bajo la barra, con márgenes de 16 px y botones de 44 px',
+        fit.left >= 16 && fit.right >= 16 && fit.top >= fit.barBottom && fit.bottom <= 844 && fit.minTarget >= 44 && fit.scrollX <= 0, JSON.stringify(fit));
+      await context.close();
+    }
+  }
+
   /* 4. Avatar in every room ------------------------------------------------ */
   {
     const { page, consoleErrors } = await openMuseum('?character=1&mobility=1&continuity=1&gatea=1');

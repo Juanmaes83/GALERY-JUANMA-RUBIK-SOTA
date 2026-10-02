@@ -85,6 +85,10 @@ Campos reales de una obra, comprobados en el código (`authoring/experience-conf
 | Wet Paint (fuente y efecto) | ✅ solo en la Itinerante | Cuadro de la sala (persiste en el navegador) |
 | Sala y posición | ❌ | Se fijan en el World |
 
+### Audioguía
+
+En **Construir**, el editor de la institución (bienvenida), de cada sala y de cada obra con ficha termina con el grupo **Audioguía**: idioma, título, guion, transcripción, créditos, derechos, estado editorial, duración, orden de sala y audio. En **Visitante** aparece el inventario de las 24 pistas con su estado. El texto se guarda en este navegador; el archivo de audio solo dura la sesión. Detalle en [11-AUDIOGUIA](11-AUDIOGUIA.md).
+
 ## Persistencia: cómo guarda
 
 | Clave (`localStorage` salvo indicación) | Qué guarda |
@@ -121,6 +125,7 @@ Esa es la **brecha principal del producto**:
 - que guardar no se confunde con aplicar;
 - que un archivo de otra sesión no rompe la obra;
 - que precio, orden y visibilidad de un producto llegan a la tienda del visitante (`SHOP-STUDIO`);
+- que la audioguía acepta un audio, mide su duración, lo asocia a un idioma, lo reproduce como visitante y, tras recargar, conserva el texto y declara el audio caducado (`AUDIOGUIDE-*`; ver [11-AUDIOGUIA](11-AUDIOGUIA.md));
 - que no hay errores de consola.
 
 La auditoría visual humana de la fase 2 sigue **pendiente**, como en el origen.

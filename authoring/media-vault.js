@@ -29,6 +29,9 @@
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const VIDEO_TYPES = ['video/mp4', 'video/webm'];
+// Audioguide narration. WAV and FLAC are accepted for a master an author is
+// still checking; the visitor copy should be MP3, AAC (M4A) or Ogg.
+const AUDIO_TYPES = ['audio/mpeg', 'audio/mp4', 'audio/aac', 'audio/x-m4a', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/flac'];
 
 /** Long enough for a large file over a slow disk, short enough to be an answer. */
 const PROBE_TIMEOUT_MS = 20000;
@@ -72,10 +75,11 @@ function posterFrom(video) {
  */
 const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 const VIDEO_EXTENSIONS = ['mp4', 'webm', 'm4v'];
+const AUDIO_EXTENSIONS = ['mp3', 'm4a', 'aac', 'ogg', 'oga', 'opus', 'wav', 'flac', 'weba'];
 
 function looksLike(file, kind) {
-  const types = kind === 'video' ? VIDEO_TYPES : IMAGE_TYPES;
-  const extensions = kind === 'video' ? VIDEO_EXTENSIONS : IMAGE_EXTENSIONS;
+  const types = kind === 'video' ? VIDEO_TYPES : kind === 'audio' ? AUDIO_TYPES : IMAGE_TYPES;
+  const extensions = kind === 'video' ? VIDEO_EXTENSIONS : kind === 'audio' ? AUDIO_EXTENSIONS : IMAGE_EXTENSIONS;
   const type = String(file?.type || '').toLowerCase();
   if (types.includes(type)) return true;
   // A type that names the right family but a codec we did not list is still
@@ -99,13 +103,18 @@ const COPY = {
   video: {
     SELECTED: 'Seleccionado', LOADING: 'Cargando…', DECODED: 'Decodificado',
     READY: 'Listo', APPLIED: 'En la sala', ERROR: 'No se pudo usar', RELEASED: 'Retirado'
+  },
+  audio: {
+    SELECTED: 'Seleccionado', LOADING: 'Cargando…', DECODED: 'Decodificado',
+    READY: 'Listo para escuchar', APPLIED: 'En la audioguía', ERROR: 'No se pudo usar', RELEASED: 'Retirado'
   }
 };
 
 /** The ordered chain, so a UI can draw progress instead of a single word. */
 export const ASSET_CHAIN = Object.freeze({
   image: ['SELECTED', 'LOADING', 'READY'],
-  video: ['SELECTED', 'LOADING', 'DECODED', 'READY']
+  video: ['SELECTED', 'LOADING', 'DECODED', 'READY'],
+  audio: ['SELECTED', 'LOADING', 'READY']
 });
 
 /**
@@ -222,7 +231,8 @@ export class MediaVault {
 
     if (!file) return this._fail(asset, 'No se ha seleccionado ningún archivo.');
     if (!looksLike(file, kind)) {
-      const wanted = kind === 'video' ? 'un vídeo MP4 o WebM' : 'una imagen JPG, PNG o WebP';
+      const wanted = kind === 'video' ? 'un vídeo MP4 o WebM'
+        : kind === 'audio' ? 'un audio MP3, M4A (AAC), Ogg o WAV' : 'una imagen JPG, PNG o WebP';
       return this._fail(asset, `Ese archivo no es ${wanted}. Elige otro y vuelve a intentarlo.`);
     }
 
@@ -240,6 +250,9 @@ export class MediaVault {
         }, file);
         asset.width = meta.width; asset.height = meta.height; asset.duration = meta.duration;
         asset.thumb = meta.thumb || null;
+      } else if (kind === 'audio') {
+        const meta = await this._probeAudio(url, file);
+        asset.duration = meta.duration;
       } else {
         const meta = await this._probeImage(url);
         asset.width = meta.width; asset.height = meta.height;
@@ -263,6 +276,36 @@ export class MediaVault {
       image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
       image.onerror = () => reject(new Error('La imagen no se pudo decodificar.'));
       image.src = url;
+    });
+  }
+
+  /**
+   * An audio file is ready when its metadata has parsed and it reports a
+   * duration: that is what the audioguide shows and what a seek needs.
+   */
+  _probeAudio(url, file = null) {
+    return new Promise((resolve, reject) => {
+      const audio = document.createElement('audio');
+      audio.preload = 'metadata';
+      let settled = false;
+      const finish = (fn) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        try { audio.removeAttribute('src'); audio.load(); } catch { /* already gone */ }
+        fn();
+      };
+      const timer = setTimeout(() => finish(() => reject(new Error('El audio tardó demasiado en abrirse. Puede que el formato no sea compatible.'))), PROBE_TIMEOUT_MS);
+      audio.onloadedmetadata = () => {
+        // Read before `finish` unloads the element: unloading resets duration to NaN.
+        const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+        finish(() => resolve({ duration }));
+      };
+      audio.onerror = () => finish(() => {
+        const name = String(file?.name || '');
+        reject(new Error(`Este navegador no puede reproducir «${name}». Exporta la pista como MP3 o M4A (AAC) y vuelve a subirla.`));
+      });
+      audio.src = url;
     });
   }
 

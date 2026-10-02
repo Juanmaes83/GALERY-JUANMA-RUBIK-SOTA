@@ -1,0 +1,81 @@
+/* Audioguide — visitor panel. Uses the HUD tokens from app/ui/styles.css. */
+
+.iw-guide {
+  position: absolute;
+  top: 64px;
+  /* Clear of the sheet's «next work» arrow at the right edge. */
+  right: 64px;
+  z-index: 30;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  padding: 16px 18px 18px;
+  background: var(--iw-panel);
+  border: 1px solid var(--iw-line-strong);
+  color: var(--iw-ink);
+  font: 400 0.84rem/1.5 var(--iw-sans);
+  pointer-events: auto;
+}
+.iw-guide[hidden] { display: none; }
+
+.iw-guide__head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.iw-guide__head h2 { flex: 1; margin: 0; font: 400 1.05rem/1.2 var(--iw-serif); }
+.iw-guide__lang { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; color: var(--iw-ink-dim); }
+.iw-guide__lang select { background: transparent; color: var(--iw-ink); border: 1px solid var(--iw-line); padding: 4px 6px; font: inherit; }
+
+.iw-guide__nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.iw-guide__nav button {
+  border: 1px solid var(--iw-line);
+  background: transparent;
+  color: var(--iw-ink);
+  padding: 7px 10px;
+  min-height: 34px;
+  font: 500 0.74rem/1.2 var(--iw-sans);
+  cursor: pointer;
+}
+.iw-guide__nav button[aria-pressed="true"] { border-color: var(--iw-ink); background: rgba(240, 236, 228, 0.1); }
+
+.iw-guide__context { margin: 0; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--iw-ink-dim); }
+.iw-guide__track h3 { margin: 4px 0 6px; font: 400 1.15rem/1.3 var(--iw-serif); }
+.iw-guide__track h3:focus { outline: none; }
+.iw-guide__meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 10px; font-size: 0.74rem; color: var(--iw-ink-dim); }
+/* The status is written out; the mark beside it only repeats it. */
+.iw-guide__status::before { content: '●'; margin-right: 4px; color: #b9a26a; }
+.iw-guide__status[data-status="AVAILABLE"]::before,
+.iw-guide__status[data-status="AVAILABLE_SESSION"]::before { color: #7fb37f; }
+.iw-guide__status[data-status="STALE_AUDIO"]::before { color: #c98a6b; }
+
+.iw-guide__controls { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.iw-guide__controls .iw-btn { min-height: 38px; min-width: 44px; }
+.iw-guide__progress { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.74rem; color: var(--iw-ink-dim); }
+.iw-guide__volume { display: flex; align-items: center; gap: 6px; }
+.iw-guide__volume input { width: 110px; }
+
+.iw-guide__pending,
+.iw-guide__note { margin: 6px 0; padding: 8px 10px; border-left: 2px solid var(--iw-line-strong); color: var(--iw-ink-dim); font-size: 0.78rem; }
+.iw-guide__notice { min-height: 1.2em; margin: 6px 0; font-size: 0.78rem; color: var(--iw-ink); }
+.iw-guide__notice:empty { min-height: 0; margin: 0; }
+
+.iw-guide__own { margin: 10px 0; padding: 10px; border: 1px dashed var(--iw-line-strong); }
+.iw-guide__own h4,
+.iw-guide__transcript h4 { margin: 0 0 6px; font: 600 0.72rem/1.2 var(--iw-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--iw-ink-dim); }
+.iw-guide__own p { margin: 0 0 6px; font-size: 0.78rem; }
+.iw-guide__transcript { margin-top: 12px; }
+.iw-guide__transcript p { margin: 0 0 8px; }
+.iw-guide__credits { font-size: 0.72rem; color: var(--iw-ink-dim); }
+.iw-guide__empty { color: var(--iw-ink-dim); }
+
+.iw-guide button:focus-visible,
+.iw-guide select:focus-visible,
+.iw-guide input:focus-visible { outline: 2px solid var(--iw-ink); outline-offset: 2px; }
+
+.iw-btn.is-playing { border-color: #7fb37f; }
+.iw-label__guide { margin-left: 8px; }
+
+/* Phone: under the top bar, the full width minus the gutter, half the screen at most. */
+@media (max-width: 640px) {
+  .iw-guide { top: 128px; right: 16px; left: 16px; width: auto; max-height: 50vh; padding: 14px; }
+  /* Every control is a thumb target: navigation, playback and «Cerrar». */
+  .iw-guide button { min-height: 44px; }
+  .iw-guide select, .iw-guide input[type="range"] { min-height: 32px; }
+}

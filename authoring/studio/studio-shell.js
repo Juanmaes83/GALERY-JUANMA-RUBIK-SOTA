@@ -47,9 +47,26 @@ const SLOT_COPY = Object.freeze({
  * their file unselectable, and conclude the product does not take video. Naming
  * the extensions outright removes the operating system from the decision.
  */
+/** The author's own track for an item and language, without creating it. */
+function trackDraftPeek(config, ref, locale) {
+  const { scope, id } = parseRef(ref);
+  const g = config.audioguide || {};
+  const item = scope === 'welcome' ? g.welcome : scope === 'room' ? g.rooms?.[id] : g.works?.[id];
+  return item?.locales?.[locale] || {};
+}
+
+/** The museum's base text for an item and language (World metadata). */
+function baseTrackOf(world, ref, locale) {
+  const { scope, id } = parseRef(ref);
+  const g = world?.metadata?.audioguide || {};
+  const item = scope === 'welcome' ? g.welcome : scope === 'room' ? g.rooms?.[id] : g.works?.[id];
+  return item?.locales?.[locale] || {};
+}
+
 const ACCEPT = Object.freeze({
   image: '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp',
-  video: '.mp4,.m4v,.webm,video/mp4,video/webm'
+  video: '.mp4,.m4v,.webm,video/mp4,video/webm',
+  audio: '.mp3,.m4a,.aac,.ogg,.oga,.opus,.wav,.flac,audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/wav,audio/webm,audio/flac'
 });
 
 /**
@@ -79,6 +96,10 @@ const SLOT_CHOICE_NOTE = Object.freeze({
 });
 import { ConfigStore } from '../config-store.js';
 import { describeAsset } from '../media-vault.js';
+import {
+  audioguideInventory, resolveTrack, audioAvailability, trackStatus, trackDraft,
+  AUDIOGUIDE_LOCALES, EDITORIAL, SUGGESTED_SECONDS, formatDuration, parseRef
+} from '../../app/audioguide/audioguide-model.js';
 import { buildExperienceTree, walkTree, findNode, roomOf, NODE } from './experience-tree.js';
 import { evaluateReadiness, PROJECT_STATE, SEVERITY } from './readiness.js';
 
@@ -240,6 +261,9 @@ export class StudioShell {
     this.config = normaliseConfig(config);
     this.world = world;
     this.vault = vault;
+    // The language the audioguide editor shows. Each language is its own
+    // track: switching never copies a script, transcript or file across.
+    this.guideLocale = 'es';
     // The world's media are paths relative to the world file, and the library
     // renders them in <img>. Without the same base the loader uses, every
     // project thumbnail would 404 against the page's own directory.
@@ -554,7 +578,14 @@ export class StudioShell {
   _secondColumn() {
     if (this.domain === 'content') return this._library();
     if (this.domain === 'experience') return this._transitions();
-    if (this.domain === 'visitor') return this._visitor();
+    // The visitor column is replaced by the phase 1/2 extensions
+    // (visitor-phase1.js, museum-phase2.js); the audioguide inventory is added
+    // here so it survives whichever version of the column is installed.
+    if (this.domain === 'visitor') {
+      const html = this._visitor();
+      const at = html.lastIndexOf('</section>');
+      return at >= 0 ? html.slice(0, at) + this._guideInventory() + html.slice(at) : html + this._guideInventory();
+    }
     return this._tree();
   }
 
@@ -1056,7 +1087,8 @@ export class StudioShell {
         ${this._field('Fechas de la colección', 'institution.dates', i.dates, { hint: 'Bajo el claim, en la misma cartela' })}
         ${this._field('Introducción', 'institution.introduction', i.introduction,
     { area: true, rows: 6, hint: 'Texto de la cartela de entrada' })}
-      `, [i.dates, i.introduction])}`;
+      `, [i.dates, i.introduction])}
+      ${this._guideEditor('welcome')}`;
   }
 
   _exhibitionEditor() {
@@ -1080,7 +1112,8 @@ export class StudioShell {
           ${(node.children || []).map((c) => `
             <li><button data-node="${esc(c.id)}"><b>${esc(c.label)}</b><i>${esc(c.sublabel)}</i></button></li>`).join('')}
         </ul>
-      `)}`;
+      `)}
+      ${this._guideEditor(`room:${node.id}`)}`;
   }
 
   _entityEditor(node) {
@@ -1141,7 +1174,8 @@ export class StudioShell {
           <dt>Medidas</dt><dd>${entity?.size ? `${(entity.size[0] * 100).toFixed(0)} × ${(entity.size[1] * 100).toFixed(0)} cm` : '—'}</dd>
         </dl>
         <p class="st-note">La colocación y el encuadre los gobierna la sala. El estudio no expone coordenadas de cámara.</p>
-      `, [d.year, d.medium, d.description])}`;
+      `, [d.year, d.medium, d.description])}
+      ${this._guideRef(node) ? this._guideEditor(this._guideRef(node)) : ''}`;
   }
 
   /**
@@ -1399,6 +1433,7 @@ export class StudioShell {
     });
 
     on('[data-media]', 'change', (e) => this._takeFile(e.currentTarget.dataset.media, e.target.files?.[0]));
+    on('[data-guide-locale]', 'change', (e) => { this.guideLocale = e.target.value; this.render(); });
 
     // Reuse: point an existing file at another wall, without finding it on disk
     // a second time. It goes through the same slot rules as an upload, so a
@@ -1414,6 +1449,7 @@ export class StudioShell {
 
     const act = (name, fn) => on(`[data-act="${name}"]`, 'click', fn);
     act('replay', () => this._replay());
+    act('guideRemoveAudio', () => this._guideRemoveAudio());
     act('progAdd', () => {
       this.config.visitor.programme.push({
         id: `prog_${Date.now().toString(36)}`,
@@ -1521,6 +1557,22 @@ export class StudioShell {
   }
 
   _write(path, value) {
+    // `audioguide|<ref>|<locale>|<field>`: refs carry dots (entity ids), so the
+    // audioguide uses its own separator.
+    if (path.startsWith('audioguide|')) {
+      const [, ref, locale, field] = path.split('|');
+      if (field === 'order') {
+        trackDraft(this.config, ref, locale);
+        const room = this.config.audioguide.rooms[parseRef(ref).id];
+        room.order = value === '' || Number.isNaN(value) ? null : Number(value);
+        return;
+      }
+      const track = trackDraft(this.config, ref, locale);
+      if (field === 'durationS') track.durationMs = Number(value) > 0 ? Math.round(Number(value) * 1000) : null;
+      else if (field === 'editorial') track.editorial = EDITORIAL[value] ? value : null;
+      else track[field] = value === '' ? null : value;
+      return;
+    }
     const parts = path.split('.');
     if (parts[0] === 'visitor') {
       // `visitor.programme.<i>.<field>` or `visitor.<field>`. The index is
@@ -1598,6 +1650,7 @@ export class StudioShell {
   async _takeFile(slot, file) {
     // An empty change (a cancelled picker) is not a decision to remove the file.
     if (!file) return;
+    if (slot === 'AUDIOGUIDE_AUDIO') return this._takeGuideAudio(file);
     const { kind, field } = SLOT_MEDIA[slot];
     const holder = slot === MEDIA_SLOT.INSTITUTION_LOGO
       ? this.config.institution
@@ -1653,6 +1706,140 @@ export class StudioShell {
     });
     this._markDirty();
     this.render();
+  }
+
+  /** The audioguide item the selected node edits, or null. */
+  _guideRef(node = findNode(this.tree, this.selectedId)) {
+    if (!node) return null;
+    if (node.kind === NODE.INSTITUTION) return 'welcome';
+    if (node.kind === NODE.ROOM) return `room:${node.id}`;
+    if (node.kind === NODE.ENTITY) {
+      const e = (this.world.entities || []).find((x) => x.id === node.id);
+      return e?.interaction?.focusable && !e?.content?.product ? `work:${node.id}` : null;
+    }
+    return null;
+  }
+
+  /**
+   * An audio file for the selected item and language. Like every upload it
+   * lives for the session: the reference is saved, the file is not, and the
+   * editor says so instead of letting «Guardado» suggest otherwise.
+   */
+  async _takeGuideAudio(file) {
+    const ref = this._guideRef();
+    if (!ref) return;
+    const track = trackDraft(this.config, ref, this.guideLocale);
+    if (track.audio?.assetId) this.vault.release(track.audio.assetId);
+    track.audio = null;
+    const asset = await this.vault.accept(file, {
+      kind: 'audio',
+      onStart: (fresh) => {
+        track.audio = { kind: 'audio', src: fresh.reference, assetId: fresh.id, name: fresh.name, mimeType: fresh.mimeType, bytes: fresh.bytes, durationMs: 0 };
+      }
+    });
+    track.audio = {
+      kind: 'audio', src: asset.reference, assetId: asset.id, name: asset.name, mimeType: asset.mimeType, bytes: asset.bytes,
+      durationMs: asset.state === 'READY' ? Math.round((asset.duration || 0) * 1000) : 0
+    };
+    // A measured length replaces a typed one: the file is the authority.
+    if (asset.state === 'READY' && asset.duration) track.durationMs = Math.round(asset.duration * 1000);
+    this._markDirty();
+    this.render();
+  }
+
+  _guideRemoveAudio() {
+    const ref = this._guideRef();
+    if (!ref) return;
+    const track = trackDraft(this.config, ref, this.guideLocale);
+    if (track.audio?.assetId) this.vault.release(track.audio.assetId);
+    track.audio = null;
+    this._markDirty();
+    this.render();
+  }
+
+  /**
+   * The «Audioguía» group of the welcome, a room or a work. Fields inherit the
+   * museum's base text like a work's title does; the status line is computed
+   * from what is really there.
+   */
+  _guideEditor(ref) {
+    const locale = this.guideLocale;
+    const own = trackDraftPeek(this.config, ref, locale);
+    const base = baseTrackOf(this.world, ref, locale);
+    const resolved = resolveTrack(this.world, this.config, ref, locale);
+    const availability = audioAvailability(resolved.audio, (r) => this.vault.resolve(r));
+    const status = trackStatus(resolved, availability);
+    const scope = parseRef(ref).scope;
+    const [lo, hi] = SUGGESTED_SECONDS[scope] || [30, 60];
+    const path = (field) => `audioguide|${ref}|${locale}|${field}`;
+    const audio = own.audio;
+    const asset = audio?.assetId ? this.vault.get(audio.assetId) : null;
+    const d = audio ? describeAsset(asset, audio) : null;
+    const room = scope === 'room' ? this.config.audioguide?.rooms?.[parseRef(ref).id] : null;
+    const durationMs = resolved.durationMs || 0;
+    return this._group('Audioguía', `
+      <div class="st-guidebar" data-guide-ref="${esc(ref)}">
+        <label class="st-f st-f--inline"><span class="st-l">Idioma</span>
+          <select data-guide-locale>${Object.entries(AUDIOGUIDE_LOCALES).map(([code, name]) =>
+    `<option value="${code}" ${code === locale ? 'selected' : ''}>${esc(name)}</option>`).join('')}</select>
+        </label>
+        <p class="st-guidestatus" data-guide-status="${esc(status.key)}"><b>Estado:</b> ${esc(status.label)}</p>
+      </div>
+      ${this._field('Título de la pista', path('title'), own.title, { inherited: base.title || '' })}
+      ${this._field('Guion', path('script'), own.script, { area: true, rows: 6, inherited: base.script || '',
+    hint: `El texto que se graba. Que complemente la cartela, no que la lea. Orientación: ${lo}–${hi} s.` })}
+      ${this._field('Transcripción', path('transcript'), own.transcript, { area: true, rows: 6, inherited: base.transcript || '',
+    hint: 'Lo que el visitante lee: siempre visible, haya audio o no.' })}
+      ${this._field('Créditos', path('credits'), own.credits, { inherited: base.credits || '', hint: 'Voz, guion, grabación' })}
+      ${this._field('Derechos', path('rights'), own.rights, { inherited: base.rights || '', hint: 'Licencia o permiso de cada audio y texto' })}
+      <label class="st-f"><span class="st-l">Estado editorial</span>
+        <select data-bind="${esc(path('editorial'))}">
+          ${Object.entries(EDITORIAL).map(([k, label]) => `<option value="${k}" ${resolved.editorial === k ? 'selected' : ''}>${esc(label)}</option>`).join('')}
+        </select>
+      </label>
+      <label class="st-f"><span class="st-l">Duración (segundos)</span>
+        <span class="st-h">${audio && asset?.state === 'READY' ? 'Calculada a partir del archivo' : 'Escríbela si aún no hay archivo; el archivo la sustituye'}</span>
+        <input type="number" min="0" step="1" data-num="1" data-bind="${esc(path('durationS'))}" value="${durationMs ? Math.round(durationMs / 1000) : ''}">
+      </label>
+      ${scope === 'room' ? `
+        <label class="st-f"><span class="st-l">Orden en la audioguía</span>
+          <span class="st-h">Posición de esta sala entre las introducciones</span>
+          <input type="number" min="0" step="1" data-num="1" data-bind="${esc(path('order'))}" value="${room?.order ?? ''}">
+        </label>` : ''}
+      <div class="st-slot ${d?.state === 'ERROR' ? 'is-bad' : ''}" data-slot="AUDIOGUIDE_AUDIO">
+        <div class="st-slothead"><span class="st-l">Audio de la pista (${esc(AUDIOGUIDE_LOCALES[locale])})</span><span class="st-h">MP3, M4A (AAC), Ogg o WAV</span></div>
+        <div class="st-slotrow">
+          <label class="st-file"><input type="file" data-media="AUDIOGUIDE_AUDIO" accept="${ACCEPT.audio}"><span>${audio ? 'Cambiar archivo' : 'Elegir archivo'}</span></label>
+          <span class="st-filename">${audio ? esc(audio.name) : 'Ningún archivo seleccionado'}</span>
+        </div>
+        ${audio ? `<p class="st-slotstate ${d?.state === 'ERROR' ? 'is-bad' : d?.state === 'READY' ? 'is-ok' : 'is-busy'}">${esc(d?.label || '')}${d?.detail ? ` · ${esc(d.detail)}` : ''}</p>` : '<p class="st-slotstate">Sin audio: el visitante lee la transcripción y ve «pendiente de audio».</p>'}
+        ${asset?.state === 'READY' ? `<audio class="st-guideplayer" controls preload="metadata" src="${esc(asset.url)}" aria-label="Escuchar el audio antes de guardar"></audio>
+          <button class="st-b st-b--small" data-act="guideRemoveAudio">Quitar el audio</button>` : ''}
+      </div>
+      <p class="st-note st-guidepersist">
+        <b>Qué se guarda:</b> título, guion, transcripción, créditos, derechos, estado, duración y orden, en <b>este navegador</b>.
+        El archivo de audio <b>solo dura esta sesión del Studio</b>: al recargar, la pista vuelve a «pendiente de audio».
+        No hay publicación compartida: otros dispositivos no ven estos cambios.
+      </p>`);
+  }
+
+  /** Every item of the audioguide with its status, to see what is missing. */
+  _guideInventory() {
+    const items = audioguideInventory(this.world);
+    const locale = this.guideLocale;
+    const row = (item) => {
+      const t = resolveTrack(this.world, this.config, item.ref, locale);
+      const st = trackStatus(t, audioAvailability(t.audio, (r) => this.vault.resolve(r)));
+      const node = item.scope === 'welcome' ? 'institution' : item.id;
+      return `<li><button data-node="${esc(node)}" data-guide-item="${esc(item.ref)}"><b>${esc(item.label)}</b><i data-guide-state="${esc(st.key)}">${esc(st.label)}${t.durationMs ? ` · ${formatDuration(t.durationMs)}` : ''}</i></button></li>`;
+    };
+    const works = items.filter((i) => i.scope === 'work');
+    return `
+      <section class="st-shelf" data-guide-inventory>
+        <h3>Audioguía</h3>
+        <p class="st-note">Bienvenida, ${items.filter((i) => i.scope === 'room').length} introducciones de sala y ${works.length} cápsulas de obra (${esc(AUDIOGUIDE_LOCALES[locale])}). Elige una para editarla.</p>
+        <ul class="st-list">${items.map(row).join('')}</ul>
+      </section>`;
   }
 
   /**

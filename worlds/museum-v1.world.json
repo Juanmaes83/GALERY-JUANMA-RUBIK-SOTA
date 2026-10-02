@@ -8,7 +8,310 @@
     "institution": "Fundación Arenas (institución ficticia)",
     "contentRights": "CONTROLLED / FICTITIOUS / OWNED — see README §Content and rights",
     "language": "es",
-    "note": "Las obras de la colección permanente, sus autores y sus textos son ficticios y se generan en tiempo de ejecución. No se referencia ninguna colección ni institución real. Dos piezas tienen autoría real acreditada: Marble Bust 01 (Rico Cilliers, Poly Haven) y la instalación de la Sala Breeze (Niklas Niehus). Ver THIRD_PARTY_NOTICES.md."
+    "note": "Las obras de la colección permanente, sus autores y sus textos son ficticios y se generan en tiempo de ejecución. No se referencia ninguna colección ni institución real. Dos piezas tienen autoría real acreditada: Marble Bust 01 (Rico Cilliers, Poly Haven) y la instalación de la Sala Breeze (Niklas Niehus). Ver THIRD_PARTY_NOTICES.md.",
+    "audioguide": {
+      "defaultLocale": "es",
+      "note": "Textos base de la audioguía: borradores compuestos solo con datos del museo, sin grabación. El equipo editorial los sustituye desde el Studio (Audioguía) y adjunta los audios.",
+      "welcome": {
+        "locales": {
+          "es": {
+            "title": "Bienvenida",
+            "script": "La Fundación Arenas reúne pintura, obra sobre papel, escultura y registro sonoro producidos entre 1958 y 1994. El recorrido comentado dura seis minutos. La visita tiene 7 salas.",
+            "transcript": "La Fundación Arenas reúne pintura, obra sobre papel, escultura y registro sonoro producidos entre 1958 y 1994. El recorrido comentado dura seis minutos. La visita tiene 7 salas.",
+            "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+            "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+            "editorial": "DRAFT"
+          }
+        }
+      },
+      "rooms": {
+        "space.lobby": {
+          "order": null,
+          "locales": {
+            "es": {
+              "title": "Vestíbulo",
+              "script": "Vestíbulo. Desde aquí se pasa a: Galería A y Tienda del museo.",
+              "transcript": "Vestíbulo. Desde aquí se pasa a: Galería A y Tienda del museo.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "space.gallery-a": {
+          "order": null,
+          "locales": {
+            "es": {
+              "title": "Galería A — Horizontes",
+              "script": "Galería A — Horizontes. En esta sala: «Horizonte interrumpido», de Amalia Serrat, «Campo de ceniza», de Amalia Serrat, «División tercera», de Bruno Ferrán, «Estudio de figura, IV», de Bruno Ferrán, «Vasija de arenas», de Teresa Miralles y «Marble Bust 01 — estudio de material», de Rico Cilliers. Desde aquí se pasa a: Archivo, Galería B y Vestíbulo.",
+              "transcript": "Galería A — Horizontes. En esta sala: «Horizonte interrumpido», de Amalia Serrat, «Campo de ceniza», de Amalia Serrat, «División tercera», de Bruno Ferrán, «Estudio de figura, IV», de Bruno Ferrán, «Vasija de arenas», de Teresa Miralles y «Marble Bust 01 — estudio de material», de Rico Cilliers. Desde aquí se pasa a: Archivo, Galería B y Vestíbulo.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "space.gallery-b": {
+          "order": null,
+          "locales": {
+            "es": {
+              "title": "Galería B — Cámara oscura",
+              "script": "Galería B — Cámara oscura. En esta sala: «Noche de invierno», de Jonás Vilar, «Marea baja», de Teresa Miralles y «Cuaderno de luz», de Jonás Vilar. Desde aquí se pasa a: Galería A, Sala Breeze y Sala de Exposición Itinerante.",
+              "transcript": "Galería B — Cámara oscura. En esta sala: «Noche de invierno», de Jonás Vilar, «Marea baja», de Teresa Miralles y «Cuaderno de luz», de Jonás Vilar. Desde aquí se pasa a: Galería A, Sala Breeze y Sala de Exposición Itinerante.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "space.archive": {
+          "order": null,
+          "locales": {
+            "es": {
+              "title": "Archivo — Sala de escucha",
+              "script": "Archivo — Sala de escucha. En esta sala: «Cinta 14: taller, tarde», de Archivo Fundación Arenas. Desde aquí se pasa a: Galería A.",
+              "transcript": "Archivo — Sala de escucha. En esta sala: «Cinta 14: taller, tarde», de Archivo Fundación Arenas. Desde aquí se pasa a: Galería A.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "space.breeze": {
+          "order": null,
+          "locales": {
+            "es": {
+              "title": "Sala Breeze — Viento sobre mármol",
+              "script": "Sala Breeze — Viento sobre mármol. En esta sala: «Viento sobre mármol», de Niklas Niehus. Desde aquí se pasa a: Galería B.",
+              "transcript": "Sala Breeze — Viento sobre mármol. En esta sala: «Viento sobre mármol», de Niklas Niehus. Desde aquí se pasa a: Galería B.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "space.itinerant-wet-paint": {
+          "order": null,
+          "locales": {
+            "es": {
+              "title": "Sala de Exposición Itinerante — Wet Paint",
+              "script": "Sala de Exposición Itinerante — Wet Paint. En esta sala: «01 — Original», de Media del usuario, «02 — Painterly», de Efecto pictórico Museum, «03 — Living», de Living Agents, «04 — Combined», de Wet Paint + Living Agents y «05 — Experimental», de Living Art Lab. Desde aquí se pasa a: Galería B.",
+              "transcript": "Sala de Exposición Itinerante — Wet Paint. En esta sala: «01 — Original», de Media del usuario, «02 — Painterly», de Efecto pictórico Museum, «03 — Living», de Living Agents, «04 — Combined», de Wet Paint + Living Agents y «05 — Experimental», de Living Art Lab. Desde aquí se pasa a: Galería B.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "space.shop": {
+          "order": null,
+          "locales": {
+            "es": {
+              "title": "Tienda del museo",
+              "script": "Tienda del museo. Hay 8 productos de demostración: los precios son ficticios y no se puede comprar. Desde aquí se pasa a: Vestíbulo.",
+              "transcript": "Tienda del museo. Hay 8 productos de demostración: los precios son ficticios y no se puede comprar. Desde aquí se pasa a: Vestíbulo.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        }
+      },
+      "works": {
+        "entity.artwork.horizonte-interrumpido": {
+          "locales": {
+            "es": {
+              "title": "Horizonte interrumpido",
+              "script": "Serrat pintó esta serie desde la misma ventana durante catorce meses. La franja inferior, más oscura que en el resto de la serie, corresponde al invierno de 1971.",
+              "transcript": "Serrat pintó esta serie desde la misma ventana durante catorce meses. La franja inferior, más oscura que en el resto de la serie, corresponde al invierno de 1971.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.artwork.campo-de-ceniza": {
+          "locales": {
+            "es": {
+              "title": "Campo de ceniza",
+              "script": "La superficie incorpora ceniza tamizada, lo que produce una absorción de luz desigual. Debe observarse en movimiento lateral.",
+              "transcript": "La superficie incorpora ceniza tamizada, lo que produce una absorción de luz desigual. Debe observarse en movimiento lateral.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.artwork.division-tercera": {
+          "locales": {
+            "es": {
+              "title": "División tercera",
+              "script": "Tres bandas verticales de anchura desigual. Ferrán calculaba las proporciones con una regla de cálculo que se conserva en el archivo.",
+              "transcript": "Tres bandas verticales de anchura desigual. Ferrán calculaba las proporciones con una regla de cálculo que se conserva en el archivo.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.artwork.estudio-de-figura": {
+          "locales": {
+            "es": {
+              "title": "Estudio de figura, IV",
+              "script": "Cuarto de una serie de once estudios. Los tres primeros se perdieron en el traslado de 1979.",
+              "transcript": "Cuarto de una serie de once estudios. Los tres primeros se perdieron en el traslado de 1979.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.sculpture.vasija-de-arenas": {
+          "locales": {
+            "es": {
+              "title": "Vasija de arenas",
+              "script": "Pieza torneada en una sola sesión. El perfil se estrecha dos veces, un gesto que Miralles llamaba «la respiración».",
+              "transcript": "Pieza torneada en una sola sesión. El perfil se estrecha dos veces, un gesto que Miralles llamaba «la respiración».",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.sculpture.marble-bust-study": {
+          "locales": {
+            "es": {
+              "title": "Marble Bust 01 — estudio de material",
+              "script": "Obra invitada utilizada como estudio verificable de escala, silueta, superficie y luz. Fuente Poly Haven; licencia CC0 1.0.",
+              "transcript": "Obra invitada utilizada como estudio verificable de escala, silueta, superficie y luz. Fuente Poly Haven; licencia CC0 1.0.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.artwork.noche-de-invierno": {
+          "locales": {
+            "es": {
+              "title": "Noche de invierno",
+              "script": "Expuesto en sala oscura por indicación del autor: la copia original perdió densidad tras seis meses de luz directa.",
+              "transcript": "Expuesto en sala oscura por indicación del autor: la copia original perdió densidad tras seis meses de luz directa.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.artwork.marea-baja": {
+          "locales": {
+            "es": {
+              "title": "Marea baja",
+              "script": "Única pintura conservada de Miralles. El verde procede de un pigmento que ella misma preparaba con carbonato de cobre.",
+              "transcript": "Única pintura conservada de Miralles. El verde procede de un pigmento que ella misma preparaba con carbonato de cobre.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.video.cuaderno-de-luz": {
+          "locales": {
+            "es": {
+              "title": "Cuaderno de luz",
+              "script": "Registro de la luz que atravesaba el taller de Vilar entre las siete y las nueve de la mañana, filmado durante nueve días.",
+              "transcript": "Registro de la luz que atravesaba el taller de Vilar entre las siete y las nueve de la mañana, filmado durante nueve días.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.audio.sala-de-escucha": {
+          "locales": {
+            "es": {
+              "title": "Cinta 14: taller, tarde",
+              "script": "Grabación ambiental del taller de Miralles realizada durante el traslado de 1979.",
+              "transcript": "Grabación ambiental del taller de Miralles realizada durante el traslado de 1979.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.installation.viento-sobre-marmol": {
+          "locales": {
+            "es": {
+              "title": "Viento sobre mármol",
+              "script": "Una tela atraviesa la sala empujada por un campo de viento y encuentra la escultura a su paso. Nada de lo que ocurre está grabado: la caída, el pliegue y el roce se calculan mientras usted mira, y no se repiten igual dos veces.",
+              "transcript": "Una tela atraviesa la sala empujada por un campo de viento y encuentra la escultura a su paso. Nada de lo que ocurre está grabado: la caída, el pliegue y el roce se calculan mientras usted mira, y no se repiten igual dos veces.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.itinerant.original": {
+          "locales": {
+            "es": {
+              "title": "01 — Original",
+              "script": "Punto de control: la imagen o vídeo original antes de aplicar capacidades Living Art.",
+              "transcript": "Punto de control: la imagen o vídeo original antes de aplicar capacidades Living Art.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.itinerant.painterly": {
+          "locales": {
+            "es": {
+              "title": "02 — Painterly",
+              "script": "Superficie receptora para reconstrucción pictórica, wet paint, impasto y growth/reveal.",
+              "transcript": "Superficie receptora para reconstrucción pictórica, wet paint, impasto y growth/reveal.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.itinerant.living": {
+          "locales": {
+            "es": {
+              "title": "03 — Living",
+              "script": "Superficie receptora para movimiento, flocking, avoidance, attractors y respuesta al visitante.",
+              "transcript": "Superficie receptora para movimiento, flocking, avoidance, attractors y respuesta al visitante.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.itinerant.combined": {
+          "locales": {
+            "es": {
+              "title": "04 — Combined",
+              "script": "Superficie receptora para la síntesis painterly + procedural living.",
+              "transcript": "Superficie receptora para la síntesis painterly + procedural living.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        },
+        "entity.itinerant.experimental": {
+          "locales": {
+            "es": {
+              "title": "05 — Experimental",
+              "script": "Superficie reservada para nuevas capacidades, presets y combinaciones futuras sin modificar las cuatro comparaciones base.",
+              "transcript": "Superficie reservada para nuevas capacidades, presets y combinaciones futuras sin modificar las cuatro comparaciones base.",
+              "credits": "Texto: borrador automático compuesto con los datos del museo (cartela y ficha). Pendiente de redacción y revisión editorial.",
+              "rights": "Sin grabación. El texto procede de los datos del propio museo; no incorpora material externo.",
+              "editorial": "DRAFT"
+            }
+          }
+        }
+      }
+    }
   },
   "spaces": [
     {

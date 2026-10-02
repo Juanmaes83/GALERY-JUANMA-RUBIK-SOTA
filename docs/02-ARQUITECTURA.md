@@ -116,6 +116,10 @@ MediaVault (asset READY) → MediaLoader compartido → superficie viva
 
 El World de `worlds/` es la base. El Studio produce una **configuración** (Schema 3) que `applyConfigToWorld()` aplica al World **antes** de construir nada. Aplicar cambios reinicia el runtime desde los datos: no hay mutación en caliente con segundo camino, porque dos caminos acaban divergiendo. Detalle en [04-STUDIO](04-STUDIO.md).
 
+## Audioguía
+
+`app/audioguide/audioguide-model.js` (datos, sin DOM) define el modelo y fusiona los textos base del World con lo editado en el Studio dentro de `applyConfigToWorld()`, que escribe `world.metadata.audioguide`. `app/audioguide/audioguide-ui.js` es el panel y el único reproductor del visitante, instalado y retirado en cada arranque. Al sonar, baja el ambiente (`AudioDirector.duck`) y calla la narración sintética. Detalle en [11-AUDIOGUIA](11-AUDIOGUIA.md).
+
 ## Deuda técnica conocida
 
 - **Parches de prototipo.** Ocho módulos sobrescriben métodos de `StudioShell.prototype`: `visitor-phase1`, `museum-phase2`, `museum-phase2-layout-fix`, `museum-phase2-hardening`, `avatar-phase5`, `breeze-persistence-adapter`, `wet-paint-studio-controls` y `experiences/wet-paint-adapter`. Tres de ellos parchean también `ExperienceHUD.prototype`. El orden de instalación en `index.html` importa. Antes de añadir funciones grandes conviene consolidar estas capas en extensiones declaradas del Studio (roadmap, fase T).

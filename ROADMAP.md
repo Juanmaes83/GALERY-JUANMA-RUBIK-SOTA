@@ -49,6 +49,7 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 | **Necesario** | Puertas táctiles y avatar con el pulgar | En móvil no se podía cruzar ni mover el avatar | Móvil usable | — | — | ✅ (A-20 a A-27) |
 | **Necesario** | Puertas que se cruzan con E, obras fuera de los huecos, cuerdas que no cierran pasos y avatar sin tirones | En la revisión del preview, E abría una ficha en vez de entrar en Breeze, Wet Paint era una pared de cuadros, una cuerda atrapaba al visitante y la cámara del avatar daba saltos | Recorrido sin bloqueos | — | — | ✅ (A-45 a A-51) · 👁 fluidez del avatar en GPU real |
 | **Necesario** | Licencias de Venus, Poly Haven y Fabric Lace | No verificables desde este entorno | Bloquea publicar Breeze | Bajo | Consulta en navegador | ⛔ pendiente |
+| Recomendado | Audioguía: bienvenida, salas y obras, editable en el Studio | La visita no tenía relato sonoro | Visita acompañada, con transcripción siempre visible | — | — | ✅ sistema (A-52 a A-55, [11](docs/11-AUDIOGUIA.md)) · ⏳ **grabaciones y revisión editorial** · 👁 reproducción en GPU real |
 | Recomendado | Avatar ≤ 5 MB (hoy 30 MB y sin caché) | Entrada lenta con avatar | Tiempo de espera | Medio | Herramienta glTF | ○ |
 | Recomendado | Wet Paint bajo demanda (A-14) | 660 KB y un contexto WebGL para todos | Arranque y memoria en móvil | Medio | — | ○ |
 | Recomendado | Panel de Breeze en español (A-17) | Mezcla de idiomas | Coherencia | Bajo | Producto donante | ○ |
@@ -114,6 +115,7 @@ Es la fase con más impacto de negocio. Hoy lo que se personaliza **solo vive en
 | 3.4 | Puntos de experiencia (escucha, pausa sugerida, umbral, vista de destino) | Bloque 5 |
 | 3.5 | Lenguajes de experiencia: white cube, patrimonio, editorial, exposición oscura, ADN de marca | Bloque 7 |
 | 3.6 | Sonido, orientación, mapa y progreso: visitado, sin ver y siguiente | Bloque 8 y pase 3 |
+| 3.8 | Audioguía: ✅ sistema y 24 borradores de texto. Falta grabar y revisar los guiones, publicar los audios (requiere 2.1), otros idiomas y el sonido propio de *Cinta 14* | Misión 4 · [11-AUDIOGUIA](docs/11-AUDIOGUIA.md) |
 | 3.7 | Credibilidad institucional: mobiliario y señalética del museo | Pase 4 |
 
 ## Fase 4 — Valor comercial

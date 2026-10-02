@@ -1,6 +1,8 @@
 // Museum — Experience Configuration, schema 3.
 // One serialisable project truth for authoring, runtime and export.
 
+import { normaliseAudioguide, audioguideForWorld } from '../app/audioguide/audioguide-model.js';
+
 export const CONFIG_SCHEMA_VERSION = 3;
 
 export const MEDIA_SLOT = Object.freeze({
@@ -277,6 +279,10 @@ export function normaliseConfig(input = {}) {
     documents: arr(c.documents).slice(0, 1000).map(normaliseDocument),
     languages: normaliseLanguages(c.languages),
     visitor: normaliseVisitor(c.visitor),
+    // Welcome, room introductions and work capsules, per language. Additive
+    // within schema 3: a project saved before the audioguide existed has none,
+    // and every track then inherits the museum's base text.
+    audioguide: normaliseAudioguide(c.audioguide),
     experience: {
       portalVariant: c.experience?.portalVariant || 'D',
       pacing: PACING[c.experience?.pacing] ? c.experience.pacing : 'NATURAL',
@@ -414,6 +420,9 @@ export function applyConfigToWorld(world, config, resolveMedia = () => null) {
     }
   }
   arrangeShops(next);
+  // After the works and rooms are final: a hidden shop product is not a work,
+  // and an authored room or work title is what the audioguide names.
+  next.metadata.audioguide = audioguideForWorld(next, c, resolveMedia);
   return next;
 }
 
