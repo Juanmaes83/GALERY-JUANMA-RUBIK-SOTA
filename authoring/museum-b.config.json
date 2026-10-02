@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 2,
+  "configId": "cfg_museo_bruma",
+  "label": "Museo de la Bruma — configuración de prueba",
+  "institution": {
+    "name": "Museo de la Bruma",
+    "claim": "Colección de paisaje atlántico, 1902 — 1968",
+    "introduction": "El Museo de la Bruma conserva pintura y obra sobre papel del norte peninsular. La colección reúne el trabajo de tres generaciones de pintores de la costa, desde las primeras marinas de 1902 hasta la obra sobre papel de los años sesenta.",
+    "dates": "1902 — 1968",
+    "logo": {
+      "kind": "image",
+      "src": "../assets/institutions/bruma-logo.png",
+      "assetId": null,
+      "name": "bruma-logo.png",
+      "mimeType": "image/png",
+      "bytes": 0,
+      "width": 512,
+      "height": 160
+    }
+  },
+  "exhibition": {
+    "title": "Museo de la Bruma — Paisaje atlántico"
+  },
+  "experience": {
+    "portalVariant": "A"
+  },
+  "entities": {
+    "entity.artwork.horizonte-interrumpido": {
+      "title": "Marea de septiembre",
+      "creator": "Olga Vilariño",
+      "year": "1961",
+      "medium": "óleo sobre tabla",
+      "description": "Pintada en la ría durante tres inviernos consecutivos. La artista trabajaba únicamente con la luz de la primera hora, y abandonaba el cuadro cuando el sol alcanzaba el agua.",
+      "image": {
+        "kind": "image",
+        "src": "../assets/institutions/bruma-marea-septiembre.jpg",
+        "assetId": null,
+        "name": "bruma-marea-septiembre.jpg",
+        "mimeType": "image/jpeg",
+        "bytes": 0,
+        "width": 1300,
+        "height": 890
+      }
+    },
+    "entity.artwork.division-tercera": {
+      "title": "Cuaderno de niebla",
+      "creator": "Ramón Estévez",
+      "year": "1957",
+      "medium": "tinta y aguada sobre papel"
+    }
+  },
+  "rooms": {
+    "space.gallery-a": {
+      "title": "Sala del norte"
+    }
+  },
+  "visitor": {
+    "hours": "Martes a domingo, 10:00 – 19:00\nLunes cerrado",
+    "address": "Muelle de Poniente s/n, 36202 Vigo",
+    "admission": "6 € · Reducida 3 € · Menores de 12 años, gratis",
+    "accessibility": "Acceso sin escalones por el muelle. Bucle magnético en la sala de escucha.",
+    "ticketUrl": "https://example.org/museo-de-la-bruma/entradas",
+    "bookingUrl": "https://example.org/museo-de-la-bruma/visitas",
+    "directionsUrl": "https://example.org/museo-de-la-bruma/como-llegar",
+    "transport": "Cercanías hasta Vigo-Guixar y diez minutos a pie por el paseo.",
+    "parking": "Aparcamiento público del muelle, 200 plazas.",
+    "contact": "visitas@museodelabruma.example · +34 986 000 000",
+    "notes": "La sala de niebla se cierra veinte minutos antes que el resto del museo.",
+    "programme": [
+      {
+        "id": "prog_bruma_01",
+        "title": "Marea de septiembre",
+        "type": "EXHIBITION",
+        "description": "Nueve piezas sobre la luz del estuario, reunidas por primera vez.",
+        "start": "2026-09-04",
+        "end": "2027-01-11",
+        "location": "Galería A",
+        "bookingUrl": "",
+        "accessibilityNote": ""
+      },
+      {
+        "id": "prog_bruma_02",
+        "title": "Ver la niebla: visita comentada",
+        "type": "GUIDED",
+        "description": "Recorrido de una hora con la conservadora de la colección.",
+        "start": "2026-09-19 18:00",
+        "end": "2026-09-19 19:00",
+        "location": "Vestíbulo",
+        "bookingUrl": "https://example.org/museo-de-la-bruma/visitas/ver-la-niebla",
+        "accessibilityNote": "Con bucle magnético."
+      },
+      {
+        "id": "prog_bruma_03",
+        "title": "Taller de revelado a la luz del muelle",
+        "type": "WORKSHOP",
+        "description": "Seis plazas. Materiales incluidos.",
+        "start": "2026-10-03 11:00",
+        "end": "2026-10-03 14:00",
+        "location": "Archivo",
+        "bookingUrl": "https://example.org/museo-de-la-bruma/talleres/revelado",
+        "accessibilityNote": ""
+      }
+    ]
+  }
+}

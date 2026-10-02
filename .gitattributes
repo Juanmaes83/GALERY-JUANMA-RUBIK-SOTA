@@ -1,0 +1,12 @@
+# Archivos de terceros o importados byte a byte desde el origen: se conservan
+# exactos, así que la comprobación de espacios en blanco no se aplica a ellos.
+vendor/** -whitespace
+experiences/wet-paint-flow/** -whitespace
+experiences/breeze-studio-pro/** -whitespace
+docs/MUSEUM_GLB_MARBLE_BUST_PILOT_2026-09-02.md -whitespace
+docs/MUSEUM_VISUAL_STONE_VASIJA_PREMIUM_V1_2026-09-02.md -whitespace
+*.glb binary
+*.obj -diff
+*.webp binary
+*.webm binary
+*.mp4 binary
