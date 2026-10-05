@@ -1,0 +1,13 @@
+{"pass":true,"prompt":{"tag":"BUTTON","text":"EEntrar en la Galería A"},"crossed":true,"ms":7967,"active":"space.gallery-a","errors":[]}
+{"pass":true,"prompt":{"tag":"BUTTON","text":"EEntrar en la Galería A"},"crossed":true,"ms":7736,"active":"space.gallery-a","errors":[]}
+/home/claude/museo-baseline · 2/2
+{"pass":false,"prompt":{"tag":"BUTTON","text":"EEntrar en la Galería A"},"crossed":false,"ms":38639,"active":"space.lobby","errors":[]}
+{"pass":false,"prompt":{"tag":"BUTTON","text":"EEntrar en la Galería A"},"crossed":false,"ms":38545,"active":"space.lobby","errors":[]}
+/home/claude/museo-limpia · 0/2
+{"pass":true,"prompt":{"tag":"BUTTON","text":"EEntrar en la Galería A"},"crossed":true,"ms":7256,"active":"space.gallery-a","errors":[]}
+{"pass":true,"prompt":{"tag":"BUTTON","text":"EEntrar en la Galería A"},"crossed":true,"ms":7168,"active":"space.gallery-a","errors":[]}
+/home/claude/museo-baseline · 2/2
+{"pass":false,"prompt":{"tag":"BUTTON","text":"EEntrar en la Galería A"},"crossed":false,"ms":39308,"active":"space.lobby","errors":[]}
+{"pass":false,"prompt":{"tag":"BUTTON","text":"EEntrar en la Galería A"},"crossed":false,"ms":38681,"active":"space.lobby","errors":[]}
+/home/claude/museo-limpia · 0/2
+DONE

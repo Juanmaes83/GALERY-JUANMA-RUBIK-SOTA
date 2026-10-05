@@ -132,6 +132,11 @@ Notas de método: la fila `floorsReadyMs` del resumen es un artefacto (desde la 
 | `npm test` | base `4f0c01c` | **2 fallos · `EXIT 1`**: `SHOP-COLLIDE` (la candidata lo pasa) y `SHOP-STUDIO` con **el mismo detalle** que en la candidata. `AVATAR-PACE-LOW-FPS` pasa (105 %) | `docs/visual-validation/npm-test-base-4f0c01c.log` |
 | `SHOP-STUDIO` aislado (2 pasadas por ejecución, alternando) | base y candidata | **Pasa en ambas** (base 4/4, candidata 4/4) | `docs/visual-validation/shop-studio-aislado.log` |
 
+| `npm test` | `ec29066` (rama `mision-visual-limpia`, solo alcance visual) | **2 fallos · `EXIT 1`**: `SHOP-STUDIO` (mismo detalle que en la base) y **`MOBILE-DOOR-TAP`** (`{"tag":"BUTTON","text":"EEntrar en la Galería A"}`). `AVATAR-PACE-LOW-FPS` pasa (105 %) | `docs/visual-validation/npm-test-mision-visual-limpia-ec29066.log` |
+| `MOBILE-DOOR-TAP` aislado (`tools/mobile-door-tap.mjs`, 2 × 2 intentos alternos) | base y misión | **Base 4/4 · misión 0/4** (también 0/2 sobre `f4fe47d`) | `docs/visual-validation/mobile-door-tap-aislado.log` |
+
+**`MOBILE-DOOR-TAP` — regresión repetible en la prueba, causa identificada.** El toque en el aviso sí cruza la puerta (Vestíbulo → Galería A, una sola vez). Pero `locator.tap()` de Playwright no termina en sus 8 s porque, en móvil LOW con SwiftShader, los fotogramas de la misión son más lentos que los de la base; la prueba entonces repite el clic por DOM, el aviso ya es «Volver al vestíbulo» y el visitante vuelve atrás (registro: cruce a Galería A a los 8,5 s y vuelta inmediata). En la base el toque termina en ≈ 7,5 s y la prueba pasa. No es un doble disparo de la aplicación, pero sí indica fotogramas móviles más lentos que la base, que no se han medido en serie sobre la versión actual. La prueba no se ha modificado. **Bloquea la fusión hasta resolverlo o aceptarlo expresamente.**
+
 **`SHOP-STUDIO`:** falla dentro de la suite completa en la base y en la candidata con el mismo síntoma, y pasa aislado en las dos. Es un defecto previo dependiente del orden o del tiempo de la suite, **no causado por esta misión**; no se ha tocado la prueba. **`AVATAR-PACE-LOW-FPS`:** pasa en ambas en esta ejecución; en la ejecución de `0d2a91c` falló por falta de fotogramas (SwiftShader). Se mantiene como sensible al entorno.
 
 Ejecutadas en serie, nunca a la vez. La suite recorre navegación por las salas, puertas y señales de salida, POV y avatar (tercera persona, suavidad, ritmo con pocos FPS), móvil POV y encuadres, obras y fichas, Studio, tienda, Breeze sin WebGPU, Wet Paint y audioguía.
@@ -165,7 +170,8 @@ No se observan artefactos nuevos (z-fighting, franjas, texturas sin cargar). Obr
 | Cruces de puerta | **Validado en SwiftShader**: igual o más rápido salvo Wet Paint (+2 ms) |
 | Fluidez parado/caminando | **No validado**: regresión repetible de +5…+9 % en Galería A, Galería B y Wet Paint (SwiftShader) |
 | Móvil emulado | **Pendiente** (no medido sobre la versión actual) |
-| Comportamiento (`npm test`) | **Parcialmente validado**: candidata 1 fallo (`SHOP-STUDIO`, previo: falla igual en la base y pasa aislado en ambas); base 2 fallos. Ver §7 |
+| Comportamiento (`npm test`, rama limpia `ec29066`) | **No validado**: `MOBILE-DOOR-TAP` falla de forma repetible (0/4 aislado; base 4/4) por fotogramas móviles más lentos; `SHOP-STUDIO` es previo. |
+| Comportamiento (`npm test`, `dc519a4`) | **Parcialmente validado**: candidata 1 fallo (`SHOP-STUDIO`, previo: falla igual en la base y pasa aislado en ambas); base 2 fallos. Ver §7 |
 | GPU real y móvil real | **No validado** |
 | Preview | **No existe**: push rechazado (403) y Vercel sin los archivos (`missing_files`) |
 | Sala Breeze | **Excluida**; sin cambios |

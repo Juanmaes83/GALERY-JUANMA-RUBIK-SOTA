@@ -153,6 +153,7 @@ Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION
 | V.8 | Preview de la rama y revisión de Juanma | **Bloqueado**: push 403 desde esta sesión; preview pendiente de publicar la rama |
 | V.9 | `SHOP-STUDIO`: falla en la suite completa en base y candidata con el mismo detalle; aislado pasa 4/4 en ambas. Defecto previo | **Pendiente** (fuera del alcance visual) |
 | V.10 | Incidencias intermitentes en capturas (§8 del informe) | **Pendiente** |
+| V.11 | `MOBILE-DOOR-TAP` falla en la rama visual (0/4 aislado; base 4/4): el toque tarda más de 8 s en completarse en móvil LOW con SwiftShader y la prueba repite el clic. Medir y optimizar el móvil LOW antes de fusionar | **Bloqueante** |
 
 ## Transversal — deuda técnica y calidad
 
