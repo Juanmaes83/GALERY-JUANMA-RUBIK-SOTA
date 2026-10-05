@@ -53,6 +53,14 @@ const GUIDE_WALK_SPEED = 1.05;
 
 const PLINTH_HEIGHT = 1.02;
 
+/** 1×1 white sRGB texture: a colour map that leaves the colour unchanged. */
+function whiteMap() {
+  const t = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.needsUpdate = true;
+  return t;
+}
+
 /** A subject that stands on the floor rather than hanging on a wall. */
 function isFloorAnchor(anchor) {
   return anchor.normal[1] > 0.5 || (anchor.normal[0] === 0 && anchor.normal[2] === 0);
@@ -181,7 +189,13 @@ export class MuseumSceneKit extends SceneKit {
     const materials = {
       wall: new THREE.MeshStandardMaterial({
         color: profile.wall.color, roughness: profile.wall.roughness, metalness: 0,
-        roughnessMap: plaster, bumpMap: plaster, bumpScale: 0.012
+        roughnessMap: plaster, bumpMap: plaster, bumpScale: 0.012,
+        // A white 1×1 colour map changes nothing on screen but gives the wall
+        // the same shader features as the floor (colour + relief), so the two
+        // share one program instead of compiling two. On the phone tier there
+        // is no warmup, and every program is compiled on the frame that first
+        // needs it — the first frame of a crossing (MOBILE-DOOR-TAP).
+        ...(surface ? { map: whiteMap() } : {})
       }),
       floor: surface
         ? new THREE.MeshStandardMaterial({

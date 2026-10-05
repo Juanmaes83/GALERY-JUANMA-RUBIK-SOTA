@@ -387,8 +387,12 @@ export function buildStoneDado({ size, origin, openings, keepClear = [], surface
   const oy = origin[1];
   const group = new THREE.Group();
   group.name = 'stone-dado';
-  const stone = new THREE.MeshLambertMaterial({ color: 0xf1ece4, bumpScale: surface.bumpScale });
-  surface.bind(stone, (t) => { t.repeat.set(1 / 2.4, 1 / 2.4); t.offset.set(0.13, 0.31); }, ['map', 'bumpMap']);
+  // Same material model and maps as the floor it continues (colour, and the
+  // relief as roughness and bump), so the dado and the floor share one shader
+  // program: on the phone tier every extra program is compiled on the first
+  // frame of a crossing.
+  const stone = new THREE.MeshStandardMaterial({ color: 0xf1ece4, roughness: surface.roughness, metalness: 0, bumpScale: surface.bumpScale });
+  surface.bind(stone, (t) => { t.repeat.set(1 / 2.4, 1 / 2.4); t.offset.set(0.13, 0.31); });
   const proud = 0.03;
   dadoSpans({ size, origin, openings, keepClear }, (face, a, b) => {
     const len = b - a;
