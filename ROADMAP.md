@@ -137,6 +137,23 @@ Es la fase con más impacto de negocio. Hoy lo que se personaliza **solo vive en
 | 5.2 | Compartir y enlazar a una obra o parada concreta | Bloque 9 |
 | 5.3 | Exportar como paquete de experiencia | Bloque 9 |
 
+## Misión visual — seis salas · *rama `mision-visual-limpia` (solo alcance visual), sin fusionar*
+
+Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION-VISUAL.md). Breeze **excluida** de la misión. Todo medido con render por software (SwiftShader); nada en GPU ni móvil reales. **No aprobada por Juanma.**
+
+| # | Tarea | Estado |
+|---|---|---|
+| V.1 | Suelos con acabado propio por sala (canvas 2D: color + relieve) | Hecho · visible en capturas SwiftShader |
+| V.2 | Jerarquía de luz en Galería A y Wet Paint (sin luces nuevas) | Hecho · visible en capturas |
+| V.3 | Oclusión en juntas y sombras de contacto (decal), marcos perfilados, cartelas con grosor | Hecho |
+| V.4 | Zócalos (Vestíbulo, Archivo), vigas (Archivo), retícula (Galería B) | Hecho; Archivo ya a la par de la base (antes +42 %) |
+| V.5 | Rendimiento: 5 iteraciones. Serie oficial 5+5 HIGH: arranque **−28,5 %**, cruces iguales o más rápidos; **Galería A, Galería B y Wet Paint +5…+9 % repetible** | **No validado** (fluidez); causa sin identificar |
+| V.6 | Serie móvil sobre la versión actual | **Pendiente** |
+| V.7 | GPU real y móvil real | **Pendiente** |
+| V.8 | Preview de la rama y revisión de Juanma | **Bloqueado**: push 403 desde esta sesión; preview pendiente de publicar la rama |
+| V.9 | `SHOP-STUDIO`: falla en la suite completa en base y candidata con el mismo detalle; aislado pasa 4/4 en ambas. Defecto previo | **Pendiente** (fuera del alcance visual) |
+| V.10 | Incidencias intermitentes en capturas (§8 del informe) | **Pendiente** |
+
 ## Transversal — deuda técnica y calidad
 
 | # | Tarea |

@@ -1,0 +1,121 @@
+{
+  "root": "/home/claude/museo-objetivo",
+  "tier": "auto",
+  "mobile": true,
+  "policy": {
+    "tier": "LOW",
+    "shadows": false,
+    "textureScale": 0.5,
+    "dprCap": 0.85
+  },
+  "loadMs": 229,
+  "readyMs": 15398,
+  "bytesAtReadyMB": 3.86,
+  "bytesTotalMB": 6.24,
+  "failedRequests": [],
+  "pageErrors": [],
+  "rooms": {
+    "space.lobby": {
+      "still": {
+        "median": 700.7,
+        "p90": 2866.8,
+        "n": 10
+      },
+      "walking": {
+        "median": 1000.7,
+        "p90": 1258.7,
+        "n": 8
+      },
+      "calls": 158,
+      "triangles": 23663,
+      "textures": 34,
+      "geometries": 202,
+      "heapMB": 26.6
+    },
+    "space.shop": {
+      "still": {
+        "median": 403.9,
+        "p90": 536.6,
+        "n": 10
+      },
+      "walking": {
+        "median": 559.1,
+        "p90": 846.4,
+        "n": 8
+      },
+      "calls": 184,
+      "triangles": 24464,
+      "textures": 36,
+      "geometries": 265,
+      "heapMB": 29.2
+    },
+    "space.gallery-a": {
+      "still": {
+        "median": 545.1,
+        "p90": 2384.8,
+        "n": 10
+      },
+      "walking": {
+        "median": 354.8,
+        "p90": 387.2,
+        "n": 8
+      },
+      "calls": 134,
+      "triangles": 23550,
+      "textures": 38,
+      "geometries": 227,
+      "heapMB": 34.5
+    },
+    "space.archive": {
+      "still": {
+        "median": 175.4,
+        "p90": 244.9,
+        "n": 10
+      },
+      "walking": {
+        "median": 177.7,
+        "p90": 207.4,
+        "n": 8
+      },
+      "calls": 26,
+      "triangles": 1500,
+      "textures": 31,
+      "geometries": 181,
+      "heapMB": 31.4
+    },
+    "space.gallery-b": {
+      "still": {
+        "median": 726.1,
+        "p90": 764.6,
+        "n": 10
+      },
+      "walking": {
+        "median": 830.9,
+        "p90": 1044.1,
+        "n": 8
+      },
+      "calls": 74,
+      "triangles": 2494,
+      "textures": 50,
+      "geometries": 308,
+      "heapMB": 32.9
+    },
+    "space.itinerant-wet-paint": {
+      "still": {
+        "median": 236.1,
+        "p90": 250.4,
+        "n": 10
+      },
+      "walking": {
+        "median": 236.9,
+        "p90": 290.2,
+        "n": 8
+      },
+      "calls": 69,
+      "triangles": 2476,
+      "textures": 41,
+      "geometries": 276,
+      "heapMB": 31.6
+    }
+  }
+}

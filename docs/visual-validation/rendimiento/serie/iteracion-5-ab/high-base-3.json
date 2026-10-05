@@ -1,0 +1,87 @@
+{
+  "root": "/home/claude/museo-baseline",
+  "tier": "HIGH",
+  "mobile": false,
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "policy": {
+    "tier": "HIGH",
+    "shadows": true,
+    "textureScale": 1,
+    "dprCap": 2
+  },
+  "loadMs": 354,
+  "readyMs": 55537,
+  "floorsAtReady": null,
+  "floorsPreviewMs": null,
+  "floorsReadyMs": null,
+  "bytesAtReadyMB": 3.82,
+  "bytesTotalMB": 6.47,
+  "failedRequests": [],
+  "pageErrors": [],
+  "rooms": {
+    "space.gallery-a": {
+      "still": {
+        "median": 3089.4,
+        "p90": 6405.2,
+        "n": 8
+      },
+      "walking": {
+        "median": 2518.8,
+        "p90": 3638.1,
+        "n": 8
+      },
+      "calls": 251,
+      "triangles": 32962,
+      "textures": 73,
+      "geometries": 301,
+      "heapMB": 29.4,
+      "crossMs": [
+        36439,
+        12008
+      ],
+      "floorOnArrival": null
+    },
+    "space.gallery-b": {
+      "still": {
+        "median": 3960.3,
+        "p90": 4148.1,
+        "n": 8
+      },
+      "walking": {
+        "median": 4468.8,
+        "p90": 5113.7,
+        "n": 8
+      },
+      "calls": 124,
+      "triangles": 5625,
+      "textures": 114,
+      "geometries": 427,
+      "heapMB": 34.1,
+      "crossMs": [
+        21106
+      ],
+      "floorOnArrival": null
+    },
+    "space.itinerant-wet-paint": {
+      "still": {
+        "median": 1531.2,
+        "p90": 1621.9,
+        "n": 8
+      },
+      "walking": {
+        "median": 1520.8,
+        "p90": 1681.1,
+        "n": 8
+      },
+      "calls": 105,
+      "triangles": 3698,
+      "textures": 103,
+      "geometries": 354,
+      "heapMB": 32.8,
+      "crossMs": [
+        6
+      ],
+      "floorOnArrival": null
+    }
+  }
+}

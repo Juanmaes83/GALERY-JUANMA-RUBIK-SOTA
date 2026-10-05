@@ -1,0 +1,154 @@
+{
+  "root": "/home/claude/museo-objetivo",
+  "tier": "HIGH",
+  "mobile": false,
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "policy": {
+    "tier": "HIGH",
+    "shadows": true,
+    "textureScale": 1,
+    "dprCap": 2
+  },
+  "loadMs": 338,
+  "readyMs": 56508,
+  "floorsAtReady": {
+    "limestone": "full",
+    "oak": "full",
+    "terrazzo": "full"
+  },
+  "floorsPreviewMs": 109901,
+  "floorsReadyMs": 136859,
+  "bytesAtReadyMB": 3.87,
+  "bytesTotalMB": 6.61,
+  "failedRequests": [],
+  "pageErrors": [],
+  "rooms": {
+    "space.lobby": {
+      "still": {
+        "median": 4756.2,
+        "p90": 4849.5,
+        "n": 8
+      },
+      "walking": {
+        "median": 5426.1,
+        "p90": 6494.8,
+        "n": 8
+      },
+      "calls": 436,
+      "triangles": 78986,
+      "textures": 79,
+      "geometries": 457,
+      "heapMB": 33.7,
+      "crossMs": [
+        5193
+      ],
+      "floorOnArrival": "full"
+    },
+    "space.shop": {
+      "still": {
+        "median": 2961.1,
+        "p90": 3161.6,
+        "n": 8
+      },
+      "walking": {
+        "median": 2858,
+        "p90": 3723.6,
+        "n": 8
+      },
+      "calls": 256,
+      "triangles": 44622,
+      "textures": 67,
+      "geometries": 351,
+      "heapMB": 28.9,
+      "crossMs": [
+        13
+      ],
+      "floorOnArrival": "full"
+    },
+    "space.gallery-a": {
+      "still": {
+        "median": 3163.8,
+        "p90": 3190.3,
+        "n": 8
+      },
+      "walking": {
+        "median": 2710.3,
+        "p90": 3775,
+        "n": 8
+      },
+      "calls": 247,
+      "triangles": 34358,
+      "textures": 84,
+      "geometries": 336,
+      "heapMB": 30.2,
+      "crossMs": [
+        41864,
+        13685
+      ],
+      "floorOnArrival": "full"
+    },
+    "space.archive": {
+      "still": {
+        "median": 841,
+        "p90": 924.3,
+        "n": 8
+      },
+      "walking": {
+        "median": 847.2,
+        "p90": 888.1,
+        "n": 8
+      },
+      "calls": 24,
+      "triangles": 590,
+      "textures": 72,
+      "geometries": 235,
+      "heapMB": 42.6,
+      "crossMs": [
+        8697
+      ],
+      "floorOnArrival": "full"
+    },
+    "space.gallery-b": {
+      "still": {
+        "median": 4320.8,
+        "p90": 4531.1,
+        "n": 8
+      },
+      "walking": {
+        "median": 4977.1,
+        "p90": 5019.7,
+        "n": 8
+      },
+      "calls": 124,
+      "triangles": 6207,
+      "textures": 125,
+      "geometries": 456,
+      "heapMB": 36.1,
+      "crossMs": [
+        23295
+      ],
+      "floorOnArrival": "full"
+    },
+    "space.itinerant-wet-paint": {
+      "still": {
+        "median": 1630,
+        "p90": 1690.5,
+        "n": 8
+      },
+      "walking": {
+        "median": 1719.1,
+        "p90": 1793.6,
+        "n": 8
+      },
+      "calls": 106,
+      "triangles": 4230,
+      "textures": 113,
+      "geometries": 381,
+      "heapMB": 33.7,
+      "crossMs": [
+        13
+      ],
+      "floorOnArrival": "full"
+    }
+  }
+}

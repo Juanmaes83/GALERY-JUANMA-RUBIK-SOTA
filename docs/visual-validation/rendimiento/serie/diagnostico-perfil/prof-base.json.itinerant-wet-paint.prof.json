@@ -1,0 +1,73 @@
+{
+ "totalMs": 10913,
+ "top": [
+  [
+   "(program) :-1",
+   10901
+  ],
+  [
+   "uniform1f :-1",
+   1
+  ],
+  [
+   "updateMatrixWorld three.core.min.js:5",
+   1
+  ],
+  [
+   "(garbage collector) :-1",
+   1
+  ],
+  [
+   "facingCosine proximity.js:138",
+   1
+  ],
+  [
+   "Pa.renderBufferDirect three.module.min.js:5",
+   1
+  ],
+  [
+   "uniformMatrix4fv :-1",
+   1
+  ],
+  [
+   "intersectsObject three.core.min.js:5",
+   1
+  ],
+  [
+   "(anon) three.module.min.js:5",
+   1
+  ],
+  [
+   "i three.module.min.js:5",
+   1
+  ],
+  [
+   "sort three.module.min.js:5",
+   1
+  ],
+  [
+   "refreshMaterialUniforms three.module.min.js:5",
+   1
+  ],
+  [
+   "Hi three.module.min.js:5",
+   1
+  ],
+  [
+   "drawElements :-1",
+   1
+  ],
+  [
+   "setupView three.module.min.js:5",
+   1
+  ],
+  [
+   "at three.module.min.js:5",
+   1
+  ],
+  [
+   "update three.module.min.js:5",
+   0
+  ]
+ ]
+}

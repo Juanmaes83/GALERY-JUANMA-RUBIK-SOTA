@@ -1,0 +1,93 @@
+{
+ "totalMs": 10864,
+ "top": [
+  [
+   "(program) :-1",
+   10831
+  ],
+  [
+   "requestAnimationFrame :-1",
+   8
+  ],
+  [
+   "bindVertexArray :-1",
+   4
+  ],
+  [
+   "step runtime.js:746",
+   4
+  ],
+  [
+   "setFromRotationMatrix three.core.min.js:5",
+   2
+  ],
+  [
+   "updateMatrixWorld three.core.min.js:5",
+   2
+  ],
+  [
+   "tick runtime.js:780",
+   2
+  ],
+  [
+   "uniformMatrix4fv :-1",
+   1
+  ],
+  [
+   "lookAt three.core.min.js:5",
+   1
+  ],
+  [
+   "useProgram :-1",
+   1
+  ],
+  [
+   "drawElements :-1",
+   1
+  ],
+  [
+   "enable :-1",
+   1
+  ],
+  [
+   "ct three.module.min.js:5",
+   1
+  ],
+  [
+   "(anon) three.module.min.js:5",
+   1
+  ],
+  [
+   "at three.module.min.js:5",
+   1
+  ],
+  [
+   "(anon) :-1",
+   1
+  ],
+  [
+   "intersectsObject three.core.min.js:5",
+   1
+  ],
+  [
+   "uniform3f :-1",
+   1
+  ],
+  [
+   "uniform1f :-1",
+   1
+  ],
+  [
+   "update three.module.min.js:5",
+   1
+  ],
+  [
+   "setFromProjectionMatrix three.core.min.js:5",
+   0
+  ],
+  [
+   "n three.module.min.js:5",
+   0
+  ]
+ ]
+}

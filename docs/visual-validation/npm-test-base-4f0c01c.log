@@ -1,0 +1,158 @@
+
+> galery-juanma-rubik-sota@0.1.0 test
+> npm run check && node tests/proximity.test.mjs && node tests/audioguide.test.mjs && node tests/museum-smoke.mjs
+
+
+> galery-juanma-rubik-sota@0.1.0 check
+> node tools/check-static.mjs
+
+sintaxis: 96 archivos JS
+json: 5 archivos
+grafo desde index.html: 158 archivos alcanzados, 0 referencias inertes declaradas
+media del World: 20 rutas
+Marble Bust 01: 897296 bytes, sha256 846a99ead6340cffbbe2492328ff030d9a53bd2201385195d6ebd21ab63263a5
+texto = cartela: 5 medidas
+
+OK
+  ok   DOOR-AHEAD                   Frente a la puerta y mirándola, E elige la puerta aunque una obra esté a medio metro  — door
+  ok   WORK-AHEAD                   Mirando la obra desde cerca, E elige la obra aunque la puerta esté al lado  — work
+  ok   DOOR-BEHIND                  Con una obra delante y la puerta detrás, E elige la obra  — work
+  ok   BACK-OUT                     De espaldas a todo, E sigue pudiendo cruzar la puerta, nunca abre una obra que no se mira  — door
+  ok   FLOOR-ANCHOR                 La altura del ancla no cuenta como distancia: gana lo que está más delante  — door
+
+OK
+  ok   INVENTORY                    Bienvenida, 7 salas y 16 obras: 24 pistas  — 24 (7 salas, 16 obras)
+  ok   NO-PRODUCTS                  Los productos de la tienda no tienen cápsula  — 11 productos
+  ok   BASE-TEXT                    Cada pista tiene título y transcripción base en español
+  ok   NO-FAKE-AUDIO                El museo no declara ningún audio que no exista
+  ok   BASE-DRAFT                   Los textos base son borradores: ninguno se presenta como revisado
+  ok   INHERIT                      Un campo vacío hereda el texto base; uno escrito lo sustituye
+  ok   LOCALE-ISOLATION             Un idioma no toma el guion ni el audio de otro  — {"audio":null,"script":null}
+  ok   ITEM-ISOLATION               Editar una obra no cambia otra
+  ok   PERSIST                      Título, duración y referencia de audio sobreviven a la recarga
+  ok   NORMALISE                    Idiomas desconocidos, textos vacíos y estados inventados se descartan
+  ok   AVAILABLE-SESSION            Con el archivo en la sesión: disponible en este navegador
+  ok   STALE                        Tras recargar, el archivo de otra sesión se declara no disponible, sin botón de reproducir
+  ok   PENDING                      Sin archivo pero con texto: pendiente de audio
+  ok   REVIEW                       Lista para revisión sigue diciendo que falta el audio
+  ok   DRAFT-EMPTY                  Sin guion ni transcripción: borrador
+  ok   VISITOR-STALE                El visitante recibe el estado real y ninguna URL inservible  — STALE_AUDIO
+  ok   VISITOR-LOCALES              Se ofrecen los idiomas con texto o audio; un título suelto no basta  — es,en
+  ok   VISITOR-READY                Con el archivo en la sesión, el visitante recibe la URL reproducible
+  ok   DURATION                     Duración en minutos y segundos
+
+OK
+  ok   BOOT                         El museo arranca  — WebGL2 disponible
+  ok   WORLD-VALID                  El World cumple el esquema  — 7 salas
+  ok   START-SPACE                  La visita empieza en el Vestíbulo  — space.lobby
+  ok   PRESENCE-CHOICE              La entrada ofrece «POV» o «Con mi avatar»  — {"selected":"pov","enter":"Entrar en POV"}
+  ok   ENTER                        El botón «Entrar» retira el velo de bienvenida
+  ok   INVARIANTS                   Invariantes arquitectónicas  — 9 comprobadas
+  ok   SHOP-ROOM                    La tienda del museo se visita desde el Vestíbulo  — space.shop · 11 productos
+  ok   SHOP-SHEET                   La ficha de producto muestra el precio marcado como demostración (sin compra)  — 28 € · precio de demostración · tienda simulada, sin compra
+  ok   SHOP-TEXT                    El catálogo también está en «Contenido en texto», con precio de demostración
+  ok   SHOP-FIXTURES                Como en la referencia: 6 vitrinas, mostrador, dependienta, 3 cuadros; cada producto plano en su vitrina y 3 productos en 3D  — {"vitrinas":6,"mostrador":1,"dependienta":1,"cuadros":3,"productos":11,"en3d":3,"fuera":[]}
+ FAIL  SHOP-COLLIDE                 Al caminar hacia una vitrina o el mostrador el visitante se detiene en su borde; detrás del mostrador no se pasa  — 1.6, 0.82, 0.82, 0.82, 0.82, 0.82, 1.1 · mostrador: x=-8.8
+  ok   SHOP-SELECT                  Cada producto se elige con E desde donde puede estar el visitante (la réplica, desde el mostrador)  — 11 de 11
+  ok   SHOP-COST                    La tienda amueblada sigue siendo ligera (llamadas de dibujo y triángulos)  — 57 llamadas · 11597 triángulos
+  ok   SHOP-EXIT                    Se vuelve de la tienda al Vestíbulo  — space.lobby
+  ok   ROOM gallery-a               Portal portal.lobby-gallery-a  — space.gallery-a
+  ok   ROOM archive                 Portal portal.gallery-a-archive  — space.archive
+  ok   ROOM gallery-a               Portal portal.archive-gallery-a  — space.gallery-a
+  ok   ROOM gallery-b               Portal portal.gallery-a-gallery-b  — space.gallery-b
+  ok   ROOM itinerant-wet-paint     Portal portal.gallery-b-itinerant  — space.itinerant-wet-paint
+  ok   ROOM gallery-b               Portal portal.itinerant-gallery-b  — space.gallery-b
+  ok   ROOM breeze                  Portal portal.gallery-b-breeze  — space.breeze
+  ok   BREEZE-NOTICE                Sin WebGPU, la Sala Breeze explica qué necesita en vez de un escenario vacío  — no-webgpu
+  ok   BREEZE-PROMPT                El aviso de proximidad de la Sala Breeze ofrece volver a Galería B  — EVolver a la Galería B
+  ok   BREEZE-KEY-E                 La tecla E sale de la Sala Breeze a Galería B
+  ok   BREEZE-REENTER               Se vuelve a entrar en la Sala Breeze  — space.breeze
+  ok   BREEZE-BRIDGE-REACHABLE      El botón-puente de salida no queda tapado por el HUD  — ok
+  ok   BREEZE-EXIT                  Clic real en «Volver a Galería B» cruza el portal canónico y retira el aviso
+  ok   NO-BROKEN-REQUESTS           Ninguna petición local falla  — 109 peticiones
+  ok   NO-EXTERNAL-REQUESTS         La visita base no depende de la red externa
+  ok   NO-CONSOLE-ERRORS            Sin errores de consola
+  ok   WETPAINT-RESTORE             Una transformación Wet Paint guardada está en el cuadro al entrar y al volver a la Itinerante  — wetpaint · wetpaint
+  ok   WETPAINT-RESTORE CONSOLE     Sin errores de página
+  ok   WORK-OUTLINE                 Se resalta solo la obra que nombra el aviso, la de enfrente aunque haya otra en la esquina; nada con la ficha abierta  — {"far":{"nearest":null,"outlined":null,"glow":false},"aside":{"nearest":null,"outlined":null,"glow":false},"near":{"nearest":"entity.artwork.estudio-de-figura","outlined":"entity.artwork.estudio-de-figura","glow":true},"focused":{"nearest":"entity.artwork.estudio-de-figura","outlined":null,"glow":false}}
+  ok   EXIT-SIGNS                   Cada señal de salida apunta a la puerta que acerca a la salida (ruta comprobada en el grafo)  — ["gallery-b","itinerant-wet-paint","gallery-b","gallery-a","archive","gallery-a","lobby","shop"]
+  ok   EXIT-ROUTE                   Siguiendo las señales se llega a la sala con la salida  — space.archive → space.gallery-a → space.lobby
+  ok   EXIT-DOOR                    La puerta de salida del Vestíbulo pide confirmación con E y Esc permite seguir  — ESalir del museo · Has recorrido 6 salas y has visto de cerca 1 de 16 obras.
+  ok   EXIT-FAREWELL                «Salir» → «Terminar la visita» despide y ofrece volver a empezar  — {"open":true,"title":"Gracias por tu visita","button":"Volver a empezar","reachable":true}
+  ok   ORIENTATION CONSOLE          Sin errores de consola
+  ok   SPATIAL-DOORWAYS-CLEAR       Ninguna obra de pared invade una puerta ni se queda a menos de 0,5 m de su hueco  — todas las salas
+  ok   SPATIAL-ROPES-OPEN           Ninguna cuerda cruza una puerta, deja una llegada atrapada ni un hueco por el que no se cabe  — todas las salas
+  ok   SPATIAL-DOOR-HOTSPOTS        Cada puerta de cada sala se cruza con E  — todas
+  ok   WETPAINT-FOUR-WALLS          Wet Paint reparte sus cinco obras por las cuatro paredes  — original:WEST, painterly:SOUTH, living:SOUTH, combined:EAST, experimental:NORTH
+  ok   BREEZE-DOOR-E                Frente a la puerta de Breeze, E entra en la sala (no abre la ficha de la obra cercana)  — hotspot.gallery-b.to-breeze → {"space":"space.breeze","focused":null}
+  ok   BREEZE-EXIT-E                Y E vuelve de Breeze a la Galería B
+  ok   MAREA-BAJA-SHEET             «Marea baja», fuera de la puerta, se resalta y abre su ficha con E  — {"nearest":"hotspot.art.marea-baja","outlined":"entity.artwork.marea-baja"} · {"focused":"entity.artwork.marea-baja","title":"Marea baja"}
+  ok   WETPAINT-WALK-IN             Desde la puerta de Wet Paint se camina hacia dentro sin chocar con una cuerda y sin atravesarla  — z -3.40 → 0.20
+  ok   WETPAINT-WORKS-ANSWER        Cada obra de Wet Paint, en su nuevo sitio, se resalta, es la que nombra E y abre su ficha  — 5 obras
+  ok   SPATIAL CONSOLE              Sin errores de consola
+  ok   MARBLE-BUST GLB              Marble Bust 01 en modo GLB  — GLB · foco entity.sculpture.marble-bust-study
+  ok   MARBLE-BUST GLB CONSOLE      Sin errores de consola
+  ok   MARBLE-BUST FALLBACK         Marble Bust 01 en modo FALLBACK  — FALLBACK · foco entity.sculpture.marble-bust-study
+  ok   MARBLE-BUST FALLBACK CONSOLE Sin errores de consola
+  ok   STUDIO-MOUNT                 index.html?authoring=1 monta el Studio
+  ok   STUDIO-DOMAINS               Áreas Construir, Contenido, Experiencia, Visitante, Publicar y Avatar  — build, content, experience, visitor, publish, avatar
+  ok   STUDIO-AVATAR                Avatar Studio (fase 5) montado  — gate1-ready
+  ok   STUDIO-SAVE                  Guardar persiste la configuración (localStorage)
+  ok   STUDIO-RELOAD                La edición sobrevive a la recarga  — Claim de prueba 1791158714473
+  ok   STUDIO-MEDIA-REPLACE         Al sustituir un archivo, la ranura muestra el nuevo desde el primer momento  — durante: {"file":"segunda.png","state":"Lista · 1×1 · 0 kB"} · después: {"file":"segunda.png","state":"Lista · 1×1 · 0 kB"}
+  ok   STUDIO-VIDEO-ADVICE          Un vídeo que no se puede decodificar recibe un consejo coherente con el navegador  — No se pudo usar · Este navegador no reproduce vídeo MP4 (H.264). Usa un WebM (VP9) o abre el Studio en Chrome, Edge o Safari. Los visitantes con este mismo navegador tampoco verían un MP4.
+  ok   STUDIO-SAVED-NOT-APPLIED     Guardar no da la vista previa por aplicada  — {"flag":true,"label":"Vista previa desactualizada Galería A — Horizontes"}
+ FAIL  SHOP-STUDIO                  Precio, orden y visibilidad editados en el Studio llegan a la tienda del visitante tras recargar  — {"price":42,"anchor":"anchor.shop.vitrina-1","postales":true,"postalesHotspot":true}
+  ok   STALE-UPLOAD                 Tras recargar, un archivo de otra sesión no rompe la obra: se ve el original  — ../assets/collection/horizonte-interrumpido.jpg
+  ok   STUDIO-CONSOLE               Sin errores de consola en el Studio
+  ok   AUDIOGUIDE-NO-AUTOPLAY       Al entrar no suena nada ni se descarga audio: no existe reproductor hasta pulsar Reproducir  — {"players":0,"mediaRequests":[]}
+  ok   AUDIOGUIDE-PANEL             La audioguía abre la bienvenida: estado «pendiente de audio», transcripción y ningún botón de reproducir sin archivo  — {"open":true,"selected":"welcome","locale":"es","playingRef":null,"playing":false,"currentTime":0,"notice":"","players":0,"hidden":false,"title":"Bienvenida","status":"PENDING_AUDIO","toggle":null,"transcript":177,"own":false,"focusedEntity":null,"space":"space.lobby","ducked":false}
+  ok   AUDIOGUIDE-KEYBOARD-OPEN     Con el teclado: Enter abre el panel y deja el foco en él, sin activar lo que haya cerca  — {"focusedEntity":null}
+  ok   AUDIOGUIDE-SOUND-PIECE       La pieza sonora del Archivo muestra su sonido propio aparte de la cápsula narrada  — {"sheetLabel":"Cápsula (texto)","selected":"work:entity.audio.sala-de-escucha","own":true}
+  ok   AUDIOGUIDE-VISITOR-CONSOLE   Sin errores de consola en la audioguía del visitante
+  ok   AUDIOGUIDE-STUDIO-UPLOAD     El Studio acepta un audio, mide su duración y la pista pasa a «disponible en este navegador»  — {"status":"AVAILABLE_SESSION","duration":"20","file":"capsula.wav","title":"Cápsula de prueba"}
+  ok   AUDIOGUIDE-STUDIO-LOCALE     El audio pertenece a un idioma: en inglés la misma obra sigue sin archivo  — {"status":"DRAFT","duration":"","file":"Ningún archivo seleccionado","title":""}
+  ok   AUDIOGUIDE-STUDIO-INVENTORY  El inventario del Studio lista las 24 pistas y cuáles tienen audio  — {"items":24,"ready":2,"room":"AVAILABLE_SESSION"}
+  ok   AUDIOGUIDE-PLAY              La cápsula se abre desde la ficha, suena al pulsar Reproducir y baja el ambiente  — {"listen":"Escuchar cápsula","players":0,"t":0.503229,"ducked":true}
+  ok   AUDIOGUIDE-KEYBOARD          Con el teclado: Enter en «Pausar» pausa, conserva el foco y no activa nada más  — {"playing":false,"toggle":"Reanudar"}
+  ok   AUDIOGUIDE-CONTROLS          Avanzar 10 s, volumen y Detener (vuelve al principio)  — {"t0":1.011455,"t1":11.044978,"volume":0.5,"stop":0}
+  ok   AUDIOGUIDE-SHEET-CLOSE       Cerrar la ficha pausa la cápsula de esa obra y lo dice  — Pausada al cerrar la ficha.
+  ok   AUDIOGUIDE-ONE-TRACK         Una pista nueva detiene la anterior: un único reproductor y una sola voz  — {"playingRef":"room:space.gallery-a","players":1,"sounding":1}
+  ok   AUDIOGUIDE-ROOM-CHANGE       Cambiar de sala pausa la pista, con aviso  — Pausada al cambiar de sala.
+  ok   AUDIOGUIDE-PERSIST           Tras recargar, el texto sigue y el audio de otra sesión se declara no disponible  — {"status":"STALE_AUDIO","duration":"20","file":"capsula.wav","title":"Cápsula de prueba"}
+  ok   AUDIOGUIDE-STALE-VISITOR     El visitante ve «audio no disponible» y la transcripción, sin botón ni petición a un archivo inexistente  — {"status":"STALE_AUDIO","toggle":null}
+  ok   AUDIOGUIDE-STUDIO-CONSOLE    Sin errores de consola en el flujo Studio → visitante de la audioguía
+  ok   AUDIOGUIDE-MOBILE            En el móvil el panel cabe bajo la barra, con márgenes de 16 px y botones de 44 px  — {"left":16,"right":16,"top":128,"bottom":550,"barBottom":118,"minTarget":44,"scrollX":0}
+  ok   AVATAR-ENTRY-GATED           Con avatar, la entrada espera a que el avatar esté listo  — {"disabled":false,"label":"Entrar con mi avatar"}
+  ok   AVATAR-READY                 El avatar se monta desde el repositorio y la entrada se habilita  — Entrar con mi avatar
+  ok   AVATAR lobby                 Avatar en tercera persona en la sala  — {"active":"space.lobby","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR shop                  Avatar en tercera persona en la sala  — {"active":"space.shop","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR lobby                 Avatar en tercera persona en la sala  — {"active":"space.lobby","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR gallery-a             Avatar en tercera persona en la sala  — {"active":"space.gallery-a","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR archive               Avatar en tercera persona en la sala  — {"active":"space.archive","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR gallery-a             Avatar en tercera persona en la sala  — {"active":"space.gallery-a","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR gallery-b             Avatar en tercera persona en la sala  — {"active":"space.gallery-b","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR itinerant-wet-paint   Avatar en tercera persona en la sala  — {"active":"space.itinerant-wet-paint","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR gallery-b             Avatar en tercera persona en la sala  — {"active":"space.gallery-b","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR breeze                Avatar aparcado y oculto en la sala anidada  — {"active":"space.breeze","visible":false,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":true}
+  ok   AVATAR gallery-b             Avatar en tercera persona en la sala  — {"active":"space.gallery-b","visible":true,"cam":"THIRD_PERSON_EXPLORE","viol":0,"err":null,"nested":false}
+  ok   AVATAR-PROXIMITY-BODY        Con avatar, lo cercano se mide desde el cuerpo, no desde la cámara que va detrás  — {"nearest":"hotspot.art.marea-baja","cameraBehind":3.22}
+  ok   AVATAR-BREEZE-E              Con avatar, E frente a la puerta entra en Breeze y E vuelve a la Galería B con el avatar visible  — hotspot.gallery-b.to-breeze · dentro true · fuera true · visible true
+  ok   AVATAR-DT-INDEPENDENT        El avatar recorre lo mismo a 60, 30, 10 FPS y con fotogramas irregulares  — {"10":2.037,"30":2.029,"60":2.038,"irregular":2.049}
+  ok   AVATAR-CAMERA-FOLLOW         Caminando con fotogramas irregulares, la cámara acompaña al avatar sin quedarse quieta ni dar saltos  — {"mean":1,"sd":0,"frozen":0,"moving":43,"recoveries":0,"holds":0}
+  ok   AVATAR-EASE                  El avatar arranca y se detiene con suavidad (sin pasar de 0 a velocidad máxima en un fotograma)  — {"maxSpeedJump":0.19,"coast":0.078}
+  ok   AVATAR-PACE-LOW-FPS          Con pocos FPS, el avatar camina a su velocidad (sin cámara lenta)  — {"metres":0.46,"expected":0.44,"fps":0.1} · 105 % de lo esperado
+  ok   AVATAR CONSOLE               Sin errores de consola con avatar
+  ok   MOBILE-LAYOUT                Sin desbordamiento horizontal y barra superior compacta  — {"overflow":0,"topbar":118}
+  ok   MOBILE-DOOR-TAP              Se camina con el pulgar y se cruza la puerta tocando el aviso  — {"tag":"BUTTON","text":"EEntrar en la Galería A"}
+  ok   MAP-LABELS                   Los nombres de sala del mapa no se pisan ni se salen  — 7 etiquetas
+  ok   MOBILE-DETAIL-FRAMING        La obra enfocada queda por encima de la cartela  — {"centre":297,"bottom":368,"label":611}
+  ok   MOBILE-WETPAINT-FRAMING      En el móvil, cada obra de Wet Paint enfocada queda por encima de su cartela  — {"rows":[{"id":"original","bottom":370,"label":611,"ok":true},{"id":"painterly","bottom":370,"label":611,"ok":true},{"id":"living","bottom":370,"label":611,"ok":true},{"id":"combined","bottom":370,"label":611,"ok":true},{"id":"experimental","bottom":424,"label":611,"ok":true}],"overflow":0}
+  ok   MOBILE-POV CONSOLE           Sin errores de consola (móvil, POV)
+  ok   MOBILE-AVATAR-TOUCH          El pulgar mueve al avatar  — 8.39 m
+  ok   MOBILE-AVATAR-FRAMING        En vertical, el avatar ocupa la mitad inferior y deja ver la sala  — {"body":0.67,"head":0.49}
+  ok   MOBILE-AVATAR CONSOLE        Sin errores de consola (móvil, avatar)
+  info  clic por DOM tras comprobar que el elemento no estaba tapado: save, entity.shop.lamina-marea, entities.entity.shop.postales.product.visible, entity.artwork.horizonte-interrumpido, entity.artwork.horizonte-interrumpido, detailGuide, entity.artwork.horizonte-interrumpido, enter, enter
+
+2 comprobación(es) fallida(s)
+EXIT 1

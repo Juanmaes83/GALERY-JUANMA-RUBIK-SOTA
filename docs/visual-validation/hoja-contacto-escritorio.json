@@ -1,0 +1,106 @@
+[
+  {
+    "file": "lobby--general.png",
+    "luma_mean_before": 186.4,
+    "luma_mean_after": 173.5,
+    "luma_std_before": 48.3,
+    "luma_std_after": 47.1,
+    "mean_abs_diff": 14.4
+  },
+  {
+    "file": "lobby--exposicion.png",
+    "luma_mean_before": 196.8,
+    "luma_mean_after": 176.8,
+    "luma_std_before": 45.6,
+    "luma_std_after": 45.5,
+    "mean_abs_diff": 20.9
+  },
+  {
+    "file": "shop--general.png",
+    "luma_mean_before": 169.9,
+    "luma_mean_after": 163.5,
+    "luma_std_before": 53.0,
+    "luma_std_after": 52.5,
+    "mean_abs_diff": 7.5
+  },
+  {
+    "file": "shop--exposicion.png",
+    "luma_mean_before": 169.5,
+    "luma_mean_after": 164.5,
+    "luma_std_before": 51.3,
+    "luma_std_after": 50.5,
+    "mean_abs_diff": 6.0
+  },
+  {
+    "file": "gallery-a--general.png",
+    "luma_mean_before": 178.0,
+    "luma_mean_after": 151.4,
+    "luma_std_before": 55.5,
+    "luma_std_after": 48.0,
+    "mean_abs_diff": 28.3
+  },
+  {
+    "file": "gallery-a--exposicion.png",
+    "luma_mean_before": 148.3,
+    "luma_mean_after": 135.8,
+    "luma_std_before": 61.2,
+    "luma_std_after": 53.4,
+    "mean_abs_diff": 13.9
+  },
+  {
+    "file": "archive--general.png",
+    "luma_mean_before": 65.3,
+    "luma_mean_after": 61.4,
+    "luma_std_before": 47.0,
+    "luma_std_after": 48.2,
+    "mean_abs_diff": 10.7
+  },
+  {
+    "file": "archive--exposicion.png",
+    "luma_mean_before": 48.9,
+    "luma_mean_after": 47.2,
+    "luma_std_before": 54.8,
+    "luma_std_after": 54.8,
+    "mean_abs_diff": 1.8
+  },
+  {
+    "file": "gallery-b--general.png",
+    "luma_mean_before": 24.3,
+    "luma_mean_after": 25.8,
+    "luma_std_before": 29.4,
+    "luma_std_after": 30.4,
+    "mean_abs_diff": 5.5
+  },
+  {
+    "file": "gallery-b--exposicion.png",
+    "luma_mean_before": 36.8,
+    "luma_mean_after": 34.2,
+    "luma_std_before": 45.1,
+    "luma_std_after": 43.7,
+    "mean_abs_diff": 4.3
+  },
+  {
+    "file": "itinerant-wet-paint--general.png",
+    "luma_mean_before": 165.7,
+    "luma_mean_after": 135.9,
+    "luma_std_before": 49.1,
+    "luma_std_after": 41.5,
+    "mean_abs_diff": 30.0
+  },
+  {
+    "file": "itinerant-wet-paint--exposicion.png",
+    "luma_mean_before": 139.1,
+    "luma_mean_after": 123.6,
+    "luma_std_before": 58.9,
+    "luma_std_after": 50.1,
+    "mean_abs_diff": 16.6
+  },
+  {
+    "file": "breeze--sala.png",
+    "luma_mean_before": 10.8,
+    "luma_mean_after": 10.8,
+    "luma_std_before": 16.1,
+    "luma_std_after": 16.1,
+    "mean_abs_diff": 0.0
+  }
+]

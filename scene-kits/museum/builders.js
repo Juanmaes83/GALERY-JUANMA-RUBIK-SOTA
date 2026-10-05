@@ -16,6 +16,7 @@
  */
 
 import { THREE } from '../../render/render-host.js';
+import { mergeGeometries } from '../../vendor/three/addons/utils/BufferGeometryUtils.js';
 
 export const WALL_THICKNESS = 0.26;
 
@@ -28,7 +29,7 @@ export const WALL_THICKNESS = 0.26;
  * @returns {THREE.Group}
  */
 export function buildRoomShell(spec) {
-  const { size, origin, openings = [], materials, capCeiling = true } = spec;
+  const { size, origin, openings = [], materials, capCeiling = true, dado = null } = spec;
   const [w, h, d] = size;
   const [ox, oy, oz] = origin;
   const group = new THREE.Group();
@@ -66,33 +67,70 @@ export function buildRoomShell(spec) {
     { id: 'EAST', length: d, centre: [ox + w / 2 - half, oy, oz], axis: 'z', rotation: Math.PI / 2 }
   ];
 
+  // Misión Visual: where a dado covers the lower wall, the wall behind it is
+  // not drawn — the software rasteriser shaded both layers, and that overdraw
+  // was most of the dado's measured cost. The lower wall stays where the dado
+  // is interrupted (`dado.keepClear`) and for 30 cm beside every opening, so a
+  // doorway's reveal is solid. Navigation and collision never read these
+  // meshes: they come from the room's bounds and blockers.
+  const lowerKept = (wall, wallOpenings) => {
+    if (!dado) return null;
+    const spans = (dado.keepClear || []).filter((k) => k.wall === wall.id)
+      .map((k) => [k.offset - k.width / 2, k.offset + k.width / 2]);
+    for (const o of wallOpenings) {
+      spans.push([o.offset - o.width / 2 - 0.3, o.offset - o.width / 2]);
+      spans.push([o.offset + o.width / 2, o.offset + o.width / 2 + 0.3]);
+    }
+    return spans;
+  };
+  const clip = (a0, a1, spans) => spans
+    .map(([s0, s1]) => [Math.max(a0, s0), Math.min(a1, s1)])
+    .filter(([s0, s1]) => s1 - s0 > 0.005);
+  const place = (wall, mesh, offset, y) => {
+    if (wall.axis === 'x') {
+      mesh.position.set(wall.centre[0] + offset, oy + y, wall.centre[2]);
+    } else {
+      mesh.position.set(wall.centre[0], oy + y, wall.centre[2] + offset);
+      mesh.rotation.y = wall.rotation;
+    }
+  };
+
   for (const wall of walls) {
     const wallOpenings = openings.filter((opening) => opening.wall === wall.id);
+    const kept = lowerKept(wall, wallOpenings);
     for (const piece of wallSegments(wall.length, h, wallOpenings)) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(piece.width, piece.height, WALL_THICKNESS), materials.wall);
-      const along = piece.offset;
-      if (wall.axis === 'x') {
-        mesh.position.set(wall.centre[0] + along, oy + piece.centreY, wall.centre[2]);
+      const bottom = piece.centreY - piece.height / 2;
+      const top = bottom + piece.height;
+      const boxes = [];
+      if (kept && bottom < dado.top) {
+        if (top > dado.top) boxes.push({ offset: piece.offset, width: piece.width, y0: dado.top, y1: top });
+        for (const [s0, s1] of clip(piece.offset - piece.width / 2, piece.offset + piece.width / 2, kept)) {
+          boxes.push({ offset: (s0 + s1) / 2, width: s1 - s0, y0: bottom, y1: Math.min(top, dado.top) });
+        }
       } else {
-        mesh.position.set(wall.centre[0], oy + piece.centreY, wall.centre[2] + along);
-        mesh.rotation.y = wall.rotation;
+        boxes.push({ offset: piece.offset, width: piece.width, y0: bottom, y1: top });
       }
-      mesh.castShadow = false;
-      mesh.receiveShadow = true;
-      group.add(mesh);
+      for (const b of boxes) {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(b.width, b.y1 - b.y0, WALL_THICKNESS), materials.wall);
+        place(wall, mesh, b.offset, (b.y0 + b.y1) / 2);
+        mesh.castShadow = false;
+        mesh.receiveShadow = true;
+        group.add(mesh);
+      }
     }
 
     // Skirting: a 12 cm shadow line where wall meets floor. Rooms without it
-    // read as untextured boxes no matter how good the materials are.
+    // read as untextured boxes no matter how good the materials are. Under a
+    // dado only where the dado is interrupted.
     for (const piece of wallSegments(wall.length, 0.12, wallOpenings.map((o) => ({ ...o, height: 0.12 })))) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(piece.width, 0.12, WALL_THICKNESS + 0.04), materials.skirting);
-      if (wall.axis === 'x') {
-        mesh.position.set(wall.centre[0] + piece.offset, oy + 0.06, wall.centre[2]);
-      } else {
-        mesh.position.set(wall.centre[0], oy + 0.06, wall.centre[2] + piece.offset);
-        mesh.rotation.y = wall.rotation;
+      const parts = kept
+        ? clip(piece.offset - piece.width / 2, piece.offset + piece.width / 2, kept).map(([s0, s1]) => ({ offset: (s0 + s1) / 2, width: s1 - s0 }))
+        : [{ offset: piece.offset, width: piece.width }];
+      for (const part of parts) {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(part.width, 0.12, WALL_THICKNESS + 0.04), materials.skirting);
+        place(wall, mesh, part.offset, 0.06);
+        group.add(mesh);
       }
-      group.add(mesh);
     }
   }
 
@@ -394,6 +432,7 @@ export function buildFramedWork({ size, texture, framed = true, mat = 0, frameMa
     roughness: framed ? 0.86 : 0.78,
     metalness: 0
   });
+  plateMaterial.userData.exhibit = true; // Misión Visual: keeps full environment response
 
   // An unframed canvas is a solid body with the image on its *front* face; a
   // framed work sits inside its frame. Getting this wrong buries the painting
@@ -435,20 +474,38 @@ export function buildFramedWork({ size, texture, framed = true, mat = 0, frameMa
   }
 
   if (framed) {
-    const bar = 0.045;
-    const parts = [
-      { size: [w + bar * 2, bar, depth], position: [0, h / 2 + bar / 2, depth / 2] },
-      { size: [w + bar * 2, bar, depth], position: [0, -h / 2 - bar / 2, depth / 2] },
-      { size: [bar, h, depth], position: [-w / 2 - bar / 2, 0, depth / 2] },
-      { size: [bar, h, depth], position: [w / 2 + bar / 2, 0, depth / 2] }
-    ];
-    for (const part of parts) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(...part.size), frameMaterial);
-      mesh.position.set(...part.position);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.add(mesh);
-    }
+    // Misión Visual: a profiled moulding instead of a flat box section, inside
+    // the same 45 mm footprint. A raised outer rail, a stepped-down inner face
+    // and a pale sight-edge slip give the frame two shadow lines and a lit
+    // edge, which is what reads as a made object from across the room.
+    //
+    //   outer rail  28 mm wide, stretcher depth + 12 mm
+    //   inner step  17 mm wide, 80 % of the stretcher depth
+    //   slip         6 mm wide on the inner step, lapping 1.5 mm over the sight edge
+    // Merged into two meshes (moulding, slip): fewer draw calls than the four
+    // plain bars it replaces.
+    const ring = (inset, width, z) => {
+      const W = w / 2 + inset;
+      const H = h / 2 + inset;
+      return [
+        { size: [2 * (W + width), width, z], position: [0, H + width / 2, z / 2] },
+        { size: [2 * (W + width), width, z], position: [0, -H - width / 2, z / 2] },
+        { size: [width, 2 * H, z], position: [-W - width / 2, 0, z / 2] },
+        { size: [width, 2 * H, z], position: [W + width / 2, 0, z / 2] }
+      ].map((part) => new THREE.BoxGeometry(...part.size).translate(...part.position));
+    };
+    const moulding = new THREE.Mesh(
+      mergeGeometries([...ring(0.017, 0.028, depth + 0.012), ...ring(0, 0.017, depth * 0.8)]),
+      frameMaterial
+    );
+    moulding.castShadow = true;
+    moulding.receiveShadow = true;
+    group.add(moulding);
+    // The slip laps 1.5 mm over the sight edge: its inner face must not be
+    // coplanar with the inner step's, or the two z-fight in stripes.
+    const slip = new THREE.Mesh(mergeGeometries(ring(-0.0015, 0.0075, depth * 0.8 + 0.004)), slipMaterialFor(frameMaterial));
+    slip.receiveShadow = true;
+    group.add(slip);
   } else {
     // Unframed canvas: the stretcher edge is visible and catches the spot.
     const body = new THREE.Mesh(
@@ -461,6 +518,16 @@ export function buildFramedWork({ size, texture, framed = true, mat = 0, frameMa
   }
 
   return group;
+}
+
+const slipMaterials = new WeakMap();
+/** The sight-edge slip: the frame's own timber, limed pale. One per frame material. */
+function slipMaterialFor(frameMaterial) {
+  if (!slipMaterials.has(frameMaterial)) {
+    const color = frameMaterial.color.clone().lerp(new THREE.Color(0xe9dfc9), 0.55);
+    slipMaterials.set(frameMaterial, new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.05 }));
+  }
+  return slipMaterials.get(frameMaterial);
 }
 
 /** Display plinth for three-dimensional work. */
@@ -761,8 +828,13 @@ function buildBustFallback() {
 /** Wall label, mounted at the standard 8 cm to the right of a work. */
 export function buildLabel({ texture, width = 0.22 }) {
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.92, metalness: 0 });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 0.62), material);
-  mesh.position.z = 0.004;
+  material.userData.exhibit = true;
+  // Misión Visual: a cartela is a 5 mm board, not a sticker. One box, one draw
+  // call: the print on its front face sits exactly where the old plane did
+  // (z = 0.004), and its edges take the card's own border colour.
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, width * 0.62, 0.005), material);
+  mesh.position.z = 0.004 - 0.0025;
+  mesh.receiveShadow = true; // casts none, like the original plane
   return mesh;
 }
 

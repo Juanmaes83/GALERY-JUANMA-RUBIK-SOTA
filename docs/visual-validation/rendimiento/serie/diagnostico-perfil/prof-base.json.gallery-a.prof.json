@@ -1,0 +1,105 @@
+{
+ "totalMs": 22211,
+ "top": [
+  [
+   "(program) :-1",
+   22147
+  ],
+  [
+   "texSubImage2D :-1",
+   7
+  ],
+  [
+   "update three.module.min.js:5",
+   5
+  ],
+  [
+   "uniform3f :-1",
+   5
+  ],
+  [
+   "(anon) three.module.min.js:5",
+   5
+  ],
+  [
+   "bindVertexArray :-1",
+   4
+  ],
+  [
+   "requestAnimationFrame :-1",
+   4
+  ],
+  [
+   "uniform1f :-1",
+   4
+  ],
+  [
+   "(garbage collector) :-1",
+   3
+  ],
+  [
+   "setup three.module.min.js:5",
+   3
+  ],
+  [
+   "uniformMatrix4fv :-1",
+   2
+  ],
+  [
+   "L three.module.min.js:5",
+   2
+  ],
+  [
+   "updateMatrixWorld three.core.min.js:5",
+   1
+  ],
+  [
+   "F three.module.min.js:5",
+   1
+  ],
+  [
+   "Oi three.module.min.js:5",
+   1
+  ],
+  [
+   "wi three.module.min.js:5",
+   1
+  ],
+  [
+   "Pa.renderBufferDirect three.module.min.js:5",
+   1
+  ],
+  [
+   "ct three.module.min.js:5",
+   1
+  ],
+  [
+   "at three.module.min.js:5",
+   1
+  ],
+  [
+   "upload three.module.min.js:5",
+   1
+  ],
+  [
+   "copy three.core.min.js:5",
+   1
+  ],
+  [
+   "requestVideoFrameCallback :-1",
+   1
+  ],
+  [
+   "fillRect :-1",
+   1
+  ],
+  [
+   "get three.module.min.js:5",
+   1
+  ],
+  [
+   "render three.module.min.js:5",
+   1
+  ]
+ ]
+}
