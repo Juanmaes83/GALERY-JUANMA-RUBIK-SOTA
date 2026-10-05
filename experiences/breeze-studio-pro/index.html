@@ -98,7 +98,31 @@
       box-shadow: 0 8px 28px rgba(0,0,0,.35);
     }
     body.bs-museum-panel-collapsed #bsMuseumPanelShow { display: block; }
+    /* Museum: during the visit (POV or avatar) the authoring panel is not part of
+       the exhibit. It is only hidden; the bundle still builds it, so the state
+       seam keeps reading and applying the saved personalisation. */
+    html[data-museo-mode="visita"] #breezeStudioPanel,
+    html[data-museo-mode="visita"] #bsMuseumPanelShow { display: none !important; }
   </style>
+<script>
+/* Museum mode for this room: "visita" (visitor, POV or avatar) or "studio"
+   (authoring). Set from the iframe URL before the bundle builds its panel, and
+   kept in sync by the Museum guest via postMessage when the author enters or
+   leaves the Studio. Default is "visita": nothing authoring leaks into a visit. */
+(() => {
+  const BRIDGE = 'BREEZE_MUSEUM_STATE_V1';
+  const root = document.documentElement;
+  const setMode = (mode) => { root.dataset.museoMode = mode === 'studio' ? 'studio' : 'visita'; };
+  let initial = null;
+  try { initial = new URLSearchParams(location.search).get('museo'); } catch { /* */ }
+  setMode(initial);
+  window.addEventListener('message', (event) => {
+    const msg = event.data;
+    if (event.source !== window.parent || !msg || msg.bridge !== BRIDGE || msg.type !== 'SET_MODE') return;
+    setMode(msg.mode);
+  });
+})();
+</script>
   <script type="module" crossorigin src="./assets/index-NUwAD0i6.js"></script>
   <script type="module" src="./museum-state-seam.js"></script>
 </head>

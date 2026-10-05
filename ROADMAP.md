@@ -156,11 +156,39 @@ Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION
 | V.11 | `MOBILE-DOOR-TAP`: causa (5 programas de shader más en el primer fotograma del cruce, tier LOW sin precompilación) corregida en `176f7f7`; la suite completa ya solo falla en `SHOP-COLLIDE` y `SHOP-STUDIO`, como la base. Aislada, la prueba falla también en la base en este entorno (base 0/4, misión 1/4) | Corregido; prueba dependiente de SwiftShader |
 | V.12 | Móvil LOW, serie 5+5 (`176f7f7`): arranque **+9,5 %**, Galería A +5,5 %, Galería B +9 %, Archivo +12 % parado (SwiftShader) | **Bloqueante**: no publicar ni fusionar |
 
+## Studio y Breeze: usabilidad · *rama `fix/studio-layout-breeze-visibility` (PR contra `mision-visual-limpia`), sin fusionar*
+
+**Problemas de partida:**
+
+- el inspector medía 306 px y «Nombre de la institución» se partía en dos líneas;
+- guion, transcripción, créditos y derechos se mostraban en 165 px y se recortaban;
+- «Proyecto» ocupaba 182 px fijos;
+- el panel de autoría de Breeze tapaba la sala durante la visita.
+
+**Cambios:**
+
+- inspector de unos 475 px a 1440;
+- «Proyecto» plegable;
+- separador ajustable con teclado;
+- etiquetas encima de los campos;
+- textos largos a ancho completo y sin recorte;
+- panel de Breeze oculto en la visita (POV y avatar) y visible en el Studio.
+
+Evidencias y mediciones en [`docs/visual-validation/studio-breeze-ux/`](docs/visual-validation/studio-breeze-ux/README.md).
+
+| # | Tarea | Estado |
+|---|---|---|
+| S.1 | Disposición del Studio (1440, 1180 y 390 px), sin desbordamiento horizontal; guardar y aplicar dan el mismo resultado que la base | Hecho · comprobado en Chromium con SwiftShader |
+| S.2 | Panel de Breeze oculto en la visita y visible en el Studio; Breeze sigue validando (`VALIDATE_STATE` ok) | Hecho · comprobado por estado del DOM; la escena no se dibuja con WebGPU emulado |
+| S.3 | Breeze con GPU real: escena, panel en el Studio y visita sin panel | **Pendiente** |
+| S.4 | Firefox y Safari: autoajuste de las áreas de texto (fallback en JS) | **Pendiente** |
+| S.5 | Problemas previos vistos y no tocados: en móvil, las migas tapan contenido; el aviso «Volver a la Galería B» se superpone al dock de guardado de Breeze en el Studio | **Pendiente** |
+
 ## Transversal — deuda técnica y calidad
 
 | # | Tarea |
 |---|---|
-| T.1 | Consolidar los ocho parches de `StudioShell.prototype` (y tres de `ExperienceHUD.prototype`) en extensiones declaradas del Studio. **Antes** de la fase 2 |
+| T.1 | Consolidar los parches de `StudioShell.prototype` (los ocho previos más `render` y `_readiness` de `studio-layout-ux.js`) y los tres de `ExperienceHUD.prototype` en extensiones declaradas del Studio. **Antes** de la fase 2 |
 | T.2 | Que la visita no cargue código del Studio |
 | T.3 | Pruebas en Firefox y WebKit, y auditoría de accesibilidad automatizada |
 | T.4 | Pruebas de regresión visual con los estados deterministas |

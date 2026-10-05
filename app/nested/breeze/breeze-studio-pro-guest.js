@@ -12,6 +12,12 @@
 export const BREEZE_STUDIO_PRO_V41_URL =
   './experiences/breeze-studio-pro/index.html';
 
+const BREEZE_BRIDGE = 'BREEZE_MUSEUM_STATE_V1';
+
+/** "studio" while the authoring shell is mounted, "visita" otherwise (POV or avatar). */
+const museumMode = () => (document.body?.dataset?.studio === 'on' ? 'studio' : 'visita');
+const breezeUrlFor = (mode) => `${BREEZE_STUDIO_PRO_V41_URL}?museo=${mode}`;
+
 const STUDIO_INTERACTIVE_SELECTORS = ['.st-rail', '.st-tree', '.st-ed', '.st-val'];
 const MUSEUM_PASS_THROUGH_SELECTORS = ['.iw-prompt'];
 
@@ -27,6 +33,26 @@ export class BreezeStudioProGuest {
     this.focusEvents = 0;
     this._studioBody = null;
     this._studioPointerSnapshot = null;
+    this._modeObserver = null;
+  }
+
+  /**
+   * The Breeze authoring panel belongs to the Studio, not to the visit. The mode
+   * travels in the iframe URL (so the panel never flashes on first paint) and is
+   * re-sent whenever the Studio is mounted or left; the iframe only hides the
+   * panel, it never removes it, so Breeze state keeps working in both modes.
+   */
+  _syncMode() {
+    try {
+      this.iframe?.contentWindow?.postMessage({ bridge: BREEZE_BRIDGE, type: 'SET_MODE', mode: museumMode() }, '*');
+    } catch { /* iframe gone */ }
+  }
+
+  _watchMuseumMode(iframe) {
+    this._modeObserver?.disconnect();
+    this._modeObserver = new MutationObserver(() => this._syncMode());
+    this._modeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-studio'] });
+    iframe.addEventListener('load', () => this._syncMode());
   }
 
   _releaseStudioCenterInput() {
@@ -131,7 +157,7 @@ export class BreezeStudioProGuest {
       notice.remove();
       this.notice = null;
       this._guestErrors = [];
-      if (this.iframe) this.iframe.src = BREEZE_STUDIO_PRO_V41_URL;
+      if (this.iframe) this.iframe.src = breezeUrlFor(museumMode());
     });
     stage.appendChild(notice);
     this.notice = notice;
@@ -200,7 +226,7 @@ export class BreezeStudioProGuest {
     const iframe = document.createElement('iframe');
     iframe.dataset.nestedRoomStudio = 'room.breeze';
     iframe.title = 'Sala Breeze — Breeze Studio PRO V4.1 original';
-    iframe.src = BREEZE_STUDIO_PRO_V41_URL;
+    iframe.src = breezeUrlFor(museumMode());
     iframe.allow = 'autoplay; fullscreen';
     iframe.setAttribute('allowfullscreen', '');
     iframe.tabIndex = 0;
@@ -219,6 +245,7 @@ export class BreezeStudioProGuest {
     stage.appendChild(iframe);
     this.iframe = iframe;
     this._watchGuestHealth(iframe, stage);
+    this._watchMuseumMode(iframe);
     this._releaseStudioCenterInput();
 
     await new Promise((resolve) => {
@@ -291,11 +318,17 @@ export class BreezeStudioProGuest {
       hasIframe: Boolean(this.iframe?.isConnected),
       unavailable: Boolean(this.notice?.isConnected),
       notice: this.notice?.isConnected ? this.notice.dataset.breezeUnavailable : null,
-      hasMuseumPose: Boolean(this.lastPose)
+      hasMuseumPose: Boolean(this.lastPose),
+      museumMode: museumMode(),
+      panelHiddenForVisit: (() => {
+        try { return this.iframe?.contentDocument?.documentElement?.dataset?.museoMode === 'visita'; } catch { return null; }
+      })()
     };
   }
 
   async dispose() {
+    this._modeObserver?.disconnect();
+    this._modeObserver = null;
     this._restoreStudioInput();
     if (this.iframe?.parentNode) this.iframe.parentNode.removeChild(this.iframe);
     this.iframe = null;

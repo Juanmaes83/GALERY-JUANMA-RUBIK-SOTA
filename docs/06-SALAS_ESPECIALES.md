@@ -65,6 +65,19 @@ El museo no reconstruye la capacidad probada: la integra.
 
 Salidas siempre disponibles: botón-puente abajo a la izquierda (elevado para no tapar la barra «info» de Breeze), hotspot con `E` y botones del aviso.
 
+**Panel de autoría solo en el Studio** (rama `fix/studio-layout-breeze-visibility`):
+
+- **En la visita, POV o avatar, el panel «Breeze Studio PRO» (`#breezeStudioPanel`) no se muestra.**
+  - El guest abre el iframe con `?museo=visita|studio`, según `body[data-studio]`.
+  - Cuando el Studio se monta o se abandona, el guest reenvía el modo con el mensaje `SET_MODE` del puente `BREEZE_MUSEUM_STATE_V1`.
+- **El panel solo se oculta con CSS en `experiences/breeze-studio-pro/index.html`.**
+  - El bundle sigue construyéndolo, así que guardar y restaurar la personalización y `VALIDATE_STATE` funcionan igual.
+  - El bundle no se ha modificado.
+- **En el Studio, el panel sigue visible y editable.**
+- **La barra «info» con los créditos del autor se mantiene.**
+
+Evidencias en [`visual-validation/studio-breeze-ux/`](visual-validation/studio-breeze-ux/README.md).
+
 **Pendiente:**
 
 - 👁 **Validación visual** de la tela y el viento en un navegador con GPU real. En el entorno de pruebas (WebGPU emulado por CPU) el dispositivo se pierde a los pocos segundos, también con Breeze funcionando solo.

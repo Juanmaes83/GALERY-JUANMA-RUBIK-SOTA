@@ -26,6 +26,37 @@ Es el punto de entrada **canónico** del Studio en el origen (`MUSEUM_SPECIAL_RO
 
 La vista previa sigue el contrato `ENTRAR → USAR → SALIR → REANUDAR`. Siempre hay un «← Volver al Studio» persistente que restaura área, entidad seleccionada, secciones abiertas y scroll. El botón Atrás del navegador es secundario.
 
+## Disposición (rama `fix/studio-layout-breeze-visibility`)
+
+**Escritorio, desde 1241 px:**
+
+- **Inspector:** `clamp(400px, 33vw, 520px)`; a 1440 px son unos 475 px, antes 306 px.
+- **Vista previa:** baja de 600 a unos 570 px.
+- **«Proyecto»:**
+  - deja de ocupar una columna fija de 182 px;
+  - queda en una pestaña de 44 px con su porcentaje;
+  - se abre como cajón de 300 px sobre el inspector, sin mover la vista previa;
+  - se cierra con el botón o con `Esc`.
+- **Etiquetas:** van encima de los campos cuando el inspector mide menos de 560 px (container query).
+- **Guion, transcripción, créditos y derechos:**
+  - ocupan siempre el ancho completo y crecen con su texto, sin barra interna;
+  - créditos y derechos ajustan el texto en varias líneas, pero siguen guardando una sola línea.
+- **Separador** entre la vista previa y el inspector:
+  - se arrastra o se maneja con el teclado: `←`/`→` (con Mayús, ×4), `Inicio` para restablecer y `Fin` para el máximo;
+  - se restablece también con doble clic;
+  - nunca deja la vista 3D por debajo de 360 px;
+  - el ancho se recuerda solo durante la sesión.
+
+**Entre 901 y 1240 px:** el inspector va de 340 a 400 px y «Proyecto» se reduce a una fila plegable.
+
+**Hasta 900 px:** se mantienen las secciones apiladas con pestañas. «Proyecto» está plegado, y la pestaña «Proyecto» lo despliega.
+
+**Implementación:**
+
+- `authoring/studio/studio-layout-ux.css` y `studio-layout-ux.js`.
+- Son solo de presentación: no tocan el modelo de datos, guardar ni aplicar.
+- Evidencias en [`visual-validation/studio-breeze-ux/`](visual-validation/studio-breeze-ux/README.md).
+
 ## Áreas
 
 ```text

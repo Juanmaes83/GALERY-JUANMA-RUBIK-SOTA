@@ -1,0 +1,876 @@
+{
+ "entorno": "Chromium headless (Playwright), WebGL2 por SwiftShader; WebGPU por SwiftShader con --enable-unsafe-webgpu. No es GPU real.",
+ "studio": {
+  "antes_827a6d9": {
+   "desktop": {
+    "stage": {
+     "x": 352,
+     "y": 56,
+     "w": 600,
+     "h": 480
+    },
+    "ed": {
+     "x": 952,
+     "y": 56,
+     "w": 306,
+     "h": 844
+    },
+    "val": {
+     "x": 1258,
+     "y": 56,
+     "w": 182,
+     "h": 844
+    },
+    "tree": {
+     "x": 156,
+     "y": 56,
+     "w": 196,
+     "h": 844
+    },
+    "edHScroll": 0,
+    "pageHScroll": 0,
+    "guion": {
+     "tag": "TEXTAREA",
+     "w": 165,
+     "h": 143,
+     "labelAbove": false,
+     "clipped": true
+    },
+    "transcripcion": {
+     "tag": "TEXTAREA",
+     "w": 165,
+     "h": 143,
+     "labelAbove": false,
+     "clipped": true
+    },
+    "creditos": {
+     "tag": "INPUT",
+     "w": 165,
+     "h": 38,
+     "labelAbove": false,
+     "clipped": true
+    },
+    "derechos": {
+     "tag": "INPUT",
+     "w": 165,
+     "h": 38,
+     "labelAbove": false,
+     "clipped": true
+    },
+    "nombre": {
+     "tag": "INPUT",
+     "w": 165,
+     "h": 38,
+     "labelAbove": false,
+     "clipped": true
+    }
+   },
+   "desktopGuion": {
+    "stage": {
+     "x": 352,
+     "y": 56,
+     "w": 600,
+     "h": 480
+    },
+    "ed": {
+     "x": 952,
+     "y": 56,
+     "w": 306,
+     "h": 844
+    },
+    "val": {
+     "x": 1258,
+     "y": 56,
+     "w": 182,
+     "h": 844
+    },
+    "tree": {
+     "x": 156,
+     "y": 56,
+     "w": 196,
+     "h": 844
+    },
+    "edHScroll": 0,
+    "pageHScroll": 0,
+    "guion": {
+     "tag": "TEXTAREA",
+     "w": 165,
+     "h": 143,
+     "labelAbove": false,
+     "clipped": true
+    },
+    "transcripcion": {
+     "tag": "TEXTAREA",
+     "w": 165,
+     "h": 143,
+     "labelAbove": false,
+     "clipped": true
+    },
+    "creditos": {
+     "tag": "INPUT",
+     "w": 165,
+     "h": 38,
+     "labelAbove": false,
+     "clipped": true
+    },
+    "derechos": {
+     "tag": "INPUT",
+     "w": 165,
+     "h": 38,
+     "labelAbove": false,
+     "clipped": true
+    },
+    "nombre": {
+     "tag": "INPUT",
+     "w": 165,
+     "h": 38,
+     "labelAbove": false,
+     "clipped": true
+    }
+   },
+   "desktopErrors": [],
+   "medium": {
+    "stage": {
+     "x": 260,
+     "y": 56,
+     "w": 620,
+     "h": 488
+    },
+    "ed": {
+     "x": 880,
+     "y": 56,
+     "w": 300,
+     "h": 744
+    },
+    "val": {
+     "x": 880,
+     "y": 432,
+     "w": 300,
+     "h": 368
+    },
+    "tree": {
+     "x": 52,
+     "y": 56,
+     "w": 208,
+     "h": 744
+    },
+    "edHScroll": 0,
+    "pageHScroll": 0,
+    "guion": {
+     "tag": "TEXTAREA",
+     "w": 267,
+     "h": 143,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "transcripcion": {
+     "tag": "TEXTAREA",
+     "w": 267,
+     "h": 143,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "creditos": {
+     "tag": "INPUT",
+     "w": 267,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": true
+    },
+    "derechos": {
+     "tag": "INPUT",
+     "w": 267,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": true
+    },
+    "nombre": {
+     "tag": "INPUT",
+     "w": 267,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": false
+    }
+   },
+   "mediumErrors": [],
+   "phone": {
+    "stage": {
+     "x": 0,
+     "y": 88,
+     "w": 390,
+     "h": 270
+    },
+    "ed": {
+     "x": 0,
+     "y": 2403,
+     "w": 390,
+     "h": 1853
+    },
+    "val": {
+     "x": 0,
+     "y": 4255,
+     "w": 390,
+     "h": 501
+    },
+    "tree": {
+     "x": 0,
+     "y": 458,
+     "w": 390,
+     "h": 1944
+    },
+    "edHScroll": 0,
+    "pageHScroll": 0,
+    "guion": {
+     "tag": "TEXTAREA",
+     "w": 358,
+     "h": 143,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "transcripcion": {
+     "tag": "TEXTAREA",
+     "w": 358,
+     "h": 143,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "creditos": {
+     "tag": "INPUT",
+     "w": 358,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": true
+    },
+    "derechos": {
+     "tag": "INPUT",
+     "w": 358,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": true
+    },
+    "nombre": {
+     "tag": "INPUT",
+     "w": 358,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": false
+    }
+   },
+   "phoneErrors": []
+  },
+  "despues": {
+   "desktop": {
+    "stage": {
+     "x": 352,
+     "y": 56,
+     "w": 569,
+     "h": 455
+    },
+    "ed": {
+     "x": 921,
+     "y": 56,
+     "w": 475,
+     "h": 844
+    },
+    "val": {
+     "x": 1396,
+     "y": 56,
+     "w": 44,
+     "h": 844
+    },
+    "tree": {
+     "x": 156,
+     "y": 56,
+     "w": 196,
+     "h": 844
+    },
+    "edHScroll": 0,
+    "pageHScroll": 0,
+    "guion": {
+     "tag": "TEXTAREA",
+     "w": 442,
+     "h": 117,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "transcripcion": {
+     "tag": "TEXTAREA",
+     "w": 442,
+     "h": 117,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "creditos": {
+     "tag": "TEXTAREA",
+     "w": 442,
+     "h": 61,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "derechos": {
+     "tag": "TEXTAREA",
+     "w": 442,
+     "h": 61,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "nombre": {
+     "tag": "INPUT",
+     "w": 442,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": false
+    }
+   },
+   "desktopGuion": {
+    "stage": {
+     "x": 352,
+     "y": 56,
+     "w": 569,
+     "h": 455
+    },
+    "ed": {
+     "x": 921,
+     "y": 56,
+     "w": 475,
+     "h": 844
+    },
+    "val": {
+     "x": 1396,
+     "y": 56,
+     "w": 44,
+     "h": 844
+    },
+    "tree": {
+     "x": 156,
+     "y": 56,
+     "w": 196,
+     "h": 844
+    },
+    "edHScroll": 0,
+    "pageHScroll": 0,
+    "guion": {
+     "tag": "TEXTAREA",
+     "w": 442,
+     "h": 117,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "transcripcion": {
+     "tag": "TEXTAREA",
+     "w": 442,
+     "h": 117,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "creditos": {
+     "tag": "TEXTAREA",
+     "w": 442,
+     "h": 61,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "derechos": {
+     "tag": "TEXTAREA",
+     "w": 442,
+     "h": 61,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "nombre": {
+     "tag": "INPUT",
+     "w": 442,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": false
+    }
+   },
+   "projectOpen": {
+    "mode": "open",
+    "expanded": "true",
+    "val": {
+     "x": 1140,
+     "w": 300
+    },
+    "stage": {
+     "x": 352,
+     "w": 569
+    }
+   },
+   "projectEsc": {
+    "mode": "closed",
+    "focus": "st-valtoggle is-ok"
+   },
+   "split": {
+    "w0": 475,
+    "afterArrowLeftx4": 539,
+    "stageAfter": 505,
+    "afterHome": 475,
+    "aria": {
+     "role": "separator",
+     "now": "475",
+     "min": "320",
+     "max": "684"
+    }
+   },
+   "singleLine": {
+    "hasNewline": false,
+    "tail": "al. AB"
+   },
+   "desktopErrors": [],
+   "medium": {
+    "stage": {
+     "x": 260,
+     "y": 56,
+     "w": 566,
+     "h": 445
+    },
+    "ed": {
+     "x": 826,
+     "y": 56,
+     "w": 354,
+     "h": 744
+    },
+    "val": {
+     "x": 826,
+     "y": 751,
+     "w": 354,
+     "h": 49
+    },
+    "tree": {
+     "x": 52,
+     "y": 56,
+     "w": 208,
+     "h": 744
+    },
+    "edHScroll": 0,
+    "pageHScroll": 0,
+    "guion": {
+     "tag": "TEXTAREA",
+     "w": 321,
+     "h": 117,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "transcripcion": {
+     "tag": "TEXTAREA",
+     "w": 321,
+     "h": 117,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "creditos": {
+     "tag": "TEXTAREA",
+     "w": 321,
+     "h": 81,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "derechos": {
+     "tag": "TEXTAREA",
+     "w": 321,
+     "h": 61,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "nombre": {
+     "tag": "INPUT",
+     "w": 321,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": false
+    }
+   },
+   "mediumErrors": [],
+   "phone": {
+    "stage": {
+     "x": 0,
+     "y": 88,
+     "w": 390,
+     "h": 270
+    },
+    "ed": {
+     "x": 0,
+     "y": 2403,
+     "w": 390,
+     "h": 1835
+    },
+    "val": {
+     "x": 0,
+     "y": 4237,
+     "w": 390,
+     "h": 121
+    },
+    "tree": {
+     "x": 0,
+     "y": 458,
+     "w": 390,
+     "h": 1944
+    },
+    "edHScroll": 0,
+    "pageHScroll": 0,
+    "guion": {
+     "tag": "TEXTAREA",
+     "w": 358,
+     "h": 117,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "transcripcion": {
+     "tag": "TEXTAREA",
+     "w": 358,
+     "h": 117,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "creditos": {
+     "tag": "TEXTAREA",
+     "w": 358,
+     "h": 81,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "derechos": {
+     "tag": "TEXTAREA",
+     "w": 358,
+     "h": 61,
+     "labelAbove": true,
+     "clipped": false
+    },
+    "nombre": {
+     "tag": "INPUT",
+     "w": 358,
+     "h": 38,
+     "labelAbove": true,
+     "clipped": false
+    }
+   },
+   "phoneErrors": []
+  }
+ },
+ "guardar_aplicar": {
+  "antes_827a6d9": {
+   "saved": "Guardado · 17:09",
+   "configUnchangedBySave": true,
+   "configUnchangedByApply": false,
+   "live": "Vista previa aplicada Vestíbulo",
+   "breezeBridge": "READY_UNSAVED",
+   "breezeSave": {
+    "ok": true,
+    "saved": true
+   },
+   "errors": []
+  },
+  "despues": {
+   "saved": "Guardado · 17:13",
+   "configUnchangedBySave": true,
+   "configUnchangedByApply": false,
+   "live": "Vista previa aplicada Vestíbulo",
+   "breezeBridge": "READY_UNSAVED",
+   "breezeSave": {
+    "ok": true,
+    "saved": true
+   },
+   "errors": [],
+   "mobileProject": {
+    "state": "open",
+    "expanded": "true",
+    "hScroll": 0
+   }
+  }
+ },
+ "breeze": {
+  "pov": {
+   "antes_827a6d9": {
+    "query": "?tier=LOW",
+    "route": {
+     "start": "space.lobby",
+     "at": "space.breeze"
+    },
+    "waited": "panel",
+    "camera": "EXPLORE",
+    "src": "./experiences/breeze-studio-pro/index.html",
+    "museoMode": null,
+    "panelExists": true,
+    "panelDisplay": "block",
+    "panelRect": {
+     "x": 1066,
+     "y": 18,
+     "w": 356,
+     "h": 852
+    },
+    "showTabDisplay": "none",
+    "saveDock": true,
+    "runtime": true,
+    "studioOn": false,
+    "notice": null,
+    "validate": {
+     "ok": true,
+     "checks": {
+      "runtime": true,
+      "panel": true,
+      "experience": true,
+      "background": true,
+      "cloth": true,
+      "object": true,
+      "physics": true
+     }
+    },
+    "errorCount": 0,
+    "errors": []
+   },
+   "despues": {
+    "query": "?tier=LOW",
+    "route": {
+     "start": "space.lobby",
+     "at": "space.breeze"
+    },
+    "waited": "panel",
+    "camera": "EXPLORE",
+    "src": "./experiences/breeze-studio-pro/index.html?museo=visita",
+    "museoMode": "visita",
+    "panelExists": true,
+    "panelDisplay": "none",
+    "panelRect": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "showTabDisplay": "none",
+    "saveDock": true,
+    "runtime": true,
+    "studioOn": false,
+    "notice": null,
+    "validate": {
+     "ok": true,
+     "checks": {
+      "runtime": true,
+      "panel": true,
+      "experience": true,
+      "background": true,
+      "cloth": true,
+      "object": true,
+      "physics": true
+     }
+    },
+    "errorCount": 0,
+    "errors": []
+   }
+  },
+  "avatar": {
+   "antes_827a6d9": {
+    "query": "?tier=LOW&character=1&mobility=1&continuity=1&gatea=1",
+    "route": {
+     "start": "space.gallery-a",
+     "at": "space.breeze"
+    },
+    "waited": "panel",
+    "camera": "THIRD_PERSON_EXPLORE",
+    "src": "./experiences/breeze-studio-pro/index.html",
+    "museoMode": null,
+    "panelExists": true,
+    "panelDisplay": "block",
+    "panelRect": {
+     "x": 1066,
+     "y": 18,
+     "w": 356,
+     "h": 852
+    },
+    "showTabDisplay": "none",
+    "saveDock": true,
+    "runtime": true,
+    "studioOn": false,
+    "notice": null,
+    "validate": {
+     "ok": true,
+     "checks": {
+      "runtime": true,
+      "panel": true,
+      "experience": true,
+      "background": true,
+      "cloth": true,
+      "object": true,
+      "physics": true
+     }
+    },
+    "errorCount": 0,
+    "errors": []
+   },
+   "despues_ejecucion_1": {
+    "query": "?tier=LOW&character=1&mobility=1&continuity=1&gatea=1",
+    "route": {
+     "start": "space.gallery-a",
+     "at": "space.breeze"
+    },
+    "waited": "panel",
+    "camera": "THIRD_PERSON_EXPLORE",
+    "src": "./experiences/breeze-studio-pro/index.html?museo=visita",
+    "museoMode": "visita",
+    "panelExists": true,
+    "panelDisplay": "none",
+    "panelRect": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "showTabDisplay": null,
+    "saveDock": false,
+    "runtime": true,
+    "studioOn": false,
+    "notice": null,
+    "validate": "Breeze Studio PRO no está listo.",
+    "errorCount": 19,
+    "errors": [
+     "TypeError: Cannot read properties of undefined (reading 'size')",
+     "TypeError: Cannot read properties of undefined (reading 'size')",
+     "TypeError: Cannot read properties of undefined (reading 'size')",
+     "TypeError: Cannot read properties of undefined (reading 'size')",
+     "TypeError: Cannot read properties of undefined (reading 'size')"
+    ]
+   },
+   "despues_ejecucion_2": {
+    "query": "?tier=LOW&character=1&mobility=1&continuity=1&gatea=1",
+    "route": {
+     "start": "space.gallery-a",
+     "at": "space.breeze"
+    },
+    "waited": "panel",
+    "camera": "THIRD_PERSON_EXPLORE",
+    "src": "./experiences/breeze-studio-pro/index.html?museo=visita",
+    "museoMode": "visita",
+    "panelExists": true,
+    "panelDisplay": "none",
+    "panelRect": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "showTabDisplay": "none",
+    "saveDock": true,
+    "runtime": true,
+    "studioOn": false,
+    "notice": null,
+    "validate": {
+     "ok": true,
+     "checks": {
+      "runtime": true,
+      "panel": true,
+      "experience": true,
+      "background": true,
+      "cloth": true,
+      "object": true,
+      "physics": true
+     }
+    },
+    "errorCount": 0,
+    "errors": []
+   }
+  },
+  "studio": {
+   "antes_827a6d9": {
+    "query": "?authoring=1&tier=LOW",
+    "route": {
+     "via": "tree-select",
+     "at": "space.breeze",
+     "selected": "entity.installation.viento-sobre-marmol",
+     "afterCloseFocus": {
+      "camera": "EXPLORE",
+      "selected": "entity.installation.viento-sobre-marmol"
+     }
+    },
+    "waited": "panel",
+    "camera": "EXPLORE",
+    "src": "./experiences/breeze-studio-pro/index.html",
+    "museoMode": null,
+    "panelExists": true,
+    "panelDisplay": "block",
+    "panelRect": {
+     "x": 226,
+     "y": 18,
+     "w": 356,
+     "h": 474
+    },
+    "showTabDisplay": "none",
+    "saveDock": true,
+    "runtime": true,
+    "studioOn": true,
+    "notice": null,
+    "validate": {
+     "ok": true,
+     "checks": {
+      "runtime": true,
+      "panel": true,
+      "experience": true,
+      "background": true,
+      "cloth": true,
+      "object": true,
+      "physics": true
+     }
+    },
+    "afterPreview": {
+     "studio": null,
+     "panelDisplay": "block"
+    },
+    "errorCount": 2,
+    "errors": [
+     "TypeError: Cannot read properties of undefined (reading 'size')",
+     "TypeError: Cannot read properties of undefined (reading 'size')"
+    ]
+   },
+   "despues": {
+    "query": "?authoring=1&tier=LOW",
+    "route": {
+     "via": "tree-select",
+     "at": "space.breeze",
+     "selected": "entity.installation.viento-sobre-marmol",
+     "afterCloseFocus": {
+      "camera": "EXPLORE",
+      "selected": "entity.installation.viento-sobre-marmol"
+     }
+    },
+    "waited": "panel",
+    "camera": "EXPLORE",
+    "src": "./experiences/breeze-studio-pro/index.html?museo=studio",
+    "museoMode": "studio",
+    "panelExists": true,
+    "panelDisplay": "block",
+    "panelRect": {
+     "x": 195,
+     "y": 18,
+     "w": 356,
+     "h": 449
+    },
+    "showTabDisplay": "none",
+    "saveDock": true,
+    "runtime": true,
+    "studioOn": true,
+    "notice": null,
+    "validate": {
+     "ok": true,
+     "checks": {
+      "runtime": true,
+      "panel": true,
+      "experience": true,
+      "background": true,
+      "cloth": true,
+      "object": true,
+      "physics": true
+     }
+    },
+    "afterPreview": {
+     "studio": null,
+     "museoMode": "visita",
+     "panelDisplay": "none"
+    },
+    "errorCount": 2,
+    "errors": [
+     "TypeError: Cannot read properties of undefined (reading 'size')",
+     "TypeError: Cannot read properties of undefined (reading 'size')"
+    ]
+   }
+  }
+ }
+}
