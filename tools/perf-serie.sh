@@ -5,7 +5,7 @@
 cd "$(dirname "$0")/.."
 OUT=${1:?carpeta de salida}; P=${2:-4800}; BASE=${BASE_ROOT:-../museo-baseline}
 mkdir -p "$OUT"
-for prof in high movil; do for i in 1 2 3 4 5; do for v in base cand; do
+for prof in ${PROFILES:-high movil}; do for i in 1 2 3 4 5; do for v in base cand; do
   P=$((P+1))
   ROOT=$([ $v = base ] && echo "$BASE" || echo .)
   FLAGS=$([ $prof = high ] && echo "--tier HIGH" || echo "--mobile")

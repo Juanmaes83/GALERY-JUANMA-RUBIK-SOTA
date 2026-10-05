@@ -1,6 +1,6 @@
 # Misión visual: presentación de las siete salas
 
-**Rama:** `mision-visual-presentacion` · **Base:** `4f0c01c` (Misión 5, tienda del museo) · **Estado:** candidata local, sin fusionar ni desplegar a producción · **Actualizado:** 2026-10-04 · **Declaración:** **parcialmente validado** (ver §11).
+**Rama:** `mision-visual-presentacion` · **Base:** `4f0c01c` (Misión 5, tienda del museo) · **Estado:** candidata local, sin fusionar ni desplegar a producción · **Actualizado:** 2026-10-04 · **Declaración:** **bloqueada** (ver §11).
 
 **Alcance:** seis salas (Vestíbulo, Galería A, Galería B, Archivo, Wet Paint y Tienda). **La Sala Breeze queda excluida** de esta misión: no se ha modificado su bundle ni su comportamiento.
 
@@ -185,6 +185,37 @@ No se observan artefactos nuevos (z-fighting, franjas, texturas sin cargar). Obr
 - Incidencias intermitentes en las capturas (§8): repetir varias pasadas completas en base y candidata.
 - No implementados: HDRI real, reflexión planar, sombras de contacto calculadas.
 
+
+## 12. Rama limpia `mision-visual-limpia`: MOBILE-DOOR-TAP y móvil (2026-10-05)
+
+**Causa.** En el tier LOW no hay precompilación de shaders (política del motor, para no arriesgar la pérdida del contexto WebGL en teléfonos), así que cada programa se compila en el primer fotograma del cruce, el que responde al toque. Registrando los shaders compilados durante el toque Vestíbulo → Galería A: base **10** programas; misión **15** (suelo con color + relieve, zócalo Lambert y decal, cada uno en dos configuraciones de luces). Fotogramas de ese momento: base ≈ 1,5 + 1,3 s; misión ≈ 2,1 + 3,9 + 1,7 s. Con eso, `locator.tap()` superaba los 8 s y la prueba repetía el clic por DOM, que ya llevaba de vuelta al Vestíbulo.
+
+**Corrección (`176f7f7`).** La pared lleva un mapa de color blanco 1×1 (sin efecto visible) y comparte programa con el suelo; el zócalo de piedra pasa a MeshStandard con los mapas del suelo. Resultado: **10 programas en el cruce, igual que la base**; capturas del Vestíbulo y Galería A sin diferencia apreciable. No se ha cambiado la prueba ni el timeout.
+
+**Pruebas tras la corrección:**
+
+| Ejecución | Resultado | Registro |
+|---|---|---|
+| `npm test` en `176f7f7` | **2 fallos · `EXIT 1`**: `SHOP-COLLIDE` y `SHOP-STUDIO`, **los mismos dos y con el mismo detalle que en la base** (`npm-test-base-4f0c01c.log`). `MOBILE-DOOR-TAP` **pasa**. `AVATAR-PACE-LOW-FPS` pasa (105 %) | `docs/visual-validation/npm-test-mision-visual-limpia-176f7f7.log` |
+| `MOBILE-DOOR-TAP` aislado, 4 + 4 alternos | **Base 0/4** (toque 8,1–8,4 s) · **misión 1/4** (7,3–8,9 s). En esta máquina la prueba aislada falla también en la base: depende del tiempo de SwiftShader y no puede darse por verde en ninguna de las dos. Mediana del toque: misión ≈ 0,5 s más lenta | `docs/visual-validation/mobile-door-tap-tras-correccion.log` |
+
+**Móvil emulado (390 × 844, LOW), serie 5 + 5 alterna, `176f7f7` frente a `4f0c01c`** (`serie/movil-176f7f7`):
+
+| | Base → misión | Δ |
+|---|---|---|
+| Arranque (`ready`) | 17,7 s → 19,4 s | **+9,5 %** |
+| Vestíbulo parado / caminando | 935 → 922 / 1347 → 1294 ms | −1,4 % / −3,9 % |
+| Tienda | 570 → 571 / 834 → 827 | 0 % / −1 % |
+| Galería A | 728 → 768 / 490 → 517 | **+5,5 % / +5,4 %** |
+| Archivo | 176 → 197 / 191 → 188 | **+12 %** / −2 % |
+| Galería B | 969 → 1057 / 1109 → 1120 | **+9,1 %** / +1 % |
+| Wet Paint | 337 → 325 / 332 → 346 | −3,4 % / +4,2 % |
+| Cruce a Galería A | 3632 → 3800 ms | +4,6 % |
+
+Errores de página 0 → 0; peticiones fallidas 0 → 0.
+
+**Conclusión.** La corrección iguala el número de shaders del cruce, y la suite completa ya muestra solo los fallos de la base. Pero no se puede demostrar que la navegación móvil no empeora: el arranque sube un 9,5 % (límite 5 %) y Galería A, Galería B y Archivo son más lentas paradas. **La misión queda bloqueada**: no se publica la rama, no se abre la PR y no se fusiona. Todo medido con SwiftShader; sin pruebas en GPU ni teléfono físicos.
+
 ## 11. Declaración
 
-**Parcialmente validado.** La mejora visual está implementada; el arranque y los cruces mejoran frente a la base; pero la serie oficial muestra una regresión repetible de fluidez en tres salas con render por software, y la suite tiene un fallo. No se declara terminada.
+**Bloqueada** (rama limpia `mision-visual-limpia`, §12). La mejora visual está implementada; el arranque y los cruces mejoran frente a la base; pero la serie oficial muestra una regresión repetible de fluidez en tres salas con render por software, y la suite tiene un fallo. No se declara terminada.

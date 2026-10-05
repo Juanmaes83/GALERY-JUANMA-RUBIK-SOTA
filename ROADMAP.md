@@ -137,7 +137,7 @@ Es la fase con más impacto de negocio. Hoy lo que se personaliza **solo vive en
 | 5.2 | Compartir y enlazar a una obra o parada concreta | Bloque 9 |
 | 5.3 | Exportar como paquete de experiencia | Bloque 9 |
 
-## Misión visual — seis salas · *rama `mision-visual-limpia` (solo alcance visual), sin fusionar*
+## Misión visual — seis salas · *rama `mision-visual-limpia` (solo alcance visual), bloqueada, sin publicar*
 
 Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION-VISUAL.md). Breeze **excluida** de la misión. Todo medido con render por software (SwiftShader); nada en GPU ni móvil reales. **No aprobada por Juanma.**
 
@@ -153,7 +153,8 @@ Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION
 | V.8 | Preview de la rama y revisión de Juanma | **Bloqueado**: push 403 desde esta sesión; preview pendiente de publicar la rama |
 | V.9 | `SHOP-STUDIO`: falla en la suite completa en base y candidata con el mismo detalle; aislado pasa 4/4 en ambas. Defecto previo | **Pendiente** (fuera del alcance visual) |
 | V.10 | Incidencias intermitentes en capturas (§8 del informe) | **Pendiente** |
-| V.11 | `MOBILE-DOOR-TAP` falla en la rama visual (0/4 aislado; base 4/4): el toque tarda más de 8 s en completarse en móvil LOW con SwiftShader y la prueba repite el clic. Medir y optimizar el móvil LOW antes de fusionar | **Bloqueante** |
+| V.11 | `MOBILE-DOOR-TAP`: causa (5 programas de shader más en el primer fotograma del cruce, tier LOW sin precompilación) corregida en `176f7f7`; la suite completa ya solo falla en `SHOP-COLLIDE` y `SHOP-STUDIO`, como la base. Aislada, la prueba falla también en la base en este entorno (base 0/4, misión 1/4) | Corregido; prueba dependiente de SwiftShader |
+| V.12 | Móvil LOW, serie 5+5 (`176f7f7`): arranque **+9,5 %**, Galería A +5,5 %, Galería B +9 %, Archivo +12 % parado (SwiftShader) | **Bloqueante**: no publicar ni fusionar |
 
 ## Transversal — deuda técnica y calidad
 

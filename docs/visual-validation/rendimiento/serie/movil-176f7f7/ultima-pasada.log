@@ -1,0 +1,7 @@
+space.lobby {"still":{"median":794.5,"p90":850.3,"n":8},"walking":{"median":1183.4,"p90":1314.7,"n":8},"calls":142,"triangles":22845,"textures":26,"geometries":189,"heapMB":25.6,"crossMs":[],"floorOnArrival":null}
+space.shop {"still":{"median":499.4,"p90":525,"n":8},"walking":{"median":725.2,"p90":1135.3,"n":8},"calls":181,"triangles":23946,"textures":30,"geometries":257,"heapMB":27,"crossMs":[11],"floorOnArrival":null}
+space.gallery-a {"still":{"median":601.6,"p90":633.1,"n":8},"walking":{"median":433.8,"p90":446.6,"n":8},"calls":131,"triangles":22854,"textures":28,"geometries":211,"heapMB":29.2,"crossMs":[5383],"floorOnArrival":null}
+space.archive {"still":{"median":164.4,"p90":182.2,"n":8},"walking":{"median":186.4,"p90":194,"n":8},"calls":18,"triangles":384,"textures":23,"geometries":167,"heapMB":27.9,"crossMs":[12],"floorOnArrival":null}
+space.gallery-b {"still":{"median":873.2,"p90":931.8,"n":8},"walking":{"median":1012.8,"p90":1250.7,"n":8},"calls":64,"triangles":2232,"textures":38,"geometries":291,"heapMB":29.5,"crossMs":[1446],"floorOnArrival":null}
+space.itinerant-wet-paint {"still":{"median":271.3,"p90":301.4,"n":8},"walking":{"median":286.2,"p90":374.4,"n":8},"calls":68,"triangles":2206,"textures":31,"geometries":267,"heapMB":30.6,"crossMs":[5],"floorOnArrival":null}
+ready 15665 ms · 3.82 MB · errores 0 · fallidas 0
