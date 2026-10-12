@@ -51,9 +51,12 @@ CI: `.github/workflows/test.yml` ejecuta `npm test` en cada PR.
 | Activar lo cercano (obra o puerta) | `E` o `Enter` | Tocar el aviso «Entrar en…» / «Observar de cerca…» |
 | Salir del detalle o del recorrido | `Esc` | «Volver a la sala» |
 | Terminar la visita | Puerta «Salida» del Vestíbulo (`E`) o botón «Salir» | Tocar «Salir» |
-| Mapa | `M` | Botón «Mapa» (la barra de botones se desliza en horizontal) |
-| Recorrido comentado | `G` | Botón «Recorrido comentado» |
+| Mapa | `M` | Botón «Mapa»; elige una sala para ver la siguiente puerta de la ruta |
+| Ayuda táctil | — | Botón «Ayuda»; también se muestra al entrar en la visita |
+| Recorrido comentado | `G` | «Más opciones» → «Recorrido comentado» |
 | En detalle: obra anterior o siguiente / acercar | `←` `→` / rueda | Flechas laterales / `−` `+` |
+
+En teléfono, las zonas visibles «Mover» y «Mirar» indican dónde arrastrar. «Mapa», «Ayuda» y «Salir» permanecen visibles; audioguía, sonido, contenido en texto y recorrido comentado están en «Más opciones». El mapa indica la próxima puerta, sin trasladar directamente al visitante.
 
 ## Salas
 

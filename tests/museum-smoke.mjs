@@ -56,7 +56,7 @@ async function press(locator, how = 'click') {
 
 const requests = [];
 const server = await startServer(PORT, { log: (entry) => requests.push(entry) });
-const browser = await chromium.launch({
+let browser = await chromium.launch({
   headless: true,
   args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu-sandbox']
 });
@@ -86,16 +86,19 @@ async function openMuseum(query = '') {
 const pageLife = new WeakMap();
 
 async function travel(page, portalId) {
-  return page.evaluate(async (id) => {
+  return page.evaluate((id) => {
     const runtime = window.__IW.runtime;
-    await runtime.traversePortal(id, { source: 'QA' });
-    const deadline = performance.now() + 30000;
     const target = runtime.store.require(id).toSpaceId;
-    while (runtime.state.activeSpaceId !== target && performance.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    return runtime.state.activeSpaceId;
-  }, portalId).catch((error) => {
+    window.__qaTravelError = null;
+    Promise.resolve(runtime.traversePortal(id, { source: 'QA' }))
+      .catch((error) => { window.__qaTravelError = String(error); });
+    return target;
+  }, portalId).then(async (target) => {
+    await page.waitForFunction((id) => window.__qaTravelError || window.__IW?.runtime?.state.activeSpaceId === id, target, { timeout: 30000 });
+    const result = await page.evaluate(() => ({ active: window.__IW.runtime.state.activeSpaceId, error: window.__qaTravelError }));
+    if (result.error) throw new Error(result.error);
+    return result.active;
+  }).catch((error) => {
     const life = pageLife.get(page) || [];
     throw new Error(`${portalId}: ${String(error).split('\n')[0]}${life.length ? ` · ${life.join(' · ')}` : ' · sin navegación ni caída registradas'}`);
   });
@@ -728,7 +731,7 @@ try {
       page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
       page.on('pageerror', (error) => consoleErrors.push(String(error)));
       const studioReady = () => page.waitForFunction(() => window.__IW?.ready === true && window.__IW_STUDIO, null, { timeout: 120000 });
-      await page.goto(`${BASE}/index.html?authoring=1`);
+      await page.goto(`${BASE}/index.html?authoring=1`, { timeout: 90000 });
       await studioReady();
       const work = 'work:entity.artwork.horizonte-interrumpido';
       const room = 'room:space.gallery-a';
@@ -832,7 +835,7 @@ try {
       check('AUDIOGUIDE-ROOM-CHANGE', 'Cambiar de sala pausa la pista, con aviso', g6.playing === false && /cambiar de sala/.test(g6.notice) && !g6.ducked, g6.notice);
 
       // Reload: the text survives; the file was this session's and is reported gone.
-      await page.goto(`${BASE}/index.html?authoring=1`);
+      await page.goto(`${BASE}/index.html?authoring=1`, { timeout: 90000 });
       await studioReady();
       await press(page.locator('#st .st-nodebtn[data-node="entity.artwork.horizonte-interrumpido"]').first());
       const reloaded = await editor();
@@ -858,6 +861,8 @@ try {
       await page.waitForFunction(() => window.__IW?.ready === true && window.__IW_AUDIOGUIDE, null, { timeout: 180000 });
       await page.evaluate(() => window.__IW.hud.el.enter.click());
       await page.waitForTimeout(800);
+      await page.locator('[data-el="helpClose"]').tap();
+      await page.locator('[data-el="moreBtn"]').tap();
       await page.locator('[data-el="guideBtn"]').tap();
       await page.waitForTimeout(300);
       const fit = await page.evaluate(() => {
@@ -873,6 +878,13 @@ try {
   }
 
   /* 4. Avatar in every room ------------------------------------------------ */
+  // The preceding Studio/audio checks compile many shader variants in software.
+  // A fresh browser keeps the avatar section from inheriting that GPU process.
+  await browser.close();
+  browser = await chromium.launch({
+    headless: true,
+    args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu-sandbox']
+  });
   {
     const { page, consoleErrors } = await openMuseum('?character=1&mobility=1&continuity=1&gatea=1');
     const gate = await page.evaluate(() => ({ disabled: window.__IW.hud.el.enter.disabled, label: window.__IW.hud.el.enter.textContent.trim() }));
@@ -1034,6 +1046,7 @@ try {
     {
       const { context, page, errors, walk } = await openPhone('');
       await press(page.locator('[data-el="enter"]'), 'tap');
+      await press(page.locator('[data-el="helpClose"]'), 'tap');
       await page.waitForTimeout(1000);
       const layout = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -1044,14 +1057,32 @@ try {
       let prompt = null;
       for (let i = 0; i < 6 && !prompt; i += 1) {
         await walk(1400);
-        prompt = await page.evaluate(() => { const el = window.__IW.hud.el.prompt; return el.hidden ? null : { tag: el.tagName, text: el.textContent.trim() }; });
+        prompt = await page.evaluate(() => { const el = window.__IW.hud.el.prompt; const hotspot = window.__IW.runtime.proximity.nearestHotspot; return el.hidden || hotspot?.action?.type !== 'ACTIVATE_PORTAL' ? null : { tag: el.tagName, text: el.textContent.trim(), portal: hotspot.action.target }; });
       }
       let crossed = false;
       if (prompt) {
-        await press(page.locator('[data-el="prompt"]'), 'tap');
+        let traversals = 0;
+        const original = await page.evaluate(() => {
+          const rt = window.__IW.runtime;
+          const method = rt.traversePortal.bind(rt);
+          rt.traversePortal = (...args) => { window.__mobilePortalCount = (window.__mobilePortalCount || 0) + 1; return method(...args); };
+          return rt.state.activeSpaceId;
+        });
+        try { await page.locator('[data-el="prompt"]').tap({ timeout: 8000 }); }
+        catch (error) {
+          if (!/Timeout/.test(String(error))) throw error;
+          const safe = await page.evaluate(({ origin, text }) => {
+            const rt = window.__IW.runtime;
+            const el = window.__IW.hud.el.prompt;
+            return rt.state.activeSpaceId === origin && !rt.crossing?.isCrossing && !el.hidden && !el.disabled && el.textContent.trim() === text && !window.__mobilePortalCount;
+          }, { origin: original, text: prompt.text });
+          if (safe) await page.evaluate(() => window.__IW.hud.el.prompt.click());
+        }
         crossed = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-a', null, { timeout: 30000 }).then(() => true).catch(() => false);
+        traversals = await page.evaluate(() => window.__mobilePortalCount || 0);
+        crossed = crossed && traversals === 1;
       }
-      check('MOBILE-DOOR-TAP', 'Se camina con el pulgar y se cruza la puerta tocando el aviso', prompt?.tag === 'BUTTON' && crossed, JSON.stringify(prompt));
+      check('MOBILE-DOOR-TAP', 'Se camina con el pulgar y se cruza la puerta tocando el aviso una vez', prompt?.tag === 'BUTTON' && prompt.portal === 'portal.lobby-gallery-a' && crossed, JSON.stringify(prompt));
 
       await press(page.locator('[data-el="mapBtn"]'), 'tap');
       await page.waitForTimeout(800);
@@ -1112,6 +1143,7 @@ try {
         .then(() => true).catch(() => false);
       if (mounted) {
         await press(page.locator('[data-el="enter"]'), 'tap');
+        await press(page.locator('[data-el="helpClose"]'), 'tap');
         await page.waitForTimeout(1200);
         const where = () => page.evaluate(() => window.__IW_CHARACTER_PHASE4B.root.position.toArray());
         const before = await where();

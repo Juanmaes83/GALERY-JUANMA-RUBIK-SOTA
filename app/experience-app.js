@@ -149,7 +149,19 @@ export async function boot() {
       if (hud.endVisitOpen) return;
       if (runtime.state.mode === EXPERIENCE_MODE.GUIDED) return;
       if (runtime.state.focusedEntityId) runtime.releaseFocus();
-      else runtime.activateNearest();
+      else {
+        if (hud.portalBusy) return;
+        const portal = runtime.proximity.nearestHotspot?.action?.type === 'ACTIVATE_PORTAL';
+        if (portal) { hud.portalBusy = true; hud.update(); }
+        try {
+          Promise.resolve(runtime.activateNearest()).finally(() => {
+            if (portal) { hud.portalBusy = false; hud.update(); }
+          });
+        } catch (error) {
+          if (portal) { hud.portalBusy = false; hud.update(); }
+          throw error;
+        }
+      }
     },
     onEscape: () => {
       if (hud.endVisitOpen) return hud.hideEndVisit();

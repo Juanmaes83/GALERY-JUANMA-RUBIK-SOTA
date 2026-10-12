@@ -72,15 +72,37 @@ export class ExperienceHUD {
         </div>
         <div class="iw-topbar__tools">
           <button class="iw-btn" data-el="mapBtn" aria-expanded="false">Salas <kbd>M</kbd></button>
+          <button class="iw-btn" data-el="helpBtn" aria-expanded="false">Ayuda</button>
+          <button class="iw-btn iw-btn--icon iw-btn--exit" data-el="leaveBtn" aria-haspopup="dialog">Salir</button>
+          <button class="iw-btn iw-btn--icon" data-el="moreBtn" aria-expanded="false" aria-controls="iw-more-tools">Más opciones</button>
+          <span class="iw-topbar__extra" id="iw-more-tools" data-el="moreTools">
           <button class="iw-btn" data-el="routeBtn">Recorrido comentado <kbd>G</kbd></button>
           <button class="iw-btn iw-btn--icon" data-el="soundBtn" aria-pressed="false" title="Sonido">Sonido</button>
           <button class="iw-btn iw-btn--icon" data-el="visitBtn" aria-expanded="false" hidden>Visita</button>
           <button class="iw-btn iw-btn--icon" data-el="a11yBtn" aria-expanded="false">Contenido en texto</button>
-          <button class="iw-btn iw-btn--icon iw-btn--exit" data-el="leaveBtn" aria-haspopup="dialog">Salir</button>
+          </span>
         </div>
       </header>
 
       <button type="button" class="iw-prompt" data-el="prompt" hidden></button>
+      <div class="iw-touch-zones" data-el="touchZones" hidden aria-hidden="true">
+        <div class="iw-touch-zones__zone"><span class="iw-touch-zones__glyph">↕</span><span>Mover</span></div>
+        <div class="iw-touch-zones__zone"><span class="iw-touch-zones__glyph">↔</span><span>Mirar</span></div>
+      </div>
+      <div class="iw-help" data-el="help" hidden role="dialog" aria-modal="true" aria-labelledby="iw-help-title">
+        <div class="iw-help__panel">
+          <p class="iw-help__eyebrow">Guía rápida · teléfono</p>
+          <h2 id="iw-help-title">Recorre el museo</h2>
+          <p data-el="helpMode"></p>
+          <ol>
+            <li><strong>Arrastra a la izquierda</strong> para avanzar, retroceder o cambiar de dirección.</li>
+            <li><strong>Arrastra a la derecha</strong> para mirar alrededor.</li>
+            <li><strong>Acércate a una obra o puerta</strong> y toca el aviso que aparecerá.</li>
+            <li><strong>Abre Salas</strong> para orientarte. Los cambios de sala se hacen por las puertas.</li>
+          </ol>
+          <button class="iw-btn iw-btn--primary" data-el="helpClose">Empezar la visita</button>
+        </div>
+      </div>
 
       <section class="iw-detail" data-el="detail" hidden aria-live="polite">
         <div class="iw-detail__scrim"></div>
@@ -132,7 +154,9 @@ export class ExperienceHUD {
             <button class="iw-btn" data-el="mapClose">Cerrar</button>
           </header>
           <svg data-el="mapSvg" viewBox="0 0 320 240" role="img" aria-label="Grafo de salas y pasos entre ellas"></svg>
-          <p class="iw-map__note">El mapa representa el grafo del mundo. El recorrido comentado es sólo uno de los caminos posibles.</p>
+          <p class="iw-map__note">Este plano te orienta. Para entrar en otra sala, camina hasta su puerta y toca el aviso «Entrar» cuando aparezca.</p>
+          <div class="iw-map__route" data-el="mapRoute" aria-live="polite"></div>
+          <div class="iw-map__destinations" data-el="mapDestinations" aria-label="Elegir sala de destino"></div>
         </div>
       </div>
 
@@ -180,6 +204,24 @@ export class ExperienceHUD {
     }
 
     this.el.mapBtn.addEventListener('click', () => this.toggleMap());
+    this.el.mapDestinations.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-space]');
+      if (!button) return;
+      this.mapTarget = button.dataset.space;
+      this._drawMap();
+    });
+    this.el.helpBtn.addEventListener('click', () => this.toggleHelp());
+    this.el.helpClose.addEventListener('click', () => this.toggleHelp(false));
+    this.el.moreBtn.addEventListener('click', () => {
+      const open = this.el.moreBtn.getAttribute('aria-expanded') !== 'true';
+      this.el.moreBtn.setAttribute('aria-expanded', String(open));
+      this.el.moreTools.classList.toggle('is-open', open);
+    });
+    this.el.moreTools.addEventListener('click', (event) => {
+      if (!event.target.closest('button')) return;
+      this.el.moreBtn.setAttribute('aria-expanded', 'false');
+      this.el.moreTools.classList.remove('is-open');
+    });
     this.el.mapClose.addEventListener('click', () => this.toggleMap(false));
     this.el.visitBtn?.addEventListener('click', () => this.toggleVisit());
     this.el.visitClose.addEventListener('click', () => this.toggleVisit(false));
@@ -295,7 +337,19 @@ export class ExperienceHUD {
       this.el.veil.classList.add('is-gone');
       setTimeout(() => { this.el.veil.hidden = true; }, 700);
       onEnter();
+      if (matchMedia('(pointer: coarse)').matches && !authoring) this.toggleHelp(true);
     }, { once: true });
+  }
+
+  toggleHelp(force) {
+    const open = force ?? this.el.help.hidden;
+    this.el.help.hidden = !open;
+    this.el.helpBtn.setAttribute('aria-expanded', String(open));
+    this.el.helpMode.textContent = new URLSearchParams(location.search).get('character') === '1'
+      ? 'Con avatar: el pulgar izquierdo mueve y gira al personaje; el derecho ayuda a girar la vista.'
+      : 'En primera persona: el pulgar izquierdo te mueve; el derecho gira la vista.';
+    this.el.touchZones.hidden = !matchMedia('(pointer: coarse)').matches || open || this.runtime.state.activeSpaceId === 'space.breeze';
+    if (open) this.el.helpClose.focus();
   }
 
   /**
@@ -339,6 +393,7 @@ export class ExperienceHUD {
   update() {
     const state = this.runtime.state;
     const guided = state.mode === EXPERIENCE_MODE.GUIDED;
+    this.el.touchZones.hidden = !matchMedia('(pointer: coarse)').matches || !this.el.help.hidden || Boolean(state.focusedEntityId) || guided || state.activeSpaceId === 'space.breeze';
 
     // Two previous/next meanings exist — beat and artwork — and the visitor has
     // to be able to tell which one is live. While browsing, the tour transport
@@ -368,9 +423,14 @@ export class ExperienceHUD {
     this.el.progress.style.width = `${Math.round(this.runtime.experience.progress * 100)}%`;
 
     const nearest = this.runtime.proximity.nearestHotspot;
-    if (nearest && !guided && !state.focusedEntityId) {
+    if (this.portalBusy) {
       this.el.prompt.hidden = false;
-      this.el.prompt.innerHTML = `<kbd>E</kbd><span>${nearest.accessibilityLabel}</span>`;
+      this.el.prompt.disabled = true;
+      this.el.prompt.textContent = 'Entrando…';
+    } else if (nearest && !guided && !state.focusedEntityId) {
+      this.el.prompt.hidden = false;
+      this.el.prompt.disabled = false;
+      this.el.prompt.innerHTML = `<kbd>E</kbd><span>${matchMedia('(pointer: coarse)').matches ? 'Toca: ' : ''}${escapeHtml(nearest.accessibilityLabel)}</span>`;
       // Touch has no E key: the prompt itself is the action (same as E/Enter).
       if (!this._promptBound) {
         this._promptBound = true;
@@ -572,6 +632,18 @@ export class ExperienceHUD {
       .join('');
 
     this.el.mapSvg.innerHTML = edges + nodes;
+    this.el.mapDestinations.innerHTML = store.spaces.map((space) =>
+      `<button type="button" class="iw-map__destination" data-space="${escapeHtml(space.id)}" aria-pressed="${this.mapTarget === space.id}">${escapeHtml(space.title)}</button>`
+    ).join('');
+    const destination = this.mapTarget && store.spaces.find((space) => space.id === this.mapTarget);
+    const path = destination && graph.path(active, destination.id);
+    this.el.mapRoute.textContent = !destination
+      ? 'Elige una sala para ver por qué puerta continuar.'
+      : path?.length === 1
+        ? `Ya estás en ${destination.title}.`
+        : path?.length > 1
+          ? `Para llegar a ${destination.title}, busca primero la puerta de ${store.require(path[1]).title}. Ruta: ${path.map((id) => store.require(id).title).join(' → ')}.`
+          : `No hay una ruta disponible hacia ${destination.title}.`;
   }
 
   /* == leaving ============================================================== */

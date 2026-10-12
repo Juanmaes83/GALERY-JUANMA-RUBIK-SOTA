@@ -49,11 +49,16 @@ for (let r = 0; r < runs; r += 1) {
     await touch('touchEnd', 560);
   };
   await page.locator('[data-el="enter"]').tap({ timeout: 8000 }).catch(() => page.evaluate(() => window.__IW.hud.el.enter.click()));
+  if (await page.locator('[data-el="help"]').isVisible()) {
+    await page.locator('[data-el="helpClose"]').tap({ timeout: 8000 }).catch(async () => {
+      if (await page.locator('[data-el="help"]').isVisible()) await page.evaluate(() => window.__IW.hud.el.helpClose.click());
+    });
+  }
   await page.waitForTimeout(1000);
   let prompt = null;
   for (let i = 0; i < 6 && !prompt; i += 1) {
     await walk(1400);
-    prompt = await page.evaluate(() => { const el = window.__IW.hud.el.prompt; return el.hidden ? null : { tag: el.tagName, text: el.textContent.trim() }; });
+    prompt = await page.evaluate(() => { const el = window.__IW.hud.el.prompt; const hotspot = window.__IW.runtime.proximity.nearestHotspot; return el.hidden || hotspot?.action?.type !== 'ACTIVATE_PORTAL' ? null : { tag: el.tagName, text: el.textContent.trim(), portal: hotspot.action.target }; });
   }
   let crossed = false; let ms = null;
   if (prompt) {
@@ -77,9 +82,24 @@ for (let r = 0; r < runs; r += 1) {
     const t = Date.now();
     let cdpProf = null;
     if (args.profile) { cdpProf = await context.newCDPSession(page); await cdpProf.send('Profiler.enable'); await cdpProf.send('Profiler.setSamplingInterval', { interval: 1000 }); await cdpProf.send('Profiler.start'); }
-    let tapError = null;
-    await page.locator('[data-el="prompt"]').tap({ timeout: 8000 }).catch(async (e) => { tapError = String(e).split('\n')[0].slice(0, 160); await page.evaluate(() => window.__IW.hud.el.prompt.click()); });
-    console.log('toque', tapError ? `agotó 8 s y se repitió por DOM: ${tapError}` : 'ok a la primera', `${Date.now() - t} ms`);
+    let tapError = null; let fallback = false;
+    try {
+      await page.locator('[data-el="prompt"]').tap({ timeout: 8000 });
+    } catch (e) {
+      tapError = String(e).split('\n')[0].slice(0, 160);
+      const state = await page.evaluate(() => ({
+        active: window.__IW.runtime.state.activeSpaceId,
+        crossing: Boolean(window.__IW.runtime.crossing?.isCrossing),
+        prompt: window.__IW.hud.el.prompt.textContent.trim(),
+        disabled: window.__IW.hud.el.prompt.disabled,
+        traversals: window.__tapLog.filter((entry) => entry[1] === 'traverse').length
+      }));
+      if (state.active !== 'space.gallery-a' && state.active === 'space.lobby' && !state.crossing && !state.disabled && state.traversals === 0 && state.prompt === prompt.text) {
+        await page.evaluate(() => window.__IW.hud.el.prompt.click());
+        fallback = true;
+      }
+    }
+    console.log('toque', tapError ? `timeout de Playwright; fallback ${fallback ? 'aplicado' : 'omitido'}: ${tapError}` : 'ok a la primera', `${Date.now() - t} ms`);
     crossed = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-a', null, { timeout: 30000 }).then(() => true).catch(() => false);
     ms = Date.now() - t;
     if (cdpProf) {
@@ -102,10 +122,13 @@ for (let r = 0; r < runs; r += 1) {
   console.log('shaders', JSON.stringify(await page.evaluate(() => ({ links: window.__links, frag: window.__shaderLog.length, list: window.__shaderLog.map((x) => `${x.len} ${x.defs}`) }))));
   console.log('registro', JSON.stringify(await page.evaluate(() => window.__tapLog || [])));
   console.log('después', JSON.stringify(await page.evaluate(() => ({ ga: window.__IW.runtime.spaces.stateOf('space.gallery-a'), crossing: window.__IW.runtime.crossing?.isCrossing, mode: window.__IW.runtime.state.mode }))));
-  results.push({ pass: prompt?.tag === 'BUTTON' && crossed, prompt, crossed, ms, active, errors: errors.slice(0, 3) });
+  const traversals = await page.evaluate(() => (window.__tapLog || []).filter((entry) => entry[1] === 'traverse').length);
+  const mode = await page.evaluate(() => window.__IW.runtime.state.mode);
+  results.push({ pass: prompt?.tag === 'BUTTON' && prompt.portal === 'portal.lobby-gallery-a' && crossed && active === 'space.gallery-a' && traversals === 1 && mode !== 'GUIDED', prompt, crossed, traversals, ms, active, mode, errors: errors.slice(0, 3) });
   console.log(JSON.stringify(results.at(-1)));
   await context.close();
 }
 console.log(`${root} · ${results.filter((x) => x.pass).length}/${runs}`);
 await browser.close();
 server.close();
+if (results.some((result) => !result.pass)) process.exitCode = 1;

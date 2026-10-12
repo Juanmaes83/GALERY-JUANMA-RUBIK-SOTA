@@ -52,7 +52,8 @@ export function installAudioguide(runtime, { hud = window.__IW?.hud, audio = win
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-controls', 'iw-guide');
   button.textContent = 'Audioguía';
-  tools.insertBefore(button, tools.querySelector('[data-el="soundBtn"]') || null);
+  const sound = tools.querySelector('[data-el="soundBtn"]');
+  (sound?.parentElement || tools).insertBefore(button, sound || null);
 
   const panel = document.createElement('aside');
   panel.id = 'iw-guide';
@@ -201,6 +202,14 @@ export function installAudioguide(runtime, { hud = window.__IW?.hud, audio = win
     button.textContent = playing ? 'Audioguía · sonando' : 'Audioguía';
     panel.hidden = !state.open;
     if (!state.open) return;
+    if (matchMedia('(max-width: 900px)').matches) {
+      const top = Math.ceil(tools.closest('.iw-topbar').getBoundingClientRect().bottom + 8);
+      panel.style.top = `${top}px`;
+      panel.style.maxHeight = `${Math.max(120, Math.min(innerHeight * 0.5, innerHeight - top - 16))}px`;
+    } else {
+      panel.style.top = '';
+      panel.style.maxHeight = '';
+    }
 
     const ref = state.selected;
     const track = trackOf(ref);
