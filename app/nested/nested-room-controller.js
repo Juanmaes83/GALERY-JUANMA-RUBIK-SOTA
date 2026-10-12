@@ -25,11 +25,17 @@ export class NestedRoomController {
     this._activeSpaceId = null;
     this._exitButton = null;
     this.lastError = null;
+    this.authoringMode = false;
     this.stats = { entered: 0, left: 0, failed: 0 };
 
     // Full-room graft: preserve the approved Breeze Studio PRO V4.1 rather than
     // rebuilding its authoring capabilities inside Museum.
-    this.host.register('room.breeze', () => new BreezeStudioProGuest());
+    this.host.register('room.breeze', () => new BreezeStudioProGuest({ isAuthoring: () => this.authoringMode }));
+  }
+
+  setAuthoringMode(enabled) {
+    this.authoringMode = Boolean(enabled);
+    this.host._guest?.setAuthoringMode?.(this.authoringMode);
   }
 
   get isPresenting() { return this.host.isGuestActive; }
@@ -125,7 +131,6 @@ export class NestedRoomController {
         // WorldGraph portal, so lifecycle, arrival spawn and Museum state all
         // advance exactly as they do for any other room crossing.
         await this.runtime.traversePortal(portal.id, {
-          crossing: true,
           source: 'breeze-studio-pro-exit'
         });
       } catch (error) {

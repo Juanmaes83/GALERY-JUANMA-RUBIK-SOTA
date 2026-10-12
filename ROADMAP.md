@@ -137,9 +137,9 @@ Es la fase con más impacto de negocio. Hoy lo que se personaliza **solo vive en
 | 5.2 | Compartir y enlazar a una obra o parada concreta | Bloque 9 |
 | 5.3 | Exportar como paquete de experiencia | Bloque 9 |
 
-## Misión visual — seis salas · *rama `mision-visual-limpia` (solo alcance visual), bloqueada, sin publicar*
+## Misión visual — seis salas · *rama `mision-visual-limpia`, PR #3 abierta*
 
-Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION-VISUAL.md). Breeze **excluida** de la misión. Todo medido con render por software (SwiftShader); nada en GPU ni móvil reales. **No aprobada por Juanma.**
+Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION-VISUAL.md). Los datos V.1–V.12 describen la misión visual original de octubre de 2026. La rama ya contiene mejoras móviles (`af30d50`) y la PR #3 está abierta. La revisión visual humana y la prueba en teléfono físico siguen pendientes.
 
 | # | Tarea | Estado |
 |---|---|---|
@@ -150,11 +150,14 @@ Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION
 | V.5 | Rendimiento: 5 iteraciones. Serie oficial 5+5 HIGH: arranque **−28,5 %**, cruces iguales o más rápidos; **Galería A, Galería B y Wet Paint +5…+9 % repetible** | **No validado** (fluidez); causa sin identificar |
 | V.6 | Serie móvil sobre la versión actual | **Pendiente** |
 | V.7 | GPU real y móvil real | **Pendiente** |
-| V.8 | Preview de la rama y revisión de Juanma | **Bloqueado**: push 403 desde esta sesión; preview pendiente de publicar la rama |
+| V.8 | Preview de la rama y revisión de Juanma | Rama publicada y PR #3 abierta; la revisión humana de los cambios Breeze sigue pendiente |
 | V.9 | `SHOP-STUDIO`: falla en la suite completa en base y candidata con el mismo detalle; aislado pasa 4/4 en ambas. Defecto previo | **Pendiente** (fuera del alcance visual) |
 | V.10 | Incidencias intermitentes en capturas (§8 del informe) | **Pendiente** |
 | V.11 | `MOBILE-DOOR-TAP`: causa (5 programas de shader más en el primer fotograma del cruce, tier LOW sin precompilación) corregida en `176f7f7`; la suite completa ya solo falla en `SHOP-COLLIDE` y `SHOP-STUDIO`, como la base. Aislada, la prueba falla también en la base en este entorno (base 0/4, misión 1/4) | Corregido; prueba dependiente de SwiftShader |
-| V.12 | Móvil LOW, serie 5+5 (`176f7f7`): arranque **+9,5 %**, Galería A +5,5 %, Galería B +9 %, Archivo +12 % parado (SwiftShader) | **Bloqueante**: no publicar ni fusionar |
+| V.12 | Móvil LOW, serie 5+5 (`176f7f7`): arranque **+9,5 %**, Galería A +5,5 %, Galería B +9 %, Archivo +12 % parado (SwiftShader) | Dato histórico; rendimiento físico aún pendiente, sin autorización de fusión |
+| V.13 | Breeze visible en la primera llegada a Galería B | Corregida la oclusión causada por la carcasa anidada adyacente; prueba de regresión desde sesión limpia |
+| V.14 | Acceso legible en Galería B oscura | Marco cálido y señal direccional 3D; capturas comparables de escritorio y móvil |
+| V.15 | Panel Breeze separado entre Studio y visita | Oculto y sin reapertura en POV/Avatar; disponible y editable en Studio, incluso al alternar con vista de visitante |
 
 ## Transversal — deuda técnica y calidad
 

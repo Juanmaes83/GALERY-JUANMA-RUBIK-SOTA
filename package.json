@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node tools/serve.mjs 4180",
     "check": "node tools/check-static.mjs",
-    "test": "npm run check && node tests/proximity.test.mjs && node tests/audioguide.test.mjs && node tests/museum-smoke.mjs"
+    "test": "npm run check && node tests/proximity.test.mjs && node tests/audioguide.test.mjs && node tests/breeze-first-visit.mjs --first-only && node tests/museum-smoke.mjs",
+    "test:breeze": "node tests/breeze-first-visit.mjs --first-only"
   },
   "devDependencies": {
     "playwright": "1.56.1"

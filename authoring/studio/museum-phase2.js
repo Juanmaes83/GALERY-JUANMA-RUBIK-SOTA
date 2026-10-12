@@ -116,6 +116,7 @@ function addPreviewBar(mode) {
 function enterPreview(studio, snapshot, mode='visitor') {
   window.__IW_PHASE2_PREVIEW = { snapshot, mode };
   studio.root.style.display='none'; delete document.body.dataset.studio;
+  window.__IW?.nested?.setAuthoringMode(false);
   addPreviewBar(mode);
   window.__IW?.hud?.el?.veil && (window.__IW.hud.el.veil.hidden = true);
   const url = new URL(location.href); url.searchParams.set('preview', mode); history.pushState({ iwPreview:true }, '', url);
@@ -126,6 +127,7 @@ function leavePreview({ fromPop=false }={}) {
   const studio = window.__IW_STUDIO; document.getElementById('p2-previewbar')?.remove();
   if (studio) {
     studio.root.style.display=''; document.body.dataset.studio='on';
+    window.__IW?.nested?.setAuthoringMode(true);
     studio.domain=state.snapshot.domain; studio.selectedId=state.snapshot.selectedId;
     studio.opened=new Set(state.snapshot.opened); studio.jump=state.snapshot.jump; studio.render();
     requestAnimationFrame(()=>{ const tree=studio.root.querySelector('.st-tree'); if(tree)tree.scrollTop=state.snapshot.scroll; window.__IW?.renderHost?.resize?.(); });

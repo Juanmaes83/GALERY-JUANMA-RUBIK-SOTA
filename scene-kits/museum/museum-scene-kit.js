@@ -384,6 +384,39 @@ export class MuseumSceneKit extends SceneKit {
         else { sign.position.set(ox2 + w / 2 - off, y, opening.worldPosition[2]); sign.rotation.y = -Math.PI / 2; }
         group.add(sign);
       }
+
+      // Breeze is a separate renderer. Its architectural shell must never be
+      // used as the view through this opening; give the Museum-side reveal its
+      // own restrained, readable edge instead of relying on the dark void.
+      if (opening.portalId === 'portal.gallery-b-breeze') {
+        const marker = new THREE.Group();
+        marker.name = 'breeze-entrance-marker';
+        const brass = new THREE.MeshBasicMaterial({ color: 0xbda47a, toneMapped: false });
+        const [x, , z] = opening.worldPosition;
+        const face = x - WALL_THICKNESS - 0.045;
+        const half = opening.width / 2;
+        const jambHeight = opening.height - 0.08;
+        for (const side of [-1, 1]) {
+          const jamb = new THREE.Mesh(new THREE.BoxGeometry(0.035, jambHeight, 0.055), brass);
+          jamb.position.set(face, origin[1] + jambHeight / 2, z + side * (half + 0.03));
+          marker.add(jamb);
+        }
+        const lintel = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.055, opening.width + 0.1), brass);
+        lintel.position.set(face, origin[1] + opening.height + 0.02, z);
+        marker.add(lintel);
+        // The arrival camera frames the east wall, but on a narrow phone the
+        // doorway sits partly outside the left edge. This small wall plaque is
+        // inside that view and points to the real opening without moving camera.
+        const direction = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.08, 0.28),
+          new THREE.MeshBasicMaterial({ map: signPlateTexture('← BREEZE', 1.08 / 0.28), side: THREE.DoubleSide, toneMapped: false })
+        );
+        direction.name = 'breeze-direction-sign';
+        direction.position.set(face - 0.015, origin[1] + 1.62, z + half + 0.84);
+        direction.rotation.y = -Math.PI / 2;
+        marker.add(direction);
+        group.add(marker);
+      }
     }
 
     const spots = [];
@@ -587,6 +620,13 @@ export class MuseumSceneKit extends SceneKit {
    * @param {'ACTIVE'|'ADJACENT'|'HIDDEN'} presence
    */
   setSpacePresence(handle, presence) {
+    // A nested Space is presented by its guest only while active. Its Museum
+    // shell overlaps the Gallery B doorway by one metre and previously covered
+    // that opening whenever Breeze was preloaded as an adjacent room.
+    if (handle.space.metadata?.nestedRuntime && presence !== 'ACTIVE') {
+      handle.group.visible = false;
+      return;
+    }
     if (presence === 'HIDDEN') {
       handle.group.visible = false;
       return;

@@ -250,7 +250,7 @@ export class SpaceLifecycle {
     for (const portal of this.graph.exits(this._activeSpaceId)) {
       if (portal.prefetchPolicy === 'LAZY') continue;
       const state = this.stateOf(portal.toSpaceId);
-      if (state === SPACE_STATE.UNLOADED) {
+      if (state === SPACE_STATE.UNLOADED || state === SPACE_STATE.DISPOSED) {
         this.prepare(portal.toSpaceId)
           .then(() => this._reconcilePresence())
           .catch(() => {

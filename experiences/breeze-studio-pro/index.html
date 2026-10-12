@@ -64,6 +64,13 @@
       pointer-events: none !important;
       transform: translateX(calc(100% + 24px)) !important;
     }
+    body.bs-museum-visitor #breezeStudioPanel,
+    body.bs-museum-visitor #bsMuseumPanelHide,
+    body.bs-museum-visitor #bsMuseumPanelShow {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
     #bsMuseumPanelHide,
     #bsMuseumPanelShow {
       box-sizing: border-box;
@@ -112,16 +119,26 @@
 <script>
 (() => {
   const KEY = 'iw:breeze:panelCollapsed';
+  const isAuthoring = () => !window.frameElement || window.frameElement.dataset.museumMode === 'authoring';
   const setCollapsed = (collapsed) => {
+    if (!isAuthoring() && !collapsed) return false;
     const panel = document.getElementById('breezeStudioPanel');
     if (!panel) return false;
     panel.classList.toggle('bs-museum-panel-hidden', collapsed);
     document.body.classList.toggle('bs-museum-panel-collapsed', collapsed);
-    sessionStorage.setItem(KEY, collapsed ? '1' : '0');
+    if (isAuthoring()) sessionStorage.setItem(KEY, collapsed ? '1' : '0');
     const hide = document.getElementById('bsMuseumPanelHide');
     if (hide) hide.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
     return true;
   };
+  const syncMode = () => {
+    const authoring = isAuthoring();
+    document.body.classList.toggle('bs-museum-visitor', !authoring);
+    return setCollapsed(!authoring || sessionStorage.getItem(KEY) === '1');
+  };
+
+  // Hide visitor controls before the imported UI has finished mounting.
+  document.body.classList.toggle('bs-museum-visitor', !isAuthoring());
 
   const activate = (element, handler) => {
     element.addEventListener('click', handler);
@@ -159,10 +176,11 @@
       document.body.appendChild(show);
     }
 
-    setCollapsed(sessionStorage.getItem(KEY) === '1');
+    syncMode();
     window.__BREEZE_MUSEUM_PANEL = {
       hide: () => setCollapsed(true),
       show: () => setCollapsed(false),
+      sync: syncMode,
       get collapsed() { return document.body.classList.contains('bs-museum-panel-collapsed'); }
     };
     return true;

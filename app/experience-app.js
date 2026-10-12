@@ -316,6 +316,7 @@ const portalVariant = (params.get('portalVariant') || 'D').toUpperCase();
     openBtn.onclick = () => panel.root.classList.toggle('au--hidden');
     window.__IW_PANEL = panel;
   }
+  nested.setAuthoringMode(Boolean(window.__IW_STUDIO?.root?.isConnected || window.__IW_PANEL?.root?.isConnected));
 
   const requestedState = params.get('state');
   installProbe({ runtime, renderHost, sceneKit, hud, audio, input, mediaLoader, tier, seed, reducedMotion });
@@ -417,8 +418,11 @@ async function mountStudio({ world, activeConfig, vault, boot, runtime }) {
     // furniture in it.
     onStart: async (config) => {
       window.__IW_CONFIG = config;
-      studio.destroy();
+      // An unapplied edit rebuilds the preview before START. That rebuild also
+      // creates a new StudioShell, so this closure's `studio` can be stale.
+      (window.__IW_STUDIO || studio).destroy();
       delete document.body.dataset.studio;
+      window.__IW?.nested?.setAuthoringMode(false);
       const url = new URL(location.href);
       url.searchParams.delete('authoring');
       history.replaceState(null, '', url);

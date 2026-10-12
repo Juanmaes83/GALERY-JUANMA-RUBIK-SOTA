@@ -219,3 +219,28 @@ Errores de página 0 → 0; peticiones fallidas 0 → 0.
 ## 11. Declaración
 
 **Bloqueada** (rama limpia `mision-visual-limpia`, §12). La mejora visual está implementada; el arranque y los cruces mejoran frente a la base; pero la serie oficial muestra una regresión repetible de fluidez en tres salas con render por software, y la suite tiene un fallo. No se declara terminada.
+
+## 13. Corrección de acceso a Breeze y panel de visita (2026-10-12)
+
+Las secciones anteriores conservan el diagnóstico histórico de la misión visual. Esta intervención parte de `af30d509` en la PR #3 y se limita al acceso a Breeze y a la separación entre Studio y visita.
+
+### Reproducción y causa
+
+En una sesión limpia se recorrió Vestíbulo → Galería A → Galería B. En la primera llegada, `portal.gallery-b-breeze` y `hotspot.gallery-b.to-breeze` existían una sola vez, la Galería B estaba `ACTIVE` y Breeze ya estaba `READY`. El hotspot estaba a 10,24 m del punto de llegada y ofrecía el prompt al acercarse dentro de su radio de 2,3 m. El problema visible era otro: la carcasa WebGL de la sala anidada se mostraba como sala adyacente y se solapaba un metro con el hueco de la Galería B, tapando la puerta y el rótulo. Tras volver a Galería A, Breeze quedaba `DISPOSED`; al regresar a Galería B su carcasa ya no tapaba el acceso, lo que explicaba la diferencia entre visitas.
+
+La reconciliación del conjunto de salas solo precargaba estados `UNLOADED`. Tras una descarga, Breeze permanecía `DISPOSED` hasta el siguiente cruce. Ahora se vuelve a preparar también desde `DISPOSED`, sin añadir portales ni cambiar sus destinos.
+
+### Corrección
+
+- La carcasa WebGL de una sala con `nestedRuntime` permanece oculta cuando es adyacente. El invitado WebGPU solo presenta Breeze cuando la sala está activa.
+- El acceso desde Galería B conserva el hueco real y recibe tres perfiles finos de tono latón y una pequeña señal direccional en la pared. No hay luz dinámica adicional, plano que bloquee la puerta ni cambio de colisión.
+- El controlador anidado comunica al iframe el modo real del museo. En visitante, el panel `#breezeStudioPanel`, su pestaña para mostrarlo y su control de ocultación no se ven; `show()` no puede reabrirlo. En Studio, el panel y sus controles siguen disponibles. La misma regla se aplica a «Vista previa» del Studio y se revierte al volver a editar.
+- La salida desde el iframe usa el portal canónico sin solicitar una animación de cruce que el invitado no puede mostrar. Esto evita que el controlador Avatar interprete una transición todavía en curso como fallo, manteniendo la salida y la reaparición del avatar.
+
+### Verificación
+
+`tests/breeze-first-visit.mjs` falla contra `af30d509` en la primera llegada (`breezeShellVisible: true`) y pasa con la corrección (`false`, una puerta, un hotspot, señal presente, prompt dentro del radio). Con Chrome 153 y adaptador WebGPU se probaron POV y Avatar en escritorio 1280 × 800 y móvil 390 × 844, además de POV móvil horizontal 844 × 390: primera entrada, salida, vuelta por Galería A, segunda entrada y salida. Cada activación de Breeze desde el prompt se contó una sola vez. En Studio se comprobó el panel visible, un control editable y la transición Studio → vista de visitante → Studio. No hubo desbordamiento horizontal ni respuestas HTTP fallidas de la aplicación en esas pasadas.
+
+Las capturas y sus manifiestos están en `docs/visual-validation/breeze-mobile-fix/`. Chromium 141 con SwiftShader se usó para la regresión visual de la primera llegada; Chrome 153 permitió además inspeccionar el invitado WebGPU. Los logs registraron un 404 de `favicon.ico` ya existente y cancelaciones `ERR_ABORTED` de solicitudes del iframe al desmontarlo. Esas cancelaciones no son respuestas HTTP fallidas. Los screenshots del invitado muestran la instalación, pero no certifican su fluidez ni su estabilidad en un teléfono físico. Quedan pendientes Safari iOS, Chrome Android y mediciones en GPU móvil real. La PR #3 permanece sin fusionar.
+
+Se repitió también el ciclo completo tras recargar en POV y Avatar de escritorio: la primera llegada posterior a la recarga mantuvo un portal y un hotspot, la escena anidada se abrió sin panel, la salida dejó `lastError: null` y el avatar reapareció. El test verifica que los avisos de proximidad y salida quedan dentro del viewport; en móvil emulado no apareció desbordamiento horizontal. La entrada encuadrada de cerca llena casi toda la anchura en vertical: la captura de llegada y la señal direccional muestran la ubicación desde lejos, mientras que el prompt confirma la acción al acercarse.

@@ -16,7 +16,8 @@ const STUDIO_INTERACTIVE_SELECTORS = ['.st-rail', '.st-tree', '.st-ed', '.st-val
 const MUSEUM_PASS_THROUGH_SELECTORS = ['.iw-prompt'];
 
 export class BreezeStudioProGuest {
-  constructor() {
+  constructor({ isAuthoring = () => false } = {}) {
+    this.isAuthoring = isAuthoring;
     this.iframe = null;
     this.notice = null;
     this.canvas = null;
@@ -170,6 +171,12 @@ export class BreezeStudioProGuest {
     attach();
   }
 
+  setAuthoringMode(enabled) {
+    if (!this.iframe) return;
+    this.iframe.dataset.museumMode = enabled ? 'authoring' : 'visitor';
+    try { this.iframe.contentWindow?.__BREEZE_MUSEUM_PANEL?.sync?.(); } catch { /* guest not loaded yet */ }
+  }
+
   async prepare({ canvas }) {
     this.canvas = canvas;
     const stage = canvas?.parentElement;
@@ -199,6 +206,7 @@ export class BreezeStudioProGuest {
 
     const iframe = document.createElement('iframe');
     iframe.dataset.nestedRoomStudio = 'room.breeze';
+    iframe.dataset.museumMode = this.isAuthoring() ? 'authoring' : 'visitor';
     iframe.title = 'Sala Breeze — Breeze Studio PRO V4.1 original';
     iframe.src = BREEZE_STUDIO_PRO_V41_URL;
     iframe.allow = 'autoplay; fullscreen';
