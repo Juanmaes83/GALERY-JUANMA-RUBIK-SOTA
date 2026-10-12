@@ -189,6 +189,21 @@ async function leaveBreeze() {
   if (avatar) assert.equal(state.avatarVisible, true);
 }
 
+async function enterVisit() {
+  // This click is test setup. In headless SwiftShader, Playwright can time out
+  // while sending mouse input even though the entry handler runs. Fire once in
+  // the page and reserve real keyboard/touch input for the portal assertions.
+  const state = await page.evaluate(() => {
+    const button = window.__IW.hud.el.enter;
+    const veil = window.__IW.hud.el.veil;
+    const ready = button.isConnected && !button.disabled && !button.hidden && !veil.classList.contains('is-gone');
+    if (ready) button.click();
+    return { ready, label: button.textContent.trim(), veilGone: veil.classList.contains('is-gone') };
+  });
+  assert.equal(state.ready, true, `entry unavailable: ${JSON.stringify(state)}`);
+  assert.equal(state.veilGone, true, 'entry handler did not dismiss the veil');
+}
+
 try {
   const query = studio ? '?authoring=1' : avatar ? '?character=1&mobility=1&continuity=1' : '';
   await page.goto(`${base}/index.html${query}`, { timeout: 90000 });
@@ -232,7 +247,7 @@ try {
     assert.notEqual(restored.display, 'none');
   } else {
     if (avatar) await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000 });
-    await page.locator('[data-el="enter"]').click({ force: true });
+    await enterVisit();
     if (mobile) {
       await page.locator('[data-el="helpClose"]').tap({ timeout: 8000 });
       await page.waitForFunction(() => window.__IW.hud.el.help.hidden, null, { timeout: 8000 });
@@ -252,7 +267,7 @@ try {
         await page.reload({ timeout: 90000 });
         await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 180000 });
         if (avatar) await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000 });
-        await page.locator('[data-el="enter"]').click({ force: true });
+        await enterVisit();
         const current = await page.evaluate(() => window.__IW.runtime.state.activeSpaceId);
         if (current === 'space.lobby') {
           await cross('space.gallery-a');
