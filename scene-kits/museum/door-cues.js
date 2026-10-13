@@ -17,8 +17,11 @@
  *            outline, so it never covers the name plate or the jambs.
  *
  * Unlit geometry and two generated gradients: no light sources, no shadows, at
- * most three draw calls per doorway. MeshBasic with a map and no tone mapping,
- * the program the name plates already use.
+ * most three draw calls per doorway. The casing shares the name plates' shader
+ * program. The gradients are single-sided on purpose:
+ * three.js draws a transparent double-sided mesh twice, back then front, with a
+ * second program for the back pass, and the pool is only seen from above and
+ * the glow only from the room.
  */
 
 import { THREE } from '../../render/render-host.js';
@@ -73,12 +76,21 @@ function gradientCanvas(kind) {
   return canvas;
 }
 
+// The casing is drawn like the name plates (a colour map, both sides, no tone
+// mapping) so that it shares their shader program instead of adding its own.
+function casingMaterial() {
+  const white = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+  white.colorSpace = THREE.SRGBColorSpace;
+  white.needsUpdate = true;
+  return new THREE.MeshBasicMaterial({ color: CASING_COLOR, map: white, side: THREE.DoubleSide, toneMapped: false });
+}
+
 function gradientMaterial(kind, opacity) {
   const texture = new THREE.CanvasTexture(gradientCanvas(kind));
   texture.colorSpace = THREE.SRGBColorSpace;
   return new THREE.MeshBasicMaterial({
     map: texture, transparent: true, opacity, depthWrite: false,
-    blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false
+    blending: THREE.AdditiveBlending, toneMapped: false
   });
 }
 
@@ -114,7 +126,7 @@ export function buildDoorCue({ opening, floorY, wallThickness, sceneProfile, des
   const lintel = new THREE.BoxGeometry(width, CASING_WIDTH, CASING_DEPTH);
   lintel.translate(0, height + CASING_WIDTH / 2, CASING_DEPTH / 2 + 0.002);
   pieces.push(lintel);
-  const casing = new THREE.Mesh(mergeGeometries(pieces), new THREE.MeshBasicMaterial({ color: CASING_COLOR, toneMapped: false }));
+  const casing = new THREE.Mesh(mergeGeometries(pieces), casingMaterial());
   for (const piece of pieces) piece.dispose();
   casing.name = 'door-casing';
   group.add(casing);
