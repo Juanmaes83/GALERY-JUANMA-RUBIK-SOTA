@@ -1071,6 +1071,19 @@ try {
     {
       const { context, page, errors, walk } = await openPhone('');
       await press(page.locator('[data-el="enter"]'), 'tap');
+      // The veil fades out over the guide and a timer hides it 0.7 s later; a
+      // busy phone runs that timer seconds late. Whatever the timer does, the
+      // fading veil must already let taps through: its computed style decides,
+      // read while it is shown.
+      const veil = await page.evaluate(() => {
+        const node = window.__IW.hud.el.veil;
+        const hidden = node.hidden;
+        node.hidden = false;
+        const pointerEvents = getComputedStyle(node).pointerEvents;
+        node.hidden = hidden;
+        return { gone: node.classList.contains('is-gone'), pointerEvents };
+      });
+      check('MOBILE-ENTRY-VEIL', 'Al entrar, el velo que se desvanece deja pasar los toques a la guía', veil.gone && veil.pointerEvents === 'none', JSON.stringify(veil));
       await press(page.locator('[data-el="helpClose"]'), 'tap');
       await page.waitForTimeout(1000);
       const layout = await page.evaluate(() => ({
