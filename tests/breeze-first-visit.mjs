@@ -48,16 +48,48 @@ const route = ['space.lobby'];
 const prefix = baseline ? 'baseline' : studio ? 'studio' : avatar ? 'avatar' : 'pov';
 const suffix = mobile ? (landscape ? 'mobile-landscape' : 'mobile-portrait') : 'desktop';
 
+// On SwiftShader, Chromium can restart its GPU process while the Breeze guest
+// renders with WebGPU (in these runs, during every Breeze visit). The guest
+// loses its device, and the Museum's WebGL context is lost and comes back a
+// second later without the canvas and image content the GPU held: a view of the
+// Museum after that is blank or darkened, not what a visitor sees. Such a view
+// is not captured and the manifest says so; its assertions still run. The
+// arrivals run (--arrivals) never enters Breeze and captures both arrivals.
+// Served from elsewhere (BREEZE_TEST_BASE), the code under test is the commit
+// the caller names in BREEZE_TEST_COMMIT; this checkout only runs the test.
+let commits = null;
+function commitsOf() {
+  if (!commits) {
+    const testCommit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+    commits = { commit: process.env.BREEZE_TEST_BASE ? process.env.BREEZE_TEST_COMMIT || 'unknown' : testCommit, testCommit };
+  }
+  return commits;
+}
+
+async function countContextLosses() {
+  await page.evaluate(() => {
+    window.__museumContextLosses = 0;
+    window.__IW.renderHost.renderer.domElement.addEventListener('webglcontextlost', () => { window.__museumContextLosses += 1; });
+  });
+}
+
 async function shot(name) {
   if (!capture) return;
   const file = `${set ? `${set}-` : ''}${prefix}-${suffix}-${name}.png`;
+  const { museumContextLosses, museumHidden } = await page.evaluate(() => ({ museumContextLosses: window.__museumContextLosses, museumHidden: window.__IW.nested?.report?.().museumCanvasHidden === true }));
+  const run = { mode: studio ? 'Studio' : avatar ? 'Avatar' : 'POV', viewport, browser: chrome ? 'Chrome / Chromium' : `Bundled Chromium (SwiftShader${webgpu ? ', WebGPU' : ''})` };
+  if (museumContextLosses > 0 && !museumHidden) {
+    console.log('not captured', file, `(Museum WebGL context lost ${museumContextLosses}x)`);
+    records.push({ file: null, view: file, spaceId: await page.evaluate(() => window.__IW.runtime.state.activeSpaceId), ...run, museumContextLosses, route: [...route], ...commitsOf(), result: 'not captured: the GPU process restarted during the Breeze visit (SwiftShader WebGPU); assertions passed' });
+    return;
+  }
   await page.screenshot({ path: path.join(out.pathname.replace(/^\/(?=[A-Za-z]:)/, ''), file), timeout: 60000 });
   const rendering = await page.evaluate(() => {
     const gl = document.querySelector('#iw-canvas')?.getContext('webgl2');
     const debug = gl?.getExtension('WEBGL_debug_renderer_info');
     return { webgl: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : 'WebGL2 (renderer undisclosed)', webgpu: Boolean(navigator.gpu) };
   });
-  records.push({ file, spaceId: await page.evaluate(() => window.__IW.runtime.state.activeSpaceId), mode: studio ? 'Studio' : avatar ? 'Avatar' : 'POV', viewport, browser: chrome ? 'Chrome / Chromium' : `Bundled Chromium (SwiftShader${webgpu ? ', WebGPU' : ''})`, rendering, route: [...route], commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), result: 'captured after assertions' });
+  records.push({ file, spaceId: await page.evaluate(() => window.__IW.runtime.state.activeSpaceId), ...run, rendering, museumContextLosses, route: [...route], ...commitsOf(), result: 'captured after assertions' });
 }
 
 async function cross(to) {
@@ -128,7 +160,7 @@ async function arrival(label) {
   await shot(label);
 }
 
-async function approach() {
+async function approach(label = 'approach') {
   await page.evaluate((withAvatar) => {
     if (withAvatar) {
       const body = window.__IW_CHARACTER_PHASE4B.root;
@@ -153,10 +185,10 @@ async function approach() {
   assert.equal(state.hidden, false);
   assert.equal(state.promptInViewport, true);
   assert.match(state.prompt, /Breeze/);
-  await shot('approach');
+  await shot(label);
 }
 
-async function enterWithControl() {
+async function enterWithControl(label = 'breeze-no-panel') {
   await page.evaluate(() => {
     const rt = window.__IW.runtime;
     if (!window.__breezeTraverseCount) {
@@ -204,7 +236,7 @@ async function enterWithControl() {
   assert.equal(panel.showDisplay, 'none');
   assert.equal(panel.reopened, false);
   assert.equal(panel.panelAfter, 'none');
-  await shot('breeze-no-panel');
+  await shot(label);
 }
 
 async function leaveBreeze() {
@@ -256,6 +288,7 @@ try {
   const query = studio ? '?authoring=1' : avatar ? '?character=1&mobility=1&continuity=1&gatea=1' : '';
   await page.goto(`${base}/index.html${query}`, { timeout: 90000 });
   await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 180000 });
+  await countContextLosses();
   if (studio) {
     await page.waitForFunction(() => window.__IW_STUDIO?.root?.isConnected, null, { timeout: 30000 });
     await selectStudioNode('space.breeze');
@@ -361,13 +394,14 @@ try {
       await cross('space.gallery-a');
       await cross('space.gallery-b');
       await arrival('gallery-b-second');
-      await approach();
+      await approach('approach-second');
     } else if (!firstOnly) {
       await enterWithControl();
       await leaveBreeze();
       if (reload) {
         await page.reload({ timeout: 90000 });
         await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 180000 });
+        await countContextLosses();
         if (avatar) await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000 });
         await enterVisit();
         const current = await page.evaluate(() => window.__IW.runtime.state.activeSpaceId);
@@ -377,24 +411,24 @@ try {
         } else if (current === 'space.gallery-a') await cross('space.gallery-b');
         else assert.equal(current, 'space.gallery-b');
         await arrival('gallery-b-after-reload');
-        await approach();
-        await enterWithControl();
+        await approach('approach-after-reload');
+        await enterWithControl('breeze-no-panel-after-reload');
         await leaveBreeze();
       }
       await cross('space.gallery-a');
       await cross('space.gallery-b');
       await arrival('gallery-b-second');
-      await approach();
-      await enterWithControl();
+      await approach('approach-second');
+      await enterWithControl('breeze-no-panel-second');
       await leaveBreeze();
     }
   }
   console.log('errors', JSON.stringify(errors), 'failedRequests', JSON.stringify(failed), 'httpErrors', JSON.stringify(httpErrors));
-  // WebGPU on SwiftShader loses the guest's device as soon as Breeze starts
-  // («A valid external Instance reference no longer exists»), with or without
-  // this change; the stage stays black. It is reported, not counted: the panel,
-  // the mode and the persistence bridge are what this run can verify. Any
-  // other error still fails it.
+  // WebGPU on SwiftShader: the guest loses its device when Chromium restarts the
+  // GPU process (see shot()), «A valid external Instance reference no longer
+  // exists», with or without this change, and its stage never draws. It is
+  // reported, not counted: the panel, the mode and the persistence bridge are
+  // what this run can verify. Any other error still fails it.
   const environment = webgpu ? errors.filter((error) => /WebGPU Device Lost[\s\S]*external Instance reference/.test(error)) : [];
   if (environment.length) console.log('environment (SwiftShader WebGPU)', JSON.stringify(environment));
   assert.deepEqual(errors.filter((error) => !error.includes('/favicon.ico') && !environment.includes(error)), []);
