@@ -1167,8 +1167,21 @@ try {
       const mounted = await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000, polling: 1000 })
         .then(() => true).catch(() => false);
       if (mounted) {
-        await press(page.locator('[data-el="enter"]'), 'tap');
-        await press(page.locator('[data-el="helpClose"]'), 'tap');
+        // Setup. The POV visit above taps «Entrar» and the phone guide for real.
+        // Here the avatar has just mounted and software WebGL keeps the page
+        // busy longer than a tap can wait, and the replay's scroll can move the
+        // guide under its own hit test. This visit checks the thumb and the
+        // framing, so both are clicked in the page once nothing covers them.
+        const setupClick = (selector) => page.locator(selector).evaluate((node) => {
+          const r = node.getBoundingClientRect();
+          const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          if (!(top === node || node.contains(top))) throw new Error(`${node.dataset.el} tapado por ${top?.className || top?.tagName}`);
+          node.click();
+        });
+        await setupClick('[data-el="enter"]');
+        await page.waitForFunction(() => !window.__IW.hud.el.help.hidden);
+        await setupClick('[data-el="helpClose"]');
+        await page.waitForFunction(() => window.__IW.hud.el.help.hidden);
         await page.waitForTimeout(1200);
         const where = () => page.evaluate(() => window.__IW_CHARACTER_PHASE4B.root.position.toArray());
         const before = await where();
