@@ -309,6 +309,12 @@ Resultados en `641515e` (Chromium 141 empaquetado, SwiftShader, sesión limpia):
   - contra `af30d50` falla, como se esperaba («nested shell covered the first-visit opening»).
 - Capturas, manifiestos y hojas de puertas (antes `5b40747`, después `641515e`) en [`docs/visual-validation/breeze-mobile-fix/`](visual-validation/breeze-mobile-fix/README.md).
 
+### Aviso «Esta sala necesita WebGPU» en Chrome
+
+En la revisión humana de la preview de `412d537`, Chrome mostró al entrar en Breeze «Esta sala necesita WebGPU… este navegador no lo ofrece». En ese mismo ordenador, Breeze se había abierto antes. La comprobación que decide el aviso no ha cambiado desde `af30d50`: lo muestra cuando `navigator.gpu.requestAdapter()` no entrega adaptador. La API existía; lo que faltaba era la tarjeta gráfica. Chrome lo hace con la aceleración por hardware desactivada, o cuando apaga la GPU tras fallos de su proceso gráfico; se recupera al reiniciar el navegador, y la captura mostraba una actualización pendiente de reinicio. El texto era falso para ese caso y llevaba a cambiar de navegador. Desde `92b8908`, el aviso distingue `no-api` (sin WebGPU) de `no-adapter` (WebGPU sin tarjeta gráfica: «Reinicia el navegador…»). `BREEZE-NOTICE-REASON` lo comprueba; en CI la API existe y no hay adaptador.
+
+En la suite de `92b8908` falló una vez `SHOP-COLLIDE`: la primera vitrina marcó 1,6 porque el visitante no se movió. La prueba cierra la ficha del catálogo y camina enseguida; al cerrarla, la cámara vuelve al paseo con una transición de 0,7 s de animación, durante la cual el paseo no mueve a nadie, y con fotogramas lentos esa transición duró más que la caminata de 1,8 s. Desde `7b4d311` la prueba camina cuando la cámara vuelve a ser del paseo: en la suite de `7b4d311`, la transición tardó 3,6 s reales. Esa suite terminó con 146 comprobaciones correctas y ninguna fallida (29 min), `BREEZE-NOTICE-REASON` incluida.
+
 ### Reinicio del proceso GPU en las pruebas con WebGPU
 
 Con WebGPU sobre SwiftShader, Chromium reinicia su proceso GPU durante cada visita a Breeze. El invitado pierde su dispositivo («A valid external Instance reference no longer exists», también en `5b40747`), y el contexto WebGL del museo se pierde y vuelve un segundo después sin los lienzos de textura que guardaba la GPU. Una captura de la segunda llegada tomada dentro de ese segundo salía en blanco: el test cruzaba B→A→B en 0,7 s porque, sin contexto, el museo no dibuja. Poco después, la sala volvía a dibujarse oscurecida y sin rótulos. No es un defecto de la corrección:

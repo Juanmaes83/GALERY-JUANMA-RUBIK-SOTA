@@ -2,7 +2,7 @@
 
 Dos series en esta carpeta:
 
-- **`r2-*` (revisión del 2026-10-13).** Código probado: `641515e`. La aplicación es la de `d23ffca` más `0135deb`, que hace que el velo de entrada deje pasar los toques y no cambia nada visible en las capturas. `0e06e95`, `5a4c91a` y `641515e` solo cambian pruebas. Chromium 141 empaquetado con WebGL sobre SwiftShader; WebGPU sobre SwiftShader (`--enable-unsafe-webgpu`) solo en las pasadas `r2-visit-*`; móvil emulado (tamaño, `isMobile`, `hasTouch`). Cada `manifest-r2-*.json` identifica sala, modo, viewport, navegador, renderizador, ruta, commit y resultado de cada captura.
+- **`r2-*` (revisión del 2026-10-13).** Código probado: `641515e`. La aplicación es la de `d23ffca` más `0135deb`, que hace que el velo de entrada deje pasar los toques y no cambia nada visible en las capturas. `0e06e95`, `5a4c91a` y `641515e` solo cambian pruebas. Después, `92b8908` cambia solo el aviso de Breeze sin WebGPU (capturas `r2-notice-*`), que ninguna otra captura muestra, y `7b4d311` solo una prueba de la tienda. Chromium 141 empaquetado con WebGL sobre SwiftShader; WebGPU sobre SwiftShader (`--enable-unsafe-webgpu`) solo en las pasadas `r2-visit-*`; móvil emulado (tamaño, `isMobile`, `hasTouch`). Cada `manifest-r2-*.json` identifica sala, modo, viewport, navegador, renderizador, ruta, commit y resultado de cada captura.
 - **Serie anterior (`d655e2c`)**, con GPU real; se conserva tal cual (más abajo).
 
 ## Serie r2
@@ -23,6 +23,8 @@ Tres tipos de pasada, todas desde una sesión limpia:
 | Antes de la corrección (`af30d50`), primera llegada | `r2-baseline-desktop-gallery-b-first.png` | — | — |
 
 **Puertas de todas las salas** (`r2-doors-<sala>.jpg`). Una hoja por sala: la vista desde el punto de llegada y cada puerta desde 4,5 m delante, mirándola. A la izquierda `5b40747` (cabeza de la PR #3) y a la derecha `641515e`. Mismo navegador y viewport que la serie, 1280 × 800, con cada vista reducida a la mitad. `manifest-r2-doors.json` lista commits, ruta, cámaras y vistas. Las hojas salen de un guion de diagnóstico de la revisión, no de una prueba automática; ninguna de las dos pasadas dio errores de consola.
+
+**Aviso sin WebGPU** (`r2-notice-*.png`, `manifest-r2-notice.json`), capturado en `92b8908`. `no-adapter`: el navegador tiene WebGPU pero no obtiene tarjeta gráfica, como el Chrome con la GPU apagada que vio la revisión humana. `no-api`: el navegador no tiene WebGPU.
 
 Lo que comprueba cada pasada antes de capturar (aserciones del test, no inspección visual):
 
