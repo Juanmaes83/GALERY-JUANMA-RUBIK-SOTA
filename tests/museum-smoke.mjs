@@ -34,14 +34,16 @@ function check(id, claim, pass, detail = '') {
 // view» (seen in CI); then the element is hit-tested (nothing may cover its
 // centre) and activated through the DOM. Fallbacks are counted and printed.
 //
-// A toggle must not be pressed twice. Playwright also times out while the page
-// is still busy handling a click it already sent, and replaying that click
-// undoes it: the checkbox in SHOP-STUDIO flipped back. Calls on a toggle pass
-// { toggle: true }: after a timeout the page gets two frames to handle queued
-// input and the element's own state (checked, aria-pressed/-expanded, label)
-// decides; the click is replayed only if it did not change. Everything else
-// is idempotent (select, save, enter, close) and keeps the plain replay: its
-// effect shows elsewhere, so the button's own state says nothing about it.
+// Nothing is pressed twice. Playwright also times out while the page is still
+// busy handling input it already sent; its call log then ends after
+// «performing <action> action». That press arrives late, and replaying it
+// would be a second one: the checkbox in SHOP-STUDIO flipped back, and the
+// phone guide's «Empezar la visita», already hidden, hit-tested as covered.
+// A sent press is never replayed: the page gets two frames to catch up and the
+// test's own checks see the outcome. Calls on a toggle pass { toggle: true }:
+// if the log is not conclusive, the element's state (checked, aria-pressed/
+// -expanded, label) tells whether a click landed. Only a press that never left
+// Playwright is replayed.
 const fallbacks = [];
 const stateOf = (locator) => locator.evaluate((n) => JSON.stringify([
   n.isConnected, n.checked ?? null, n.getAttribute('aria-pressed'), n.getAttribute('aria-expanded'),
@@ -54,27 +56,29 @@ async function press(locator, how = 'click', { toggle = false } = {}) {
     return true;
   } catch (error) {
     if (!/Timeout/.test(String(error))) throw error;
-    if (toggle) {
+    const name = () => locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.guide || n.dataset.node || n.dataset.bind || n.tagName).catch(() => '¿?');
+    const sent = /performing (click|tap) action/.test(String(error.message));
+    if (sent || toggle) {
       await locator.page().evaluate(() => new Promise((resolve) => {
         const cap = setTimeout(resolve, 3000);
         requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(cap); resolve(); }));
       }));
       await locator.page().waitForTimeout(250);
-      if ((await stateOf(locator)) !== before) {
-        fallbacks.push(`${await locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.guide || n.dataset.bind || n.tagName).catch(() => '¿?')} (clic tardío, sin repetir)`);
-        return true;
-      }
     }
-    const reachable = await locator.evaluate((node) => {
+    if (sent || (toggle && (await stateOf(locator)) !== before)) {
+      fallbacks.push(`${await name()} (clic tardío, sin repetir)`);
+      return true;
+    }
+    const cover = await locator.evaluate((node) => {
       node.scrollIntoView({ block: 'center' });
       const r = node.getBoundingClientRect();
       const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
       const ok = top === node || node.contains(top) || Boolean(node.closest('label')?.contains(top));
       if (ok) node.click();
-      return ok;
+      return ok ? null : `${top?.tagName.toLowerCase() || 'nada'}${top?.className ? `.${String(top.className).trim().split(/\s+/).join('.')}` : ''}`;
     });
-    fallbacks.push(`${await locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.node || n.dataset.bind || n.tagName)}${reachable ? '' : ' (TAPADO)'}`);
-    if (!reachable) throw new Error(`elemento tapado: ${fallbacks.at(-1)}`);
+    fallbacks.push(`${await name()}${cover ? ` (TAPADO por ${cover})` : ''}`);
+    if (cover) throw new Error(`elemento tapado: ${fallbacks.at(-1)}`);
     return true;
   }
 }
@@ -1085,6 +1089,8 @@ try {
       });
       check('MOBILE-ENTRY-VEIL', 'Al entrar, el velo que se desvanece deja pasar los toques a la guía', veil.gone && veil.pointerEvents === 'none', JSON.stringify(veil));
       await press(page.locator('[data-el="helpClose"]'), 'tap');
+      const guideClosed = await page.waitForFunction(() => window.__IW.hud.el.help.hidden).then(() => true).catch(() => false);
+      check('MOBILE-GUIDE-CLOSE', '«Empezar la visita» cierra la guía con un solo toque', guideClosed);
       await page.waitForTimeout(1000);
       const layout = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
