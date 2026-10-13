@@ -191,6 +191,13 @@ try {
     // product is chosen with E from where a visitor can stand.
     const fit = await page.evaluate(async () => {
       const rt = window.__IW.runtime; const e = rt.explore; const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      // The catalogue focused above hands the camera back to Explore over a
+      // 0.7 s blend, and Explore moves no one until it ends. With frames this
+      // slow the blend outlasted the first 1.8 s walk («1.6»: never moved), so
+      // the walks start once the camera is Explore's.
+      const settleStart = performance.now();
+      while ((rt.camera.isTransitioning || rt.camera.owner !== 'EXPLORE') && performance.now() - settleStart < 30000) await wait(100);
+      const settledMs = Math.round(performance.now() - settleStart);
       const space = rt.store.require('space.shop');
       const fixtures = space.metadata.shop?.fixtures || [];
       const groups = [];
@@ -232,13 +239,13 @@ try {
       }
       const info = window.__IW.renderHost.renderer.info.render;
       return { vitrines: count('VITRINE'), counter: count('COUNTER'), assistant: count('ASSISTANT'), frames: count('WALL_FRAME'), products: products.length,
-        displays: products.filter((p) => p.representation?.profile === 'shop-display').length, misplaced, collide, counterStop, notPicked: picked.filter(Boolean), calls: info.calls, triangles: info.triangles };
+        displays: products.filter((p) => p.representation?.profile === 'shop-display').length, misplaced, collide, counterStop, settledMs, notPicked: picked.filter(Boolean), calls: info.calls, triangles: info.triangles };
     });
     check('SHOP-FIXTURES', 'Como en la referencia: 6 vitrinas, mostrador, dependienta, 3 cuadros; cada producto plano en su vitrina y 3 productos en 3D',
       fit.vitrines === 6 && fit.counter === 1 && fit.assistant === 1 && fit.frames === 3 && fit.products === 11 && fit.displays === 3 && fit.misplaced.length === 0,
       JSON.stringify({ vitrinas: fit.vitrines, mostrador: fit.counter, dependienta: fit.assistant, cuadros: fit.frames, productos: fit.products, en3d: fit.displays, fuera: fit.misplaced }));
     check('SHOP-COLLIDE', 'Al caminar hacia una vitrina o el mostrador el visitante se detiene en su borde; detrás del mostrador no se pasa',
-      fit.collide.length === 7 && fit.collide.every((d) => d > 0.6 && d < 1.5) && fit.counterStop > -9.3, `${fit.collide.join(', ')} · mostrador: x=${fit.counterStop}`);
+      fit.collide.length === 7 && fit.collide.every((d) => d > 0.6 && d < 1.5) && fit.counterStop > -9.3, `${fit.collide.join(', ')} · mostrador: x=${fit.counterStop} · cámara libre tras ${fit.settledMs} ms`);
     check('SHOP-SELECT', 'Cada producto se elige con E desde donde puede estar el visitante (la réplica, desde el mostrador)', fit.notPicked.length === 0, fit.notPicked.join(', ') || `${fit.products} de ${fit.products}`);
     check('SHOP-COST', 'La tienda amueblada sigue siendo ligera (llamadas de dibujo y triángulos)', fit.calls < 220 && fit.triangles < 120000, `${fit.calls} llamadas · ${fit.triangles} triángulos`);
 
