@@ -321,7 +321,17 @@ try {
     if (avatar) await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000 });
     await enterVisit();
     if (mobile) {
-      await page.locator('[data-el="helpClose"]').tap({ timeout: 8000 });
+      // Setup too, like the entry: on software WebGL the phone guide's button
+      // can stay «unstable» for Playwright for many frames. It is closed in the
+      // page once it is open and on screen; real touch is kept for the doorway.
+      const guide = await page.evaluate(() => {
+        const el = window.__IW.hud.el;
+        const r = el.helpClose.getBoundingClientRect();
+        const state = { open: !el.help.hidden, onScreen: r.width > 0 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth };
+        if (state.open && state.onScreen) el.helpClose.click();
+        return state;
+      });
+      assert.ok(guide.open && guide.onScreen, `phone guide: ${JSON.stringify(guide)}`);
       await page.waitForFunction(() => window.__IW.hud.el.help.hidden, null, { timeout: 8000 });
     }
     const entrySpace = await page.evaluate(() => window.__IW.runtime.state.activeSpaceId);

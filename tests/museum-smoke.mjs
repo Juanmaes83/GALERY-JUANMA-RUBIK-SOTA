@@ -37,9 +37,11 @@ function check(id, claim, pass, detail = '') {
 // A timeout is not proof that nothing happened: Playwright also gives up while
 // the page is still busy handling a click it already sent. Repeating that click
 // undoes it — a checkbox or a play/pause toggle flips back (seen in CI as
-// SHOP-STUDIO). So after a timeout the page is allowed to catch up and the
-// element's state is compared; only a click that never left Playwright, on an
-// element that did not change, is replayed.
+// SHOP-STUDIO). Nor is a sent click proof that it landed: one delivered late
+// can miss an element the page has just redrawn. So after a timeout the page
+// gets two frames to handle whatever input is queued, and the element's state
+// is compared: a change means the click landed and is not repeated; no change
+// means it did not, and it is replayed once through the DOM.
 const fallbacks = [];
 const stateOf = (locator) => locator.evaluate((n) => JSON.stringify([
   n.isConnected, n.checked ?? null, n.getAttribute('aria-pressed'), n.getAttribute('aria-expanded'),
@@ -52,10 +54,13 @@ async function press(locator, how = 'click') {
     return true;
   } catch (error) {
     if (!/Timeout/.test(String(error))) throw error;
-    const sent = /performing (click|tap) action|(click|tap) action done/.test(String(error));
-    await locator.page().evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
+    await locator.page().evaluate(() => new Promise((resolve) => {
+      const cap = setTimeout(resolve, 3000);
+      requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(cap); resolve(); }));
+    }));
+    await locator.page().waitForTimeout(250);
     const after = await stateOf(locator);
-    if (sent || after !== before) {
+    if (after !== before) {
       fallbacks.push(`${await locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.node || n.dataset.bind || n.tagName).catch(() => '¿?')} (clic tardío, sin repetir)`);
       return true;
     }
