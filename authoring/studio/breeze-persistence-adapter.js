@@ -99,7 +99,12 @@ function syncConfig(studio, state) {
 
 function hydrateSavedState(studio) {
   if (savedState) return savedState;
-  const persisted = studio?.config?.entities?.[ENTITY_ID]?.breeze;
+  // A visitor's Museum is built from the saved project too (experience-app:
+  // window.__IW_CONFIG, then ConfigStore). Without the Studio, Breeze takes its
+  // saved settings from the same place: hiding the panel must not drop them.
+  let config = studio?.config || window.__IW_CONFIG || null;
+  if (!config) { try { config = ConfigStore.load(); } catch { config = null; } }
+  const persisted = config?.entities?.[ENTITY_ID]?.breeze;
   if (persisted) savedState = cleanState(persisted);
   return savedState;
 }

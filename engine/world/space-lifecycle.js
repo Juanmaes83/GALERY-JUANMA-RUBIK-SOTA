@@ -94,7 +94,18 @@ export class SpaceLifecycle {
    */
   async prepare(spaceId) {
     const slot = this._slot(spaceId);
+    // Asked for again: whatever an earlier reconcile decided, it is wanted now.
+    slot.discard = false;
     if (slot.state === SPACE_STATE.READY || slot.state === SPACE_STATE.ACTIVE) return;
+    // The Space just left stays built and warmed (COOLING): that is why the
+    // working set keeps it. Going back reuses it. Building it again left the
+    // first copy in the scene for good — two «space:gallery-a» groups after one
+    // B→A→B round trip, their media references and animations never released —
+    // and repeated the most expensive work this class does on the way back.
+    if (slot.state === SPACE_STATE.COOLING && slot.handle) {
+      this._setState(spaceId, SPACE_STATE.READY);
+      return;
+    }
     if (slot.pending) return slot.pending;
 
     slot.pending = (async () => {
@@ -106,11 +117,16 @@ export class SpaceLifecycle {
       try {
         slot.handle = await this.sceneKit.buildSpace(space, this.context);
         slot.timings.build = Math.round(performance.now() - startedAt);
+        // The visitor walked away while it was being built: it is not warmed.
+        if (slot.discard) return this._discard(spaceId, slot);
 
         const warmStartedAt = performance.now();
         this._setState(spaceId, SPACE_STATE.WARMING);
         await this.sceneKit.warmSpace(slot.handle, this.context);
         slot.timings.warm = Math.round(performance.now() - warmStartedAt);
+        // Or while it was warming. Marking it READY here once left a READY
+        // Space with no handle, and entering that room threw.
+        if (slot.discard) return this._discard(spaceId, slot);
 
         this._setState(spaceId, SPACE_STATE.READY);
         slot.timings.total = Math.round(performance.now() - startedAt);
@@ -136,8 +152,11 @@ export class SpaceLifecycle {
    */
   async activate(spaceId, options = {}) {
     const startedAt = performance.now();
-    const alreadyReady = this.stateOf(spaceId) === SPACE_STATE.READY;
+    const state = this.stateOf(spaceId);
+    const alreadyReady = state === SPACE_STATE.READY || (state === SPACE_STATE.COOLING && Boolean(this.handleOf(spaceId)));
     await this.prepare(spaceId);
+    // A concurrent activation can throw away the room this one was waiting for.
+    if (!this.handleOf(spaceId)) await this.prepare(spaceId);
     const waitedMs = Math.round(performance.now() - startedAt);
     this._activateNow(spaceId, options);
     return { spaceId, prepared: !alreadyReady, waitedMs };
@@ -241,7 +260,7 @@ export class SpaceLifecycle {
     if (this.keepPrevious && this._previousSpaceId) keep.add(this._previousSpaceId);
 
     for (const [spaceId, slot] of this._slots) {
-      if (keep.has(spaceId)) continue;
+      if (keep.has(spaceId)) { slot.discard = false; continue; }
       if (slot.state === SPACE_STATE.DISPOSED || slot.state === SPACE_STATE.UNLOADED) continue;
       this.dispose(spaceId);
     }
@@ -262,8 +281,17 @@ export class SpaceLifecycle {
 
   dispose(spaceId) {
     const slot = this._slots.get(spaceId);
-    if (!slot || !slot.handle) return;
-    this.sceneKit.disposeSpace(slot.handle);
+    if (!slot) return;
+    // Still being built or warmed. Neither step can stop half way, so the
+    // Space is thrown away when it finishes (prepare) instead of now.
+    if (slot.pending) { slot.discard = true; return; }
+    if (!slot.handle) return;
+    this._discard(spaceId, slot);
+  }
+
+  _discard(spaceId, slot) {
+    slot.discard = false;
+    if (slot.handle) this.sceneKit.disposeSpace(slot.handle);
     slot.handle = null;
     this._setState(spaceId, SPACE_STATE.DISPOSED);
     this.bus.emit(EVENTS.SPACE_DISPOSED, { spaceId });

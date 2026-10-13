@@ -36,6 +36,7 @@ import {
   placeFixture, fixtureFootprint, worldToFixture, VITRINE, LEVELS, SLOT_BOX
 } from './shop-fixtures.js';
 import { buildExitDoor, buildExitSign, buildNearHalo, firstStepTowards, placeExitSign } from './wayfinding.js';
+import { buildDoorCue } from './door-cues.js';
 import { GUIDE_DESIGNS, buildGuideFigure, buildVisitorFigure, guideMaterials } from './guide.js';
 import { MARBLE_BUST_PROFILE, MuseumModelAssets } from './model-assets.js';
 import { floorFinishFor, requestFloorSurface } from './surfaces.js';
@@ -101,6 +102,8 @@ export class MuseumSceneKit extends SceneKit {
     this._entityIndex = new Map();
     /** @type {{update:(t:number)=>void, dispose:()=>void}[]} */
     this._animated = [];
+    /** Door cues by the hotspot that crosses them (door-cues.js). */
+    this._doorCues = new Map();
 
     this._environment = null;
     this._focusedEntityId = null;
@@ -385,25 +388,20 @@ export class MuseumSceneKit extends SceneKit {
         group.add(sign);
       }
 
-      // Breeze is a separate renderer. Its architectural shell must never be
-      // used as the view through this opening; give the Museum-side reveal its
-      // own restrained, readable edge instead of relying on the dark void.
+      // Every doorway gets the same cues (door-cues.js): a casing, a warm spill
+      // that answers the visitor's approach and, where the next room cannot be
+      // seen through the opening, a glow beyond it. Breeze is drawn by its own
+      // renderer and the Archive is a teleport, so both openings were black.
+      const portal = ctx.store.require(opening.portalId);
+      const cue = buildDoorCue({
+        opening,
+        floorY: origin[1],
+        wallThickness: WALL_THICKNESS,
+        sceneProfile: space.sceneProfile,
+        destinationVisible: portal.transitionBehaviour !== 'TELEPORT'
+          && !ctx.store.require(opening.toSpaceId).metadata?.nestedRuntime
+      });
       if (opening.portalId === 'portal.gallery-b-breeze') {
-        const marker = new THREE.Group();
-        marker.name = 'breeze-entrance-marker';
-        const brass = new THREE.MeshBasicMaterial({ color: 0xbda47a, toneMapped: false });
-        const [x, , z] = opening.worldPosition;
-        const face = x - WALL_THICKNESS - 0.045;
-        const half = opening.width / 2;
-        const jambHeight = opening.height - 0.08;
-        for (const side of [-1, 1]) {
-          const jamb = new THREE.Mesh(new THREE.BoxGeometry(0.035, jambHeight, 0.055), brass);
-          jamb.position.set(face, origin[1] + jambHeight / 2, z + side * (half + 0.03));
-          marker.add(jamb);
-        }
-        const lintel = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.055, opening.width + 0.1), brass);
-        lintel.position.set(face, origin[1] + opening.height + 0.02, z);
-        marker.add(lintel);
         // The arrival camera frames the east wall, but on a narrow phone the
         // doorway sits partly outside the left edge. This small wall plaque is
         // inside that view and points to the real opening without moving camera.
@@ -412,11 +410,13 @@ export class MuseumSceneKit extends SceneKit {
           new THREE.MeshBasicMaterial({ map: signPlateTexture('← BREEZE', 1.08 / 0.28), side: THREE.DoubleSide, toneMapped: false })
         );
         direction.name = 'breeze-direction-sign';
-        direction.position.set(face - 0.015, origin[1] + 1.62, z + half + 0.84);
-        direction.rotation.y = -Math.PI / 2;
-        marker.add(direction);
-        group.add(marker);
+        direction.position.set(opening.width / 2 + 0.84, 1.62, 0.06);
+        cue.group.add(direction);
       }
+      group.add(cue.group);
+      const crossing = ctx.store.hotspotsOf(space.id)
+        .find((hotspot) => hotspot.action?.type === 'ACTIVATE_PORTAL' && hotspot.action.target === opening.portalId);
+      if (crossing) this._doorCues.set(crossing.id, { ...cue, spaceId: space.id, portalId: opening.portalId, near: 0, nearTarget: 0 });
     }
 
     const spots = [];
@@ -665,6 +665,7 @@ export class MuseumSceneKit extends SceneKit {
       if (this._nearestEntityId === entityId) this._nearestEntityId = null;
     }
     this._wayfinding?.delete(handle.spaceId);
+    for (const [hotspotId, cue] of this._doorCues) if (cue.spaceId === handle.spaceId) this._doorCues.delete(hotspotId);
     this._spaces.delete(handle.spaceId);
     this._animated = this._animated.filter((item) => {
       if (item.spaceId !== handle.spaceId) return true;
@@ -1295,6 +1296,30 @@ export class MuseumSceneKit extends SceneKit {
     }
     record.halo.visible = true;
     this._glowFrame(record, true);
+  }
+
+  /**
+   * The doorway the prompt offers to cross. Its spill brightens while the
+   * visitor stands where E or a tap would take them through, and settles back
+   * when they move away. Driven by the nearest hotspot, not by hotspot state:
+   * a crossed door's hotspot stays ACTIVE, and the cue must answer every visit.
+   */
+  setNearestDoor(hotspotId) {
+    for (const [id, cue] of this._doorCues) cue.nearTarget = id === hotspotId ? 1 : 0;
+  }
+
+  /** QA evidence: the cues each loaded doorway carries and how bright they are. */
+  doorCueReport() {
+    const rows = {};
+    for (const [hotspotId, cue] of this._doorCues) {
+      if (!this._spaces.has(cue.spaceId)) continue;
+      (rows[cue.spaceId] ||= []).push({
+        hotspotId, portalId: cue.portalId,
+        casing: Boolean(cue.group.getObjectByName('door-casing')),
+        beyond: cue.beyond, spill: +cue.spill.opacity.toFixed(3), near: +cue.near.toFixed(3)
+      });
+    }
+    return rows;
   }
 
   /**
@@ -2457,6 +2482,16 @@ export class MuseumSceneKit extends SceneKit {
     this._updateGuide(dt);
     this._updateVisitor(dt);
     this._updatePremiumInstallations(dt);
+    this._updateDoorCues(dt);
+  }
+
+  _updateDoorCues(dt) {
+    const k = 1 - Math.exp(-6 * (dt || 0.016));
+    for (const cue of this._doorCues.values()) {
+      if (Math.abs(cue.nearTarget - cue.near) < 0.002) cue.near = cue.nearTarget;
+      else cue.near += (cue.nearTarget - cue.near) * k;
+      cue.spill.opacity = cue.levels.spill + (cue.levels.near - cue.levels.spill) * cue.near;
+    }
   }
 
   _updatePremiumInstallations(dt) {

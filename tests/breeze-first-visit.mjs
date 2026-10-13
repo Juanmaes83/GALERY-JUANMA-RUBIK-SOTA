@@ -1,5 +1,9 @@
 #!/usr/bin/env node
-// Run against a fresh session: node tests/breeze-first-visit.mjs [--mobile] [--landscape] [--avatar] [--studio] [--capture] [--first-only]
+// Run against a fresh session:
+//   node tests/breeze-first-visit.mjs [--mobile] [--landscape] [--avatar] [--studio] [--capture]
+//     [--first-only | --arrivals] [--reload] [--webgpu | --chrome] [--baseline]
+// --arrivals: first arrival in Gallery B and the second one (B→A→B), without entering Breeze (npm test).
+// --webgpu:   bundled Chromium with WebGPU on SwiftShader, so the Breeze guest and its panel really load.
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -14,6 +18,10 @@ const avatar = flags.has('--avatar');
 const studio = flags.has('--studio');
 const capture = flags.has('--capture');
 const firstOnly = flags.has('--first-only');
+const arrivalsOnly = flags.has('--arrivals');
+const webgpu = flags.has('--webgpu');
+// A capture series (--set=r2) keeps earlier evidence next to the new one.
+const set = (process.argv.find((arg) => arg.startsWith('--set=')) || '').slice(6);
 const reload = flags.has('--reload');
 const baseline = flags.has('--baseline');
 const chrome = flags.has('--chrome');
@@ -24,7 +32,7 @@ const out = new URL('../docs/visual-validation/breeze-mobile-fix/', import.meta.
 if (capture) await mkdir(out, { recursive: true });
 const browser = await chromium.launch({ headless: true, ...(chrome ? { channel: 'chrome' } : {}), args: chrome
   ? ['--enable-unsafe-webgpu']
-  : ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu-sandbox'] });
+  : ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu-sandbox', ...(webgpu ? ['--enable-unsafe-webgpu'] : [])] });
 const context = await browser.newContext({ viewport, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile });
 const page = await context.newPage();
 const errors = [];
@@ -35,20 +43,21 @@ page.on('console', (message) => { if (message.type() === 'error') errors.push(`$
 page.on('requestfailed', (request) => failed.push(`${request.method()} ${request.url()} ${request.failure()?.errorText}`));
 page.on('response', (response) => { if (response.status() >= 400) httpErrors.push(`${response.status()} ${response.url()}`); });
 const records = [];
+let savedRotate = null;
 const route = ['space.lobby'];
 const prefix = baseline ? 'baseline' : studio ? 'studio' : avatar ? 'avatar' : 'pov';
 const suffix = mobile ? (landscape ? 'mobile-landscape' : 'mobile-portrait') : 'desktop';
 
 async function shot(name) {
   if (!capture) return;
-  const file = `${prefix}-${suffix}-${name}.png`;
+  const file = `${set ? `${set}-` : ''}${prefix}-${suffix}-${name}.png`;
   await page.screenshot({ path: path.join(out.pathname.replace(/^\/(?=[A-Za-z]:)/, ''), file), timeout: 60000 });
   const rendering = await page.evaluate(() => {
     const gl = document.querySelector('#iw-canvas')?.getContext('webgl2');
     const debug = gl?.getExtension('WEBGL_debug_renderer_info');
     return { webgl: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : 'WebGL2 (renderer undisclosed)', webgpu: Boolean(navigator.gpu) };
   });
-  records.push({ file, spaceId: await page.evaluate(() => window.__IW.runtime.state.activeSpaceId), mode: studio ? 'Studio' : avatar ? 'Avatar' : 'POV', viewport, browser: chrome ? 'Chrome / Chromium' : 'Bundled Chromium', rendering, route: [...route], commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), result: 'captured after assertions' });
+  records.push({ file, spaceId: await page.evaluate(() => window.__IW.runtime.state.activeSpaceId), mode: studio ? 'Studio' : avatar ? 'Avatar' : 'POV', viewport, browser: chrome ? 'Chrome / Chromium' : `Bundled Chromium (SwiftShader${webgpu ? ', WebGPU' : ''})`, rendering, route: [...route], commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), result: 'captured after assertions' });
 }
 
 async function cross(to) {
@@ -71,18 +80,36 @@ async function cross(to) {
 
 async function arrival(label) {
   await page.waitForFunction(() => window.__IW.runtime.spaces.stateOf('space.breeze') === 'READY', null, { timeout: 60000 });
-  const state = await page.evaluate(() => {
+  const state = await page.evaluate(async () => {
     const rt = window.__IW.runtime;
+    const kit = rt.sceneKit;
+    const THREE = await import('three');
     const handle = rt.spaces.handleOf('space.gallery-b');
     const breeze = rt.spaces.handleOf('space.breeze');
+    // What stands between the room and the doorway: a visible mesh that belongs
+    // to another room (Breeze's shell did, one metre inside Gallery B).
+    const owner = (object) => { for (let o = object; o; o = o.parent) for (const [id, h] of kit._spaces) if (h.group === o) return id; return null; };
+    const shown = (object) => { for (let o = object; o; o = o.parent) if (!o.visible) return false; return true; };
+    const blockers = [[14, 1.6, -12], [9.7, 1.62, -10], [14, 1.62, -6.7]].map((from) => {
+      const origin = new THREE.Vector3(...from);
+      const door = new THREE.Vector3(19.9, 1.3, -12);
+      const ray = new THREE.Raycaster(origin, door.clone().sub(origin).normalize(), 0.05, origin.distanceTo(door));
+      const hit = ray.intersectObject(kit.scene, true).find((h) => h.object.isMesh && shown(h.object) && owner(h.object) && owner(h.object) !== 'space.gallery-b');
+      return hit ? `${owner(hit.object)} a ${hit.distance.toFixed(2)} m` : null;
+    }).filter(Boolean);
+    const groups = kit.scene.children.filter((c) => c.name?.startsWith('space:')).map((c) => c.name);
+    const cue = ((kit.doorCueReport?.() || {})['space.gallery-b'] || []).find((row) => row.portalId === 'portal.gallery-b-breeze');
     return {
       active: rt.state.activeSpaceId,
       portals: rt.store.portalsOf('space.gallery-b').map((item) => item.id),
       hotspots: rt.proximity._active.map((item) => item.hotspot.id),
       breezeState: rt.spaces.stateOf('space.breeze'),
       breezeShellVisible: breeze?.group.visible,
+      blockers,
+      duplicateRooms: groups.filter((name, i) => groups.indexOf(name) !== i),
       openingCount: handle.openings.filter((item) => item.portalId === 'portal.gallery-b-breeze').length,
-      markerCount: handle.group.getObjectByName('breeze-entrance-marker')?.children.length || 0,
+      cue,
+      directionSign: Boolean(handle.group.getObjectByName('breeze-direction-sign')),
       overflow: document.documentElement.scrollWidth - innerWidth
     };
   });
@@ -92,8 +119,11 @@ async function arrival(label) {
   assert.equal(state.portals.filter((item) => item === 'portal.gallery-b-breeze').length, 1);
   assert.equal(state.hotspots.filter((item) => item === 'hotspot.gallery-b.to-breeze').length, 1);
   assert.equal(state.breezeShellVisible, false, 'nested shell covered the first-visit opening');
+  assert.deepEqual(state.blockers, [], 'another room stands between Gallery B and the Breeze doorway');
+  assert.deepEqual(state.duplicateRooms, [], 'a room was built twice and left in the scene');
   assert.equal(state.openingCount, 1);
-  assert.equal(state.markerCount, 4);
+  assert.ok(state.cue?.casing && state.cue.beyond && state.cue.spill > 0, `Breeze doorway cues missing: ${JSON.stringify(state.cue)}`);
+  assert.equal(state.directionSign, true);
   assert.equal(state.overflow, 0);
   await shot(label);
 }
@@ -116,6 +146,9 @@ async function approach() {
       promptInViewport: rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && rect.bottom <= innerHeight };
   });
   console.log('approach', JSON.stringify(state));
+  // The doorway the prompt names answers: its threshold warms up.
+  await page.waitForFunction(() => ((window.__IW.runtime.sceneKit.doorCueReport?.() || {})['space.gallery-b'] || [])
+    .find((row) => row.portalId === 'portal.gallery-b-breeze')?.near > 0.9, null, { timeout: 15000 });
   assert.ok(state.distance <= state.radius);
   assert.equal(state.hidden, false);
   assert.equal(state.promptInViewport, true);
@@ -205,7 +238,7 @@ async function enterVisit() {
 }
 
 try {
-  const query = studio ? '?authoring=1' : avatar ? '?character=1&mobility=1&continuity=1' : '';
+  const query = studio ? '?authoring=1' : avatar ? '?character=1&mobility=1&continuity=1&gatea=1' : '';
   await page.goto(`${base}/index.html${query}`, { timeout: 90000 });
   await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 180000 });
   if (studio) {
@@ -227,6 +260,16 @@ try {
       assert.equal(await toggle.isChecked(), !wasChecked);
       if (wasChecked) await toggle.check({ force: true }); else await toggle.uncheck({ force: true });
       assert.equal(await toggle.isChecked(), wasChecked);
+      // Saving from the panel keeps the change in the Museum project.
+      const rotate = iframe.locator('#bsRotate');
+      savedRotate = !(await rotate.isChecked());
+      if (savedRotate) await rotate.check({ force: true }); else await rotate.uncheck({ force: true });
+      await iframe.locator('#bsMuseumSave').click({ force: true, timeout: 15000 });
+      await iframe.locator('#bsMuseumSave[data-state="saved"]').waitFor({ state: 'attached', timeout: 60000 });
+      const saved = await page.evaluate(() => ({ status: window.__IW_BREEZE_PERSISTENCE?.status, autoRotate: window.__IW_BREEZE_PERSISTENCE?.state?.autoRotate }));
+      console.log('studio-save', JSON.stringify(saved));
+      assert.equal(saved.status, 'SAVED');
+      assert.equal(saved.autoRotate, savedRotate);
     }
     await shot('breeze-panel-visible');
     await page.getByRole('button', { name: /empezar experiencia/i }).click({ timeout: 15000 });
@@ -245,6 +288,35 @@ try {
     console.log('return-to-studio', JSON.stringify(restored));
     assert.equal(restored.mode, 'authoring');
     assert.notEqual(restored.display, 'none');
+    if (savedRotate !== null) {
+      // A new session restores what was saved: in the Studio with the panel,
+      // and for a visitor without it. Hiding the panel never drops the room's
+      // configuration.
+      for (const [label, query] of [['studio-restore', '?authoring=1'], ['visitor-restore', '']]) {
+        await page.goto(`${base}/index.html${query}`, { timeout: 90000 });
+        await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 180000 });
+        if (query) {
+          await page.waitForFunction(() => window.__IW_STUDIO?.root?.isConnected, null, { timeout: 30000 });
+          await page.locator('#st .st-nodebtn[data-node="space.breeze"]').click({ timeout: 15000 });
+        } else {
+          await enterVisit();
+          for (const destination of ['space.gallery-a', 'space.gallery-b', 'space.breeze']) await cross(destination);
+        }
+        await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.breeze', null, { timeout: 90000 });
+        await page.waitForFunction(() => ['RESTORED', 'READY_UNSAVED', 'RESTORE_ERROR'].includes(window.__IW_BREEZE_PERSISTENCE?.status), null, { timeout: 180000 });
+        const persistence = await page.evaluate(() => window.__IW_BREEZE_PERSISTENCE?.status);
+        assert.equal(persistence, 'RESTORED', `${label}: Museum did not restore the saved Breeze state`);
+        const after = await iframe.locator('body').evaluate((body) => ({
+          mode: window.frameElement.dataset.museumMode,
+          display: getComputedStyle(body.querySelector('#breezeStudioPanel')).display,
+          autoRotate: body.querySelector('#bsRotate')?.checked
+        }));
+        console.log(label, JSON.stringify(after));
+        assert.equal(after.autoRotate, savedRotate, `${label}: saved Breeze setting not restored`);
+        if (query) { assert.equal(after.mode, 'authoring'); assert.notEqual(after.display, 'none'); }
+        else { assert.equal(after.mode, 'visitor'); assert.equal(after.display, 'none'); }
+      }
+    }
   } else {
     if (avatar) await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000 });
     await enterVisit();
@@ -260,7 +332,12 @@ try {
     await cross('space.gallery-b');
     await arrival('gallery-b-first');
     await approach();
-    if (!firstOnly) {
+    if (arrivalsOnly) {
+      await cross('space.gallery-a');
+      await cross('space.gallery-b');
+      await arrival('gallery-b-second');
+      await approach();
+    } else if (!firstOnly) {
       await enterWithControl();
       await leaveBreeze();
       if (reload) {
@@ -288,11 +365,18 @@ try {
     }
   }
   console.log('errors', JSON.stringify(errors), 'failedRequests', JSON.stringify(failed), 'httpErrors', JSON.stringify(httpErrors));
-  assert.deepEqual(errors.filter((error) => !error.includes('/favicon.ico')), []);
+  // WebGPU on SwiftShader loses the guest's device as soon as Breeze starts
+  // («A valid external Instance reference no longer exists»), with or without
+  // this change; the stage stays black. It is reported, not counted: the panel,
+  // the mode and the persistence bridge are what this run can verify. Any
+  // other error still fails it.
+  const environment = webgpu ? errors.filter((error) => /WebGPU Device Lost[\s\S]*external Instance reference/.test(error)) : [];
+  if (environment.length) console.log('environment (SwiftShader WebGPU)', JSON.stringify(environment));
+  assert.deepEqual(errors.filter((error) => !error.includes('/favicon.ico') && !environment.includes(error)), []);
   assert.deepEqual(failed.filter((request) => !request.includes('net::ERR_ABORTED')), []);
   assert.deepEqual(httpErrors, []);
   if (capture) {
-    const file = path.join(out.pathname.replace(/^\/(?=[A-Za-z]:)/, ''), `manifest-${prefix}-${suffix}.json`);
+    const file = path.join(out.pathname.replace(/^\/(?=[A-Za-z]:)/, ''), `manifest-${set ? `${set}-` : ''}${prefix}-${suffix}.json`);
     await writeFile(file, JSON.stringify({ records, result: 'PASS', errors, failedRequests: failed }, null, 2));
   }
   console.log('BREEZE-FIRST-VISIT OK', prefix, suffix);

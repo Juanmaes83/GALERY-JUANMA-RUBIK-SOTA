@@ -194,12 +194,14 @@ export async function boot() {
   hud.onActivate = () => input.callbacks.onActivate?.();
 
   // The work the prompt names is outlined, so «E · Observar de cerca …» is never
-  // ambiguous between two works in range. Nothing is outlined while a work is
-  // open or while the guided route holds the camera.
+  // ambiguous between two works in range; the doorway it names brightens its
+  // threshold. Nothing responds while a work is open or while the guided route
+  // holds the camera.
   const outlineNearest = () => {
     const hotspot = runtime.proximity.nearestHotspot;
     const quiet = runtime.state.focusedEntityId || runtime.state.mode === EXPERIENCE_MODE.GUIDED;
     sceneKit.setNearestEntity?.(quiet ? null : hotspot?.entityId || null);
+    sceneKit.setNearestDoor?.(quiet || hotspot?.action?.type !== 'ACTIVATE_PORTAL' ? null : hotspot.id);
   };
   runtime.bus.on(EVENTS.WORLD_STATE_CHANGED, outlineNearest);
   runtime.bus.on(EVENTS.ENTITY_FOCUSED, outlineNearest);

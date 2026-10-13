@@ -119,7 +119,13 @@
 <script>
 (() => {
   const KEY = 'iw:breeze:panelCollapsed';
-  const isAuthoring = () => !window.frameElement || window.frameElement.dataset.museumMode === 'authoring';
+  // Standalone, Breeze Studio PRO is its own authoring tool. Inside the Museum
+  // the host's iframe says which mode applies; a frame that cannot be read is
+  // a visit, never an authoring session.
+  const isAuthoring = () => {
+    if (window.parent === window) return true;
+    try { return window.frameElement?.dataset.museumMode === 'authoring'; } catch { return false; }
+  };
   const setCollapsed = (collapsed) => {
     if (!isAuthoring() && !collapsed) return false;
     const panel = document.getElementById('breezeStudioPanel');
@@ -137,8 +143,16 @@
     return setCollapsed(!authoring || sessionStorage.getItem(KEY) === '1');
   };
 
-  // Hide visitor controls before the imported UI has finished mounting.
+  // Hide visitor controls before the imported UI has finished mounting, and
+  // answer the host's mode changes from the start: the panel can take longer
+  // than the install loop below to appear on a slow device.
   document.body.classList.toggle('bs-museum-visitor', !isAuthoring());
+  window.__BREEZE_MUSEUM_PANEL = {
+    hide: () => setCollapsed(true),
+    show: () => setCollapsed(false),
+    sync: syncMode,
+    get collapsed() { return document.body.classList.contains('bs-museum-panel-collapsed'); }
+  };
 
   const activate = (element, handler) => {
     element.addEventListener('click', handler);
@@ -177,12 +191,6 @@
     }
 
     syncMode();
-    window.__BREEZE_MUSEUM_PANEL = {
-      hide: () => setCollapsed(true),
-      show: () => setCollapsed(false),
-      sync: syncMode,
-      get collapsed() { return document.body.classList.contains('bs-museum-panel-collapsed'); }
-    };
     return true;
   };
 

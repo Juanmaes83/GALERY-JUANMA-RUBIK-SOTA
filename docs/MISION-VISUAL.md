@@ -244,3 +244,52 @@ La reconciliación del conjunto de salas solo precargaba estados `UNLOADED`. Tra
 Las capturas y sus manifiestos están en `docs/visual-validation/breeze-mobile-fix/`. Chromium 141 con SwiftShader se usó para la regresión visual de la primera llegada; Chrome 153 permitió además inspeccionar el invitado WebGPU. Los logs registraron un 404 de `favicon.ico` ya existente y cancelaciones `ERR_ABORTED` de solicitudes del iframe al desmontarlo. Esas cancelaciones no son respuestas HTTP fallidas. Los screenshots del invitado muestran la instalación, pero no certifican su fluidez ni su estabilidad en un teléfono físico. Quedan pendientes Safari iOS, Chrome Android y mediciones en GPU móvil real. La PR #3 permanece sin fusionar.
 
 Se repitió también el ciclo completo tras recargar en POV y Avatar de escritorio: la primera llegada posterior a la recarga mantuvo un portal y un hotspot, la escena anidada se abrió sin panel, la salida dejó `lastError: null` y el avatar reapareció. El test verifica que los avisos de proximidad y salida quedan dentro del viewport; en móvil emulado no apareció desbordamiento horizontal. La entrada encuadrada de cerca llena casi toda la anchura en vertical: la captura de llegada y la señal direccional muestran la ubicación desde lejos, mientras que el prompt confirma la acción al acercarse.
+
+## 14. Revisión de la corrección Breeze: ciclo de vida, puertas y panel (2026-10-13)
+
+Parte de `5b40747`, cabeza de la PR #3. La captura con el panel visible que motivó esta revisión venía de la preview `ihx4lr96o`, construida con `af30d50`, anterior a §13: en esa versión el panel sí se mostraba en la visita. `5b40747` ya corregía la oclusión y el modo del panel, pero su CI estaba en rojo (`BREEZE-EXIT`, `SHOP-STUDIO` y un cruce del avatar que no terminaba) y la revisión encontró dos defectos previos del ciclo de vida que afectan directamente al acceso a Breeze.
+
+### Diagnóstico reproducido
+
+Chromium 141 con SwiftShader, sesión limpia, Vestíbulo → Galería A → Galería B y vuelta B → A → B. Rayos lanzados contra el centro del hueco de Breeze (19,9; 1,3; −12).
+
+| | `af30d50` 1.ª llegada | `af30d50` B→A→B | `5b40747` 1.ª llegada | `5b40747` B→A→B |
+|---|---|---|---|---|
+| Estado de Breeze | `READY` | `DISPOSED` | `READY` | `READY` |
+| Carcasa de Breeze visible | sí | — | no | no |
+| Rayo desde la cámara de llegada (9,7; 1,62; −10) | choca con `space.breeze` a 9,48 de 10,45 m | libre | libre | libre |
+| Rayo desde el centro de la sala (14; 1,6; −12) | choca con `space.breeze` a 5,01 de 5,96 m | libre | libre | libre |
+| Grupos `space:*` en la escena | uno por sala | uno por sala | uno por sala | **dos de Galería A y dos de Galería B** |
+
+En todas las pasadas el portal y el hotspot de Breeze existían una sola vez y el aviso «Entrar en la sala Breeze» aparecía al acercarse. En la segunda llegada de `af30d50` no hubo ningún `space:preload-requested space.breeze`. Errores de consola: 0.
+
+### Causas
+
+1. **Primera visita frente a segunda** (§13, confirmado). La carcasa de la sala anidada (x 19…65) entra un metro en la Galería B (x 8…20), delante del hueco (x = 20). Precargada como sala adyacente, se dibujaba y tapaba la puerta y su rótulo; desde la Galería A se veía como un bloque negro al fondo. Al ir a la Galería A, Breeze se liberaba y la precarga solo aceptaba `UNLOADED`: en la segunda llegada no se reconstruía y la puerta aparecía.
+2. **La sala recién dejada se construía otra vez** (previo a `af30d50`). `prepare()` solo daba por preparada una sala `READY` o `ACTIVE`; la anterior (`COOLING`) se volvía a construir al regresar y la primera copia se quedaba en la escena con sus medios y animaciones. En la prueba unitaria, un recorrido de ida y vuelta dejaba cuatro copias de la Galería B.
+3. **Liberar una sala a medio preparar** (previo). Si el visitante salía de la Galería B mientras Breeze se calentaba, el calentamiento terminaba marcándola `READY` sin escena; al volver, entrar en Breeze lanzaba `TypeError: Cannot read properties of null (reading 'group')`. En un teléfono el calentamiento dura segundos: basta con no detenerse. Volver a precargar desde `DISPOSED` lo hacía más probable.
+4. **CI en rojo.** Las tres fallas eran trabajo de más en el hilo principal, salvo `SHOP-STUDIO`:
+   - `BREEZE-EXIT`: el clic real tardó más de 10 s en atenderse (en CI el cruce llegó 20 s después del clic). Al salir de Breeze se reconstruía la Galería B y se precargaban A y la Itinerante; al reentrar, se reconstruía Breeze.
+   - Avatar, `portal.gallery-b-gallery-a`: no era un bloqueo. El cruce terminó a los 36 s, más de los 30 s del test: esperaba a una Galería A cuya construcción tardó 60 s compitiendo con la Itinerante, la Galería B reconstruida y el dibujo del avatar.
+   - `SHOP-STUDIO`: el ayudante `press()` repetía por el DOM un clic que Playwright ya había enviado pero no había confirmado a tiempo; la casilla «Visible en la tienda» volvía a marcarse. En local pasaba; en CI, con más carga, fallaba.
+
+### Corrección
+
+- `engine/world/space-lifecycle.js`: volver a una sala `COOLING` reutiliza su escena. Una sala liberada mientras se construye o se calienta se descarta al terminar, sin calentarse y sin quedar `READY` vacía. Si vuelve a pedirse antes, se conserva. Se mantiene la precarga desde `DISPOSED` de §13: la segunda llegada encuentra las mismas salas que la primera.
+- `scene-kits/museum/door-cues.js` (nuevo), aplicado a todas las puertas: marco fino de bronce del suelo al dintel; una mancha de luz cálida en el suelo, ante el umbral, que se intensifica cuando el aviso nombra esa puerta (`setNearestDoor`, desde el hotspot más cercano, no desde su estado: el de una puerta ya cruzada se queda `ACTIVE`); y, donde la sala de destino no se ve por el hueco (Breeze, que dibuja su propio motor, y el Archivo, que es un teletransporte), un resplandor tenue al fondo del vano, más allá del muro y dentro de su contorno. Sin luces ni sombras; ningún cambio de colisión, portal, destino ni navegación. La placa «← BREEZE» sigue como señal de orientación para el teléfono en vertical.
+- Panel de Breeze: dentro de un marco que no puede leerse, el modo es visita (antes, autoría). `__BREEZE_MUSEUM_PANEL.sync` existe desde el arranque del invitado y el anfitrión cambia la clase directamente si el script del invitado aún no ha corrido. El visitante restaura la personalización guardada desde el mismo proyecto que usa el resto del museo (`window.__IW_CONFIG` o `ConfigStore`): ocultar el panel no descarta la configuración.
+- `tests/museum-smoke.mjs`: tras un tiempo agotado, `press()` deja que la página se ponga al día y compara el estado del elemento; solo repite un clic que nunca salió de Playwright.
+
+### Medidas (misma máquina, mismo recorrido)
+
+| | `5b40747` | corrección |
+|---|---|---|
+| Salir de Breeze con E | 23,7 s | 3,3 s |
+| Reentrar en Breeze | 12,5 s | 1,7 s |
+| Clic real en «Volver a Galería B» | 7,5 s (en la suite, más de 10 s) | 1,1 s |
+| Grupos `space:*` en escena en ese momento | 6 | 2 |
+| Avatar: cruce B → A tras entrar y salir de Breeze con E | sin terminar a los 30 s (terminó a los 36 s) | 10,8 s |
+
+### Pruebas
+
+`tests/space-lifecycle.test.mjs` (nuevo, Node, mundo real con un Scene Kit que cuenta): 6 fallos en `af30d50`, 5 en `5b40747`, 0 con la corrección. `tests/breeze-first-visit.mjs --arrivals` (en `npm test`): primera y segunda llegada sin entrar en Breeze, rayos libres hasta el hueco, ninguna sala duplicada, señales de la puerta presentes y respuesta de la luz al acercarse. Con `--webgpu` usa WebGPU sobre SwiftShader para cargar el invitado real.

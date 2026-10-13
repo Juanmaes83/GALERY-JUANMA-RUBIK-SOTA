@@ -33,13 +33,32 @@ function check(id, claim, pass, detail = '') {
 // animation frames barely arrive and Playwright can stall «scrolling into
 // view» (seen in CI); then the element is hit-tested (nothing may cover its
 // centre) and activated through the DOM. Fallbacks are counted and printed.
+//
+// A timeout is not proof that nothing happened: Playwright also gives up while
+// the page is still busy handling a click it already sent. Repeating that click
+// undoes it — a checkbox or a play/pause toggle flips back (seen in CI as
+// SHOP-STUDIO). So after a timeout the page is allowed to catch up and the
+// element's state is compared; only a click that never left Playwright, on an
+// element that did not change, is replayed.
 const fallbacks = [];
+const stateOf = (locator) => locator.evaluate((n) => JSON.stringify([
+  n.isConnected, n.checked ?? null, n.getAttribute('aria-pressed'), n.getAttribute('aria-expanded'),
+  n.disabled ?? null, n.textContent.trim().slice(0, 60)
+]), null, { timeout: 8000 }).catch(() => 'sin estado');
 async function press(locator, how = 'click') {
+  const before = await stateOf(locator);
   try {
     await locator[how]({ timeout: 8000 });
     return true;
   } catch (error) {
     if (!/Timeout/.test(String(error))) throw error;
+    const sent = /performing (click|tap) action|(click|tap) action done/.test(String(error));
+    await locator.page().evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
+    const after = await stateOf(locator);
+    if (sent || after !== before) {
+      fallbacks.push(`${await locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.node || n.dataset.bind || n.tagName).catch(() => '¿?')} (clic tardío, sin repetir)`);
+      return true;
+    }
     const reachable = await locator.evaluate((node) => {
       node.scrollIntoView({ block: 'center' });
       const r = node.getBoundingClientRect();

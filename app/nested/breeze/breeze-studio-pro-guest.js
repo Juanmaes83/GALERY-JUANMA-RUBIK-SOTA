@@ -174,7 +174,13 @@ export class BreezeStudioProGuest {
   setAuthoringMode(enabled) {
     if (!this.iframe) return;
     this.iframe.dataset.museumMode = enabled ? 'authoring' : 'visitor';
-    try { this.iframe.contentWindow?.__BREEZE_MUSEUM_PANEL?.sync?.(); } catch { /* guest not loaded yet */ }
+    try {
+      const guest = this.iframe.contentWindow;
+      if (guest?.__BREEZE_MUSEUM_PANEL?.sync) guest.__BREEZE_MUSEUM_PANEL.sync();
+      // No hook yet: the guest reads data-museum-mode when its script starts,
+      // and the class is what hides the panel until then.
+      else guest?.document?.body?.classList.toggle('bs-museum-visitor', !enabled);
+    } catch { /* guest not reachable yet: it reads data-museum-mode on start */ }
   }
 
   async prepare({ canvas }) {
