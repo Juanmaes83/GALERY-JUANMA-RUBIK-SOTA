@@ -34,35 +34,36 @@ function check(id, claim, pass, detail = '') {
 // view» (seen in CI); then the element is hit-tested (nothing may cover its
 // centre) and activated through the DOM. Fallbacks are counted and printed.
 //
-// A timeout is not proof that nothing happened: Playwright also gives up while
-// the page is still busy handling a click it already sent. Repeating that click
-// undoes it — a checkbox or a play/pause toggle flips back (seen in CI as
-// SHOP-STUDIO). Nor is a sent click proof that it landed: one delivered late
-// can miss an element the page has just redrawn. So after a timeout the page
-// gets two frames to handle whatever input is queued, and the element's state
-// is compared: a change means the click landed and is not repeated; no change
-// means it did not, and it is replayed once through the DOM.
+// A toggle must not be pressed twice. Playwright also times out while the page
+// is still busy handling a click it already sent, and replaying that click
+// undoes it: the checkbox in SHOP-STUDIO flipped back. Calls on a toggle pass
+// { toggle: true }: after a timeout the page gets two frames to handle queued
+// input and the element's own state (checked, aria-pressed/-expanded, label)
+// decides; the click is replayed only if it did not change. Everything else
+// is idempotent (select, save, enter, close) and keeps the plain replay: its
+// effect shows elsewhere, so the button's own state says nothing about it.
 const fallbacks = [];
 const stateOf = (locator) => locator.evaluate((n) => JSON.stringify([
   n.isConnected, n.checked ?? null, n.getAttribute('aria-pressed'), n.getAttribute('aria-expanded'),
   n.disabled ?? null, n.textContent.trim().slice(0, 60)
 ]), null, { timeout: 8000 }).catch(() => 'sin estado');
-async function press(locator, how = 'click') {
-  const before = await stateOf(locator);
+async function press(locator, how = 'click', { toggle = false } = {}) {
+  const before = toggle ? await stateOf(locator) : null;
   try {
     await locator[how]({ timeout: 8000 });
     return true;
   } catch (error) {
     if (!/Timeout/.test(String(error))) throw error;
-    await locator.page().evaluate(() => new Promise((resolve) => {
-      const cap = setTimeout(resolve, 3000);
-      requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(cap); resolve(); }));
-    }));
-    await locator.page().waitForTimeout(250);
-    const after = await stateOf(locator);
-    if (after !== before) {
-      fallbacks.push(`${await locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.node || n.dataset.bind || n.tagName).catch(() => '¿?')} (clic tardío, sin repetir)`);
-      return true;
+    if (toggle) {
+      await locator.page().evaluate(() => new Promise((resolve) => {
+        const cap = setTimeout(resolve, 3000);
+        requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(cap); resolve(); }));
+      }));
+      await locator.page().waitForTimeout(250);
+      if ((await stateOf(locator)) !== before) {
+        fallbacks.push(`${await locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.guide || n.dataset.bind || n.tagName).catch(() => '¿?')} (clic tardío, sin repetir)`);
+        return true;
+      }
     }
     const reachable = await locator.evaluate((node) => {
       node.scrollIntoView({ block: 'center' });
@@ -613,7 +614,7 @@ try {
     await page.locator('#st [data-bind="entities.entity.shop.lamina-marea.product.price"]').fill('42');
     await page.locator('#st [data-bind="entities.entity.shop.lamina-marea.product.order"]').fill('0');
     await press(page.locator('#st .st-nodebtn[data-node="entity.shop.postales"]').first());
-    await press(page.locator('#st [data-bind="entities.entity.shop.postales.product.visible"]'));
+    await press(page.locator('#st [data-bind="entities.entity.shop.postales.product.visible"]'), 'click', { toggle: true });
 
     // Replacing a file: while the new one loads, the slot must already describe
     // it, never the previous record (whose asset has just been released).
@@ -807,7 +808,7 @@ try {
       const listen = await page.evaluate(() => document.querySelector('[data-el="detailGuide"]')?.textContent.trim());
       await press(page.locator('[data-el="detailGuide"]'));
       const before = await guide(page);
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       const playing = await page.waitForFunction(() => (window.__IW_AUDIOGUIDE.report().currentTime || 0) > 0.5, null, { timeout: 20000 }).then(() => true).catch(() => false);
       const g1 = await guide(page);
       check('AUDIOGUIDE-PLAY', 'La cápsula se abre desde la ficha, suena al pulsar Reproducir y baja el ambiente',
@@ -823,7 +824,7 @@ try {
           && await page.evaluate(() => document.activeElement?.dataset?.guide === 'toggle'), JSON.stringify({ playing: g2.playing, toggle: g2.toggle }));
 
       // Seek, volume, stop.
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       await page.waitForTimeout(500);
       const t0 = (await guide(page)).currentTime;
       await press(page.locator('#iw-guide [data-guide="fwd"]'));
@@ -836,7 +837,7 @@ try {
         t1 - t0 > 8 && volume === 0.5 && g3.playing === false && g3.currentTime === 0 && g3.toggle === 'Reproducir', JSON.stringify({ t0, t1, volume, stop: g3.currentTime }));
 
       // Closing the sheet pauses that work's capsule, with a notice.
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       await page.waitForTimeout(500);
       await page.evaluate(() => window.__IW.runtime.releaseFocus());
       await page.waitForTimeout(500);
@@ -844,10 +845,10 @@ try {
       check('AUDIOGUIDE-SHEET-CLOSE', 'Cerrar la ficha pausa la cápsula de esa obra y lo dice', g4.playing === false && /cerrar la ficha/.test(g4.notice), g4.notice);
 
       // One narration at a time: the room introduction stops the capsule.
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       await page.waitForTimeout(500);
       await press(page.locator(`#iw-guide [data-guide="select"][data-ref="${room}"]`));
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       await page.waitForTimeout(800);
       const g5 = await guide(page);
       const players = await page.evaluate(() => [...document.querySelectorAll('audio')].filter((a) => !a.paused).length);
@@ -1108,7 +1109,7 @@ try {
       }
       check('MOBILE-DOOR-TAP', 'Se camina con el pulgar y se cruza la puerta tocando el aviso una vez', prompt?.tag === 'BUTTON' && prompt.portal === 'portal.lobby-gallery-a' && crossed, JSON.stringify(prompt));
 
-      await press(page.locator('[data-el="mapBtn"]'), 'tap');
+      await press(page.locator('[data-el="mapBtn"]'), 'tap', { toggle: true });
       await page.waitForTimeout(800);
       const clashes = await page.evaluate(() => {
         const texts = [...document.querySelectorAll('[data-el="mapSvg"] text')].map((t) => ({ label: t.textContent, b: t.getBBox() }));

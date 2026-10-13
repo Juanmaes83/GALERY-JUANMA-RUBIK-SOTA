@@ -222,6 +222,21 @@ async function leaveBreeze() {
   if (avatar) assert.equal(state.avatarVisible, true);
 }
 
+// Studio setup: selecting the Breeze node walks the preview Lobby → A → B →
+// Breeze, and Playwright's post-click wait for navigations can outlast that
+// busy page on software WebGL even though the click landed. It is one click in
+// the page, on a node that is on screen; the panel is what this test checks.
+async function selectStudioNode(nodeId) {
+  const state = await page.evaluate((id) => {
+    const button = document.querySelector(`#st .st-nodebtn[data-node="${id}"]`);
+    const r = button?.getBoundingClientRect();
+    const shown = Boolean(r && r.width > 0 && r.height > 0);
+    if (shown) button.click();
+    return { found: Boolean(button), shown };
+  }, nodeId);
+  assert.ok(state.found && state.shown, `Studio node ${nodeId}: ${JSON.stringify(state)}`);
+}
+
 async function enterVisit() {
   // This click is test setup. In headless SwiftShader, Playwright can time out
   // while sending mouse input even though the entry handler runs. Fire once in
@@ -243,7 +258,7 @@ try {
   await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 180000 });
   if (studio) {
     await page.waitForFunction(() => window.__IW_STUDIO?.root?.isConnected, null, { timeout: 30000 });
-    await page.locator('#st .st-nodebtn[data-node="space.breeze"]').click({ timeout: 15000 });
+    await selectStudioNode('space.breeze');
     await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.breeze', null, { timeout: 90000 });
     route.push('space.gallery-a', 'space.gallery-b', 'space.breeze');
     const iframe = page.frameLocator('iframe[data-nested-room-studio="room.breeze"]');
@@ -297,7 +312,7 @@ try {
         await page.waitForFunction(() => window.__IW?.ready === true, null, { timeout: 180000 });
         if (query) {
           await page.waitForFunction(() => window.__IW_STUDIO?.root?.isConnected, null, { timeout: 30000 });
-          await page.locator('#st .st-nodebtn[data-node="space.breeze"]').click({ timeout: 15000 });
+          await selectStudioNode('space.breeze');
         } else {
           await enterVisit();
           for (const destination of ['space.gallery-a', 'space.gallery-b', 'space.breeze']) await cross(destination);
