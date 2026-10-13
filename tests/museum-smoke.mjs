@@ -268,6 +268,16 @@ try {
     }));
     const noticeKind = await page.evaluate(() => document.querySelector('[data-breeze-unavailable]')?.dataset.breezeUnavailable || null);
     check('BREEZE-NOTICE', 'Sin WebGPU, la Sala Breeze explica qué necesita en vez de un escenario vacío', breeze.notice && !breeze.iframe && noticeKind === 'no-webgpu', noticeKind);
+    // A browser with the API but no graphics adapter (this runner, or a Chrome
+    // whose GPU is off) is told to restart, not that it lacks WebGPU.
+    const reason = await page.evaluate(() => {
+      const notice = document.querySelector('[data-breeze-unavailable]');
+      return { api: Boolean(navigator.gpu), reason: notice?.dataset.breezeReason || null, text: notice?.textContent.replace(/\s+/g, ' ').trim() || '' };
+    });
+    const honest = reason.api
+      ? reason.reason === 'no-adapter' && /Reinicia el navegador/.test(reason.text) && !/este navegador no lo ofrece/.test(reason.text)
+      : reason.reason === 'no-api' && /este navegador no lo ofrece/.test(reason.text);
+    check('BREEZE-NOTICE-REASON', 'El aviso distingue un navegador sin WebGPU de una tarjeta gráfica no disponible', honest, `${reason.api ? 'con' : 'sin'} navigator.gpu · ${reason.reason}`);
 
     // Keyboard exit: the room's own return hotspot (E) crosses back to Gallery B.
     await page.waitForTimeout(1200);
