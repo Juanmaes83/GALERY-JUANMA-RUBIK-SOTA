@@ -1,0 +1,238 @@
+{
+  "what": "Hojas comparativas por sala: cada sala desde su punto de llegada y cada puerta desde 4,5 m delante de ella, mirándola. Izquierda antes, derecha después; cada vista reducida a 640 × 400.",
+  "before": {
+    "commit": "5b407477c41d83d24b930cbf0ee5511bca8282e9",
+    "label": "cabeza de la PR #3"
+  },
+  "after": {
+    "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+    "label": "esta revisión"
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "browser": "Bundled Chromium 141 (headless), WebGL sobre SwiftShader",
+  "route": [
+    "space.lobby",
+    "space.shop",
+    "space.lobby",
+    "space.gallery-a",
+    "space.archive",
+    "space.gallery-a",
+    "space.gallery-b",
+    "space.itinerant-wet-paint"
+  ],
+  "tool": "guion de diagnóstico de la revisión (doors.mjs, fuera del repositorio); no es una prueba automática",
+  "consoleErrors": {
+    "before": [],
+    "after": []
+  },
+  "cameras": [
+    {
+      "spaceId": "space.lobby",
+      "door": "portal.lobby-gallery-a",
+      "placed": [
+        0,
+        1.62,
+        3.2
+      ]
+    },
+    {
+      "spaceId": "space.lobby",
+      "door": "portal.lobby-shop",
+      "placed": [
+        0,
+        1.62,
+        0
+      ]
+    },
+    {
+      "spaceId": "space.shop",
+      "door": "portal.shop-lobby",
+      "placed": [
+        -7.4,
+        1.62,
+        0
+      ]
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "door": "portal.gallery-a-lobby",
+      "placed": [
+        0,
+        1.62,
+        -5.9
+      ]
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "door": "portal.gallery-a-gallery-b",
+      "placed": [
+        0,
+        1.62,
+        -9
+      ]
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "door": "portal.gallery-a-archive",
+      "placed": [
+        3.5,
+        1.62,
+        -10
+      ]
+    },
+    {
+      "spaceId": "space.archive",
+      "door": "portal.archive-gallery-a",
+      "placed": [
+        -9.5,
+        1.62,
+        -10
+      ]
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "door": "portal.gallery-b-gallery-a",
+      "placed": [
+        9.7,
+        1.62,
+        -10
+      ]
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "door": "portal.gallery-b-breeze",
+      "placed": [
+        12.5,
+        1.62,
+        -10
+      ]
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "door": "portal.gallery-b-itinerant",
+      "placed": [
+        15.5,
+        1.62,
+        -12
+      ]
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "door": "portal.itinerant-gallery-b",
+      "placed": [
+        14,
+        1.62,
+        -3.4
+      ]
+    }
+  ],
+  "sheets": [
+    {
+      "file": "r2-doors-lobby.jpg",
+      "spaceId": "space.lobby",
+      "rows": [
+        {
+          "view": "Vestíbulo · desde el punto de llegada",
+          "source": "lobby-arrival.png"
+        },
+        {
+          "view": "Vestíbulo · puerta a Galería A, a 4,5 m",
+          "source": "lobby-door-to-gallery-a.png"
+        },
+        {
+          "view": "Vestíbulo · puerta a Tienda, a 4,5 m",
+          "source": "lobby-door-to-shop.png"
+        }
+      ]
+    },
+    {
+      "file": "r2-doors-shop.jpg",
+      "spaceId": "space.shop",
+      "rows": [
+        {
+          "view": "Tienda · desde el punto de llegada",
+          "source": "shop-arrival.png"
+        },
+        {
+          "view": "Tienda · puerta a Vestíbulo, a 4,5 m",
+          "source": "shop-door-to-lobby.png"
+        }
+      ]
+    },
+    {
+      "file": "r2-doors-gallery-a.jpg",
+      "spaceId": "space.gallery-a",
+      "rows": [
+        {
+          "view": "Galería A · desde el punto de llegada",
+          "source": "gallery-a-arrival.png"
+        },
+        {
+          "view": "Galería A · puerta a Archivo, a 4,5 m",
+          "source": "gallery-a-door-to-archive.png"
+        },
+        {
+          "view": "Galería A · puerta a Galería B, a 4,5 m",
+          "source": "gallery-a-door-to-gallery-b.png"
+        },
+        {
+          "view": "Galería A · puerta a Vestíbulo, a 4,5 m",
+          "source": "gallery-a-door-to-lobby.png"
+        }
+      ]
+    },
+    {
+      "file": "r2-doors-archive.jpg",
+      "spaceId": "space.archive",
+      "rows": [
+        {
+          "view": "Archivo · desde el punto de llegada",
+          "source": "archive-arrival.png"
+        },
+        {
+          "view": "Archivo · puerta a Galería A, a 4,5 m",
+          "source": "archive-door-to-gallery-a.png"
+        }
+      ]
+    },
+    {
+      "file": "r2-doors-gallery-b.jpg",
+      "spaceId": "space.gallery-b",
+      "rows": [
+        {
+          "view": "Galería B · desde el punto de llegada",
+          "source": "gallery-b-arrival.png"
+        },
+        {
+          "view": "Galería B · puerta a Sala Breeze, a 4,5 m",
+          "source": "gallery-b-door-to-breeze.png"
+        },
+        {
+          "view": "Galería B · puerta a Galería A, a 4,5 m",
+          "source": "gallery-b-door-to-gallery-a.png"
+        },
+        {
+          "view": "Galería B · puerta a Sala itinerante, a 4,5 m",
+          "source": "gallery-b-door-to-itinerant-wet-paint.png"
+        }
+      ]
+    },
+    {
+      "file": "r2-doors-itinerant-wet-paint.jpg",
+      "spaceId": "space.itinerant-wet-paint",
+      "rows": [
+        {
+          "view": "Sala itinerante · desde el punto de llegada",
+          "source": "itinerant-wet-paint-arrival.png"
+        },
+        {
+          "view": "Sala itinerante · puerta a Galería B, a 4,5 m",
+          "source": "itinerant-wet-paint-door-to-gallery-b.png"
+        }
+      ]
+    }
+  ]
+}

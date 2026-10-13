@@ -1,0 +1,165 @@
+{
+  "records": [
+    {
+      "file": "r2-visit-avatar-mobile-portrait-gallery-b-first.png",
+      "spaceId": "space.gallery-b",
+      "mode": "Avatar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browser": "Bundled Chromium (SwiftShader, WebGPU)",
+      "rendering": {
+        "webgl": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "webgpu": true
+      },
+      "museumContextLosses": 0,
+      "route": [
+        "space.gallery-a",
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    },
+    {
+      "file": "r2-visit-avatar-mobile-portrait-approach.png",
+      "spaceId": "space.gallery-b",
+      "mode": "Avatar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browser": "Bundled Chromium (SwiftShader, WebGPU)",
+      "rendering": {
+        "webgl": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "webgpu": true
+      },
+      "museumContextLosses": 0,
+      "route": [
+        "space.gallery-a",
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    },
+    {
+      "file": "r2-visit-avatar-mobile-portrait-breeze-no-panel.png",
+      "spaceId": "space.breeze",
+      "mode": "Avatar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browser": "Bundled Chromium (SwiftShader, WebGPU)",
+      "rendering": {
+        "webgl": "WebGL2 (renderer undisclosed)",
+        "webgpu": true
+      },
+      "museumContextLosses": 0,
+      "route": [
+        "space.gallery-a",
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.breeze"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    },
+    {
+      "file": null,
+      "view": "r2-visit-avatar-mobile-portrait-gallery-b-second.png",
+      "spaceId": "space.gallery-b",
+      "mode": "Avatar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browser": "Bundled Chromium (SwiftShader, WebGPU)",
+      "museumContextLosses": 1,
+      "route": [
+        "space.gallery-a",
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.breeze",
+        "space.gallery-b",
+        "space.gallery-a",
+        "space.gallery-b"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "not captured: the GPU process restarted during the Breeze visit (SwiftShader WebGPU); assertions passed"
+    },
+    {
+      "file": null,
+      "view": "r2-visit-avatar-mobile-portrait-approach-second.png",
+      "spaceId": "space.gallery-b",
+      "mode": "Avatar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browser": "Bundled Chromium (SwiftShader, WebGPU)",
+      "museumContextLosses": 1,
+      "route": [
+        "space.gallery-a",
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.breeze",
+        "space.gallery-b",
+        "space.gallery-a",
+        "space.gallery-b"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "not captured: the GPU process restarted during the Breeze visit (SwiftShader WebGPU); assertions passed"
+    },
+    {
+      "file": "r2-visit-avatar-mobile-portrait-breeze-no-panel-second.png",
+      "spaceId": "space.breeze",
+      "mode": "Avatar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browser": "Bundled Chromium (SwiftShader, WebGPU)",
+      "rendering": {
+        "webgl": "WebGL2 (renderer undisclosed)",
+        "webgpu": true
+      },
+      "museumContextLosses": 1,
+      "route": [
+        "space.gallery-a",
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.breeze",
+        "space.gallery-b",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.breeze"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    }
+  ],
+  "result": "PASS",
+  "errors": [
+    "THREE.WebGPURenderer: WebGPU Device Lost:\n\nMessage: A valid external Instance reference no longer exists.\nReason: unknown {\"url\":\"http://127.0.0.1:45073/experiences/breeze-studio-pro/assets/index-NUwAD0i6.js\",\"lineNumber\":81,\"columnNumber\":30}",
+    "THREE.WebGPURenderer: WebGPU Device Lost:\n\nMessage: A valid external Instance reference no longer exists.\nReason: unknown {\"url\":\"http://127.0.0.1:45073/experiences/breeze-studio-pro/assets/index-NUwAD0i6.js\",\"lineNumber\":81,\"columnNumber\":30}"
+  ],
+  "failedRequests": [
+    "HEAD http://127.0.0.1:45073/experiences/breeze-studio-pro/index.html net::ERR_ABORTED",
+    "HEAD http://127.0.0.1:45073/experiences/breeze-studio-pro/index.html net::ERR_ABORTED"
+  ]
+}

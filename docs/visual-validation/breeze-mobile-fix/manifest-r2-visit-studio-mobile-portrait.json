@@ -1,0 +1,35 @@
+{
+  "records": [
+    {
+      "file": "r2-visit-studio-mobile-portrait-breeze-panel-visible.png",
+      "spaceId": "space.breeze",
+      "mode": "Studio",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browser": "Bundled Chromium (SwiftShader, WebGPU)",
+      "rendering": {
+        "webgl": "WebGL2 (renderer undisclosed)",
+        "webgpu": true
+      },
+      "museumContextLosses": 0,
+      "route": [
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.breeze"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    }
+  ],
+  "result": "PASS",
+  "errors": [
+    "THREE.WebGPURenderer: WebGPU Device Lost:\n\nMessage: A valid external Instance reference no longer exists.\nReason: unknown {\"url\":\"http://127.0.0.1:39641/experiences/breeze-studio-pro/assets/index-NUwAD0i6.js\",\"lineNumber\":81,\"columnNumber\":30}"
+  ],
+  "failedRequests": [
+    "HEAD http://127.0.0.1:39641/experiences/breeze-studio-pro/index.html net::ERR_ABORTED"
+  ]
+}

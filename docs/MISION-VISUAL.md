@@ -272,13 +272,15 @@ En todas las pasadas el portal y el hotspot de Breeze existían una sola vez y e
    - `BREEZE-EXIT`: el clic real tardó más de 10 s en atenderse (en CI el cruce llegó 20 s después del clic). Al salir de Breeze se reconstruía la Galería B y se precargaban A y la Itinerante; al reentrar, se reconstruía Breeze.
    - Avatar, `portal.gallery-b-gallery-a`: no era un bloqueo. El cruce terminó a los 36 s, más de los 30 s del test: esperaba a una Galería A cuya construcción tardó 60 s compitiendo con la Itinerante, la Galería B reconstruida y el dibujo del avatar.
    - `SHOP-STUDIO`: el ayudante `press()` repetía por el DOM un clic que Playwright ya había enviado pero no había confirmado a tiempo; la casilla «Visible en la tienda» volvía a marcarse. En local pasaba; en CI, con más carga, fallaba.
+5. **El velo de entrada tapaba la guía del teléfono** (previo, mismo CSS en `af30d50`). Al pulsar «Entrar», el velo se desvanece y un temporizador lo oculta 0,7 s después. Su regla `.iw-veil.is-gone { pointer-events: none }` perdía frente a `#iw-ui > * { pointer-events: auto }` (un id gana a dos clases), así que el velo invisible seguía encima de «Empezar la visita». Con el hilo principal ocupado compilando la primera sala, el temporizador llegaba segundos tarde y el botón no respondía. Una vez superadas las fallas anteriores, la suite alcanzó esa sección del teléfono y falló allí («elemento tapado: helpClose»): el velo, con la clase `is-gone`, era el elemento sobre el centro del botón.
 
 ### Corrección
 
 - `engine/world/space-lifecycle.js`: volver a una sala `COOLING` reutiliza su escena. Una sala liberada mientras se construye o se calienta se descarta al terminar, sin calentarse y sin quedar `READY` vacía. Si vuelve a pedirse antes, se conserva. Se mantiene la precarga desde `DISPOSED` de §13: la segunda llegada encuentra las mismas salas que la primera.
 - `scene-kits/museum/door-cues.js` (nuevo), aplicado a todas las puertas: marco fino de bronce del suelo al dintel; una mancha de luz cálida en el suelo, ante el umbral, que se intensifica cuando el aviso nombra esa puerta (`setNearestDoor`, desde el hotspot más cercano, no desde su estado: el de una puerta ya cruzada se queda `ACTIVE`); y, donde la sala de destino no se ve por el hueco (Breeze, que dibuja su propio motor, y el Archivo, que es un teletransporte), un resplandor tenue al fondo del vano, más allá del muro y dentro de su contorno. Sin luces ni sombras; ningún cambio de colisión, portal, destino ni navegación. La placa «← BREEZE» sigue como señal de orientación para el teléfono en vertical.
 - Panel de Breeze: dentro de un marco que no puede leerse, el modo es visita (antes, autoría). `__BREEZE_MUSEUM_PANEL.sync` existe desde el arranque del invitado y el anfitrión cambia la clase directamente si el script del invitado aún no ha corrido. El visitante restaura la personalización guardada desde el mismo proyecto que usa el resto del museo (`window.__IW_CONFIG` o `ConfigStore`): ocultar el panel no descarta la configuración.
-- `tests/museum-smoke.mjs`: tras un tiempo agotado, `press()` deja que la página se ponga al día y compara el estado del elemento; solo repite un clic que nunca salió de Playwright.
+- `app/ui/styles.css`: la regla del velo desvanecido gana a la de `#iw-ui`. El velo deja pasar los toques desde el momento en que se pulsa «Entrar», con el temporizador puntual o tarde.
+- `tests/museum-smoke.mjs`: tras un tiempo agotado, `press()` deja que la página se ponga al día y compara el estado del elemento; solo repite un clic que nunca salió de Playwright. `MOBILE-ENTRY-VEIL` lee el estilo calculado del velo al entrar: en `5b40747`, `auto` y el velo sobre el botón; con la corrección, `none`.
 
 ### Medidas (misma máquina, mismo recorrido)
 
@@ -290,6 +292,28 @@ En todas las pasadas el portal y el hotspot de Breeze existían una sola vez y e
 | Grupos `space:*` en escena en ese momento | 6 | 2 |
 | Avatar: cruce B → A tras entrar y salir de Breeze con E | sin terminar a los 30 s (terminó a los 36 s) | 10,8 s |
 
+### Coste de las señales de puerta
+
+Medido en el Vestíbulo tras el arranque, con sus vecinas precargadas (Galería A y Tienda): 13 mallas y 230 triángulos en total para todas las puertas visibles o cargadas; dos llamadas de dibujo por puerta (marco y luz del suelo) y una más donde hay resplandor. El marco comparte el programa de shader de los rótulos; la luz y el resplandor son de una sola cara (three.js dibuja dos veces una malla transparente de dos caras). Programas compilados: 85 → 90 en escritorio y 72 → 77 en móvil emulado (5b40747 → corrección), una sola vez para todo el museo. La prueba `MOBILE-DOOR-TAP`, que vigila los programas que se compilan en el primer cruce del teléfono, pasa. A lo largo de una visita, la corrección del ciclo de vida reduce además los programas en memoria. En el mismo recorrido (Vestíbulo, Tienda, Vestíbulo, Galería A, Archivo, Galería A, Galería B), al llegar a la Galería B había 230 en `5b40747` (204 en `af30d50`) por las copias de salas, y 149 con la corrección. En móvil emulado, 222 frente a 144.
+
 ### Pruebas
 
 `tests/space-lifecycle.test.mjs` (nuevo, Node, mundo real con un Scene Kit que cuenta): 6 fallos en `af30d50`, 5 en `5b40747`, 0 con la corrección. `tests/breeze-first-visit.mjs --arrivals` (en `npm test`): primera y segunda llegada sin entrar en Breeze, rayos libres hasta el hueco, ninguna sala duplicada, señales de la puerta presentes y respuesta de la luz al acercarse. Con `--webgpu` usa WebGPU sobre SwiftShader para cargar el invitado real.
+
+Resultados en `641515e` (Chromium 141 empaquetado, SwiftShader, sesión limpia):
+
+- `npm test`: 145 comprobaciones correctas y ninguna fallida (30 min). Con la página ocupada por el render por software, Playwright no llegó a enviar 6 clics: se dieron por el DOM tras comprobar que nada tapaba el elemento. Un toque ya enviado llegó tarde y no se repitió.
+- `breeze-first-visit.mjs`:
+  - llegadas en POV (escritorio, móvil vertical y horizontal) y con avatar (escritorio y móvil): 5 de 5;
+  - visita completa con WebGPU en esos cinco modos, Studio en escritorio y móvil, y entrada tras recargar: 8 de 8 (guardar y restaurar tras recargar se comprueban en escritorio);
+  - contra `af30d50` falla, como se esperaba («nested shell covered the first-visit opening»).
+- Capturas, manifiestos y hojas de puertas (antes `5b40747`, después `641515e`) en [`docs/visual-validation/breeze-mobile-fix/`](visual-validation/breeze-mobile-fix/README.md).
+
+### Reinicio del proceso GPU en las pruebas con WebGPU
+
+Con WebGPU sobre SwiftShader, Chromium reinicia su proceso GPU durante cada visita a Breeze. El invitado pierde su dispositivo («A valid external Instance reference no longer exists», también en `5b40747`), y el contexto WebGL del museo se pierde y vuelve un segundo después sin los lienzos de textura que guardaba la GPU. Una captura de la segunda llegada tomada dentro de ese segundo salía en blanco: el test cruzaba B→A→B en 0,7 s porque, sin contexto, el museo no dibuja. Poco después, la sala volvía a dibujarse oscurecida y sin rótulos. No es un defecto de la corrección:
+
+- con una pérdida de contexto WebGL forzada (`WEBGL_lose_context`), el museo se recupera completo, tanto en `5b40747` como con la corrección;
+- con un reinicio real del proceso GPU (`Browser.crashGpuProcess` por CDP, sin WebGPU), las dos versiones oscurecen la Galería B: el brillo medio de la captura baja de 25 a 6,2 en `5b40747` y de 28,5 a 6,4 con la corrección, porque los lienzos de textura que guardaba la GPU vuelven vacíos. Tras B→A→B, `5b40747` recuperaba la sala (24) porque la reconstruía al volver, que es la fuga de la causa 2 (la copia vieja seguía en la escena). Con la corrección la sala se reutiliza y sigue oscurecida (6,4) hasta que se libera y se construye de nuevo. Recuperarse de un reinicio del proceso GPU queda pendiente (ROADMAP V.18).
+
+Las capturas del museo comprueban ahora que su contexto no se ha perdido. Si se perdió, la vista no se captura, el manifiesto lo registra y las aserciones se ejecutan igual.

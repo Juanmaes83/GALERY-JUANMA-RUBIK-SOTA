@@ -1,0 +1,103 @@
+{
+  "records": [
+    {
+      "file": "r2-pov-desktop-gallery-b-first.png",
+      "spaceId": "space.gallery-b",
+      "mode": "POV",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "browser": "Bundled Chromium (SwiftShader)",
+      "rendering": {
+        "webgl": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "webgpu": true
+      },
+      "museumContextLosses": 0,
+      "route": [
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    },
+    {
+      "file": "r2-pov-desktop-approach.png",
+      "spaceId": "space.gallery-b",
+      "mode": "POV",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "browser": "Bundled Chromium (SwiftShader)",
+      "rendering": {
+        "webgl": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "webgpu": true
+      },
+      "museumContextLosses": 0,
+      "route": [
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    },
+    {
+      "file": "r2-pov-desktop-gallery-b-second.png",
+      "spaceId": "space.gallery-b",
+      "mode": "POV",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "browser": "Bundled Chromium (SwiftShader)",
+      "rendering": {
+        "webgl": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "webgpu": true
+      },
+      "museumContextLosses": 0,
+      "route": [
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.gallery-a",
+        "space.gallery-b"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    },
+    {
+      "file": "r2-pov-desktop-approach-second.png",
+      "spaceId": "space.gallery-b",
+      "mode": "POV",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "browser": "Bundled Chromium (SwiftShader)",
+      "rendering": {
+        "webgl": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "webgpu": true
+      },
+      "museumContextLosses": 0,
+      "route": [
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.gallery-a",
+        "space.gallery-b"
+      ],
+      "commit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "testCommit": "641515e62104f77fe9a0c55779c203be902d7966",
+      "result": "captured after assertions"
+    }
+  ],
+  "result": "PASS",
+  "errors": [],
+  "failedRequests": []
+}
