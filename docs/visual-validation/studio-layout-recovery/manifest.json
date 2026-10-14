@@ -7,7 +7,7 @@
     "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
     "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
     "authoring/studio/studio-layout-ux.css": "63be77954e10fb248de25fb3dce849af47b56893",
-    "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+    "authoring/studio/studio-layout-ux.js": "1ccc271a5102a2fc0481c8f500968b6f27acaac1"
   },
   "runs": [
     {
@@ -44,6 +44,17 @@
         }
       ],
       "note": "Serie móvil final tras corregir la superposición de la barra."
+    },
+    {
+      "checks": 4,
+      "result": "PASS",
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 900
+        }
+      ],
+      "note": "Límite real de la vista 3D al ampliar el inspector en Contenido y Experiencia. Los anchos de columnas se leen del grid calculado, no de tokens CSS clamp()."
     }
   ],
   "images": [
@@ -66,5 +77,12 @@
   "limits": [
     "Sin teléfono ni GPU físicos",
     "El inspector contiene texto de QA solo en la sesión de prueba"
-  ]
+  ],
+  "captureBlobHashes": {
+    "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
+    "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
+    "authoring/studio/studio-layout-ux.css": "63be77954e10fb248de25fb3dce849af47b56893",
+    "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+  },
+  "captureNotes": "Capturas de Construir; la corrección final del separador solo afecta al cálculo del límite al redimensionar otras áreas, no al aspecto de estas capturas."
 }

@@ -58,7 +58,15 @@ function px(name, el = document.body) {
 }
 
 function editorBounds() {
-  const max = window.innerWidth - px('--st-rail') - px('--st-left') - px('--st-val') - CENTER_MIN;
+  // Custom properties can contain clamp()/calc(); parseFloat would read them
+  // as zero in Content/Experience. The grid exposes the actual pixel tracks.
+  const grid = document.querySelector('#st .st-body');
+  const tracks = grid ? getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).map(Number.parseFloat) : [];
+  const fixed = tracks.length >= 4 && tracks.every(Number.isFinite)
+    ? tracks[0] + tracks[1] + (tracks.length >= 5 ? tracks[tracks.length - 1] : 0)
+    : px('--st-rail') + px('--st-left') + px('--st-val');
+  const available = grid?.getBoundingClientRect().width || window.innerWidth;
+  const max = available - fixed - CENTER_MIN;
   return { min: EDITOR_MIN, max: Math.max(EDITOR_MIN, Math.round(max)) };
 }
 

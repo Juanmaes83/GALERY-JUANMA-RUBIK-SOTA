@@ -11,9 +11,23 @@ if (capture) await mkdir(out, { recursive: true });
 const browser = await chromium.launch({headless:true,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--disable-gpu-sandbox']});
 const records=[];
 let count=0;
+const limitsOnly=process.argv.includes('--wide-limits-only');
 function check(name, value, detail) { assert.ok(value, name + ' ' + JSON.stringify(detail)); count++; console.log('PASS',name); }
+async function checkDomainLimits(page) {
+  for(const domain of ['content','experience']) {
+    await page.locator('#st [data-domain="'+domain+'"]').click({timeout:60000});
+    await page.waitForFunction(d=>document.body.dataset.studioDomain===d,domain,{timeout:30000});
+    await page.locator('#st .st-split').focus();
+    await page.keyboard.press('End');
+    await page.waitForTimeout(500);
+    const m=await page.evaluate(()=>({center:document.querySelector('#iw-stage').getBoundingClientRect().width,editor:document.querySelector('#st .st-ed').getBoundingClientRect().width}));
+    check('domain-center-'+domain,m.center>=359 && m.editor>320,m);
+    await page.keyboard.press('Home');
+  }
+  await page.locator('#st [data-domain="build"]').click({timeout:60000});
+}
 try {
-  for(const viewport of [{width:1440,height:900},{width:1180,height:800},{width:390,height:844}].filter(v=>!process.argv.includes('--mobile-only')||v.width<901)) {
+  for(const viewport of [{width:1440,height:900},{width:1180,height:800},{width:390,height:844}].filter(v=>(!process.argv.includes('--mobile-only')||v.width<901)&&(!limitsOnly||v.width===1440))) {
     const mobile=viewport.width<901;
     const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile});
     const page=await context.newPage();
@@ -43,6 +57,7 @@ try {
       check('mobile-context-in-header',contextBar.barBottom<=contextBar.headerBottom+1,contextBar);
     }
     if(!mobile) check('inspector-width-'+viewport.width,geometry.editor>=(viewport.width===1440?400:330)&&geometry.center>=359,geometry);
+    if(limitsOnly) { await checkDomainLimits(page); await context.close(); continue; }
     await page.evaluate(()=>document.querySelector('#st .st-ed').scrollTop=0);
     if(capture) await page.screenshot({path:new URL('studio-'+viewport.width+'.jpg',out).pathname,type:'jpeg',quality:60,timeout:120000});
     const field=page.locator('#st [data-bind="institution.name"]');
@@ -96,6 +111,7 @@ try {
       check('mobile-project',(await page.locator('#st .st-valtoggle').getAttribute('aria-expanded'))==='true');
       if(capture) await page.screenshot({path:new URL('studio-proyecto-movil.jpg',out).pathname,type:'jpeg',quality:60,timeout:120000});
     }
+    if(viewport.width===1440) await checkDomainLimits(page);
     check('console-'+viewport.width,errors.length===0,errors);
     records.push({viewport,mode:'Studio',geometry,errors,result:'PASS'});
     await context.close();
