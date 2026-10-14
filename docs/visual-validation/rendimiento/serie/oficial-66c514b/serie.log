@@ -1,0 +1,14 @@
+19:23:04 high base 1
+19:35:08 high cand 1
+19:49:37 high base 2
+20:01:33 high cand 2
+20:15:30 high base 3
+20:27:24 high cand 3
+20:41:05 high base 4
+21:24:41 reanudada tras diagnóstico de ruta (estado de escena idéntico base/cand)
+21:24:41 high base 4
+21:36:14 high cand 4
+21:49:36 high base 5
+22:01:06 high cand 5
+22:15:04 movil base 1
+22:15:18 detenida tras 5+5 HIGH; móvil se medirá sobre la candidata siguiente

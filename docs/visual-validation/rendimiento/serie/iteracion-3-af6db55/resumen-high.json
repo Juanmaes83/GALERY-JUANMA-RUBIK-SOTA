@@ -1,0 +1,703 @@
+{
+  "profile": "high",
+  "passes": {
+    "base": 3,
+    "cand": 2
+  },
+  "renderer": [
+    "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+  ],
+  "tier": [
+    "HIGH"
+  ],
+  "global": {
+    "readyMs": {
+      "base": {
+        "median": 53111,
+        "min": 45026,
+        "max": 93679,
+        "n": 3
+      },
+      "cand": {
+        "median": 55815.0,
+        "min": 55122,
+        "max": 56508,
+        "n": 2
+      }
+    },
+    "floorsPreviewMs": {
+      "base": null,
+      "cand": {
+        "median": 109132.0,
+        "min": 108363,
+        "max": 109901,
+        "n": 2
+      }
+    },
+    "floorsReadyMs": {
+      "base": null,
+      "cand": {
+        "median": 136313.0,
+        "min": 135767,
+        "max": 136859,
+        "n": 2
+      }
+    },
+    "bytesAtReadyMB": {
+      "base": {
+        "median": 3.8,
+        "min": 3.8,
+        "max": 3.8,
+        "n": 3
+      },
+      "cand": {
+        "median": 3.9,
+        "min": 3.9,
+        "max": 3.9,
+        "n": 2
+      }
+    },
+    "readyOrFloorsMs": {
+      "base": {
+        "median": 53111,
+        "min": 45026,
+        "max": 93679,
+        "n": 3
+      },
+      "cand": {
+        "median": 136313.0,
+        "min": 135767,
+        "max": 136859,
+        "n": 2
+      }
+    },
+    "pageErrors": {
+      "base": 0,
+      "cand": 0
+    },
+    "failedRequests": {
+      "base": 0,
+      "cand": 0
+    }
+  },
+  "rooms": {
+    "space.lobby": {
+      "still": {
+        "base": {
+          "median": 4662.3,
+          "min": 4607.1,
+          "max": 9190.3,
+          "n": 3
+        },
+        "cand": {
+          "median": 4752.9,
+          "min": 4749.7,
+          "max": 4756.2,
+          "n": 2
+        },
+        "pct": 1.9
+      },
+      "walking": {
+        "base": {
+          "median": 5756.4,
+          "min": 5600.1,
+          "max": 11054.9,
+          "n": 3
+        },
+        "cand": {
+          "median": 5445.0,
+          "min": 5426.1,
+          "max": 5463.8,
+          "n": 2
+        },
+        "pct": -5.4
+      },
+      "calls": {
+        "base": {
+          "median": 416,
+          "min": 416,
+          "max": 416,
+          "n": 3
+        },
+        "cand": {
+          "median": 436.0,
+          "min": 436,
+          "max": 436,
+          "n": 2
+        }
+      },
+      "triangles": {
+        "base": {
+          "median": 77858,
+          "min": 77858,
+          "max": 77858,
+          "n": 3
+        },
+        "cand": {
+          "median": 78986.0,
+          "min": 78986,
+          "max": 78986,
+          "n": 2
+        }
+      },
+      "textures": {
+        "base": {
+          "median": 72,
+          "min": 72,
+          "max": 72,
+          "n": 3
+        },
+        "cand": {
+          "median": 79.0,
+          "min": 79,
+          "max": 79,
+          "n": 2
+        }
+      },
+      "heapMB": {
+        "base": {
+          "median": 31.6,
+          "min": 29.8,
+          "max": 34.3,
+          "n": 3
+        },
+        "cand": {
+          "median": 34.5,
+          "min": 33.7,
+          "max": 35.3,
+          "n": 2
+        }
+      },
+      "crossMs": {
+        "base": {
+          "median": 4965,
+          "min": 4744,
+          "max": 7963,
+          "n": 3
+        },
+        "cand": {
+          "median": 5057.0,
+          "min": 4921,
+          "max": 5193,
+          "n": 2
+        },
+        "pct": 1.9
+      }
+    },
+    "space.shop": {
+      "still": {
+        "base": {
+          "median": 2918.5,
+          "min": 2855.3,
+          "max": 5698.4,
+          "n": 3
+        },
+        "cand": {
+          "median": 2967.9,
+          "min": 2961.1,
+          "max": 2974.8,
+          "n": 2
+        },
+        "pct": 1.7
+      },
+      "walking": {
+        "base": {
+          "median": 2801.6,
+          "min": 2755,
+          "max": 5451.1,
+          "n": 3
+        },
+        "cand": {
+          "median": 2879.4,
+          "min": 2858,
+          "max": 2900.9,
+          "n": 2
+        },
+        "pct": 2.8
+      },
+      "calls": {
+        "base": {
+          "median": 257,
+          "min": 257,
+          "max": 257,
+          "n": 3
+        },
+        "cand": {
+          "median": 256.0,
+          "min": 256,
+          "max": 256,
+          "n": 2
+        }
+      },
+      "triangles": {
+        "base": {
+          "median": 43744,
+          "min": 43744,
+          "max": 43744,
+          "n": 3
+        },
+        "cand": {
+          "median": 44622.0,
+          "min": 44622,
+          "max": 44622,
+          "n": 2
+        }
+      },
+      "textures": {
+        "base": {
+          "median": 61,
+          "min": 61,
+          "max": 61,
+          "n": 3
+        },
+        "cand": {
+          "median": 67.0,
+          "min": 67,
+          "max": 67,
+          "n": 2
+        }
+      },
+      "heapMB": {
+        "base": {
+          "median": 28,
+          "min": 27.7,
+          "max": 31,
+          "n": 3
+        },
+        "cand": {
+          "median": 29.4,
+          "min": 28.9,
+          "max": 30,
+          "n": 2
+        }
+      },
+      "crossMs": {
+        "base": {
+          "median": 14,
+          "min": 9,
+          "max": 17,
+          "n": 3
+        },
+        "cand": {
+          "median": 11.0,
+          "min": 9,
+          "max": 13,
+          "n": 2
+        },
+        "pct": -21.4
+      }
+    },
+    "space.gallery-a": {
+      "still": {
+        "base": {
+          "median": 3025.8,
+          "min": 2935.8,
+          "max": 3049.4,
+          "n": 3
+        },
+        "cand": {
+          "median": 3080.8,
+          "min": 2997.7,
+          "max": 3163.8,
+          "n": 2
+        },
+        "pct": 1.8
+      },
+      "walking": {
+        "base": {
+          "median": 2493.3,
+          "min": 2472.9,
+          "max": 2562.2,
+          "n": 3
+        },
+        "cand": {
+          "median": 2661.6,
+          "min": 2612.8,
+          "max": 2710.3,
+          "n": 2
+        },
+        "pct": 6.8
+      },
+      "calls": {
+        "base": {
+          "median": 251,
+          "min": 251,
+          "max": 251,
+          "n": 3
+        },
+        "cand": {
+          "median": 247.0,
+          "min": 247,
+          "max": 247,
+          "n": 2
+        }
+      },
+      "triangles": {
+        "base": {
+          "median": 32962,
+          "min": 32962,
+          "max": 32962,
+          "n": 3
+        },
+        "cand": {
+          "median": 34358.0,
+          "min": 34358,
+          "max": 34358,
+          "n": 2
+        }
+      },
+      "textures": {
+        "base": {
+          "median": 74,
+          "min": 74,
+          "max": 74,
+          "n": 3
+        },
+        "cand": {
+          "median": 84.0,
+          "min": 84,
+          "max": 84,
+          "n": 2
+        }
+      },
+      "heapMB": {
+        "base": {
+          "median": 29.9,
+          "min": 29.4,
+          "max": 35.3,
+          "n": 3
+        },
+        "cand": {
+          "median": 31.1,
+          "min": 30.2,
+          "max": 32.1,
+          "n": 2
+        }
+      },
+      "crossMs": {
+        "base": {
+          "median": 26754.5,
+          "min": 10543,
+          "max": 58817,
+          "n": 6
+        },
+        "cand": {
+          "median": 27350.5,
+          "min": 13214,
+          "max": 41864,
+          "n": 4
+        },
+        "pct": 2.2
+      }
+    },
+    "space.archive": {
+      "still": {
+        "base": {
+          "median": 799.6,
+          "min": 763.3,
+          "max": 817.5,
+          "n": 3
+        },
+        "cand": {
+          "median": 829.8,
+          "min": 818.5,
+          "max": 841,
+          "n": 2
+        },
+        "pct": 3.8
+      },
+      "walking": {
+        "base": {
+          "median": 853.8,
+          "min": 848.3,
+          "max": 862.3,
+          "n": 3
+        },
+        "cand": {
+          "median": 818.0,
+          "min": 788.7,
+          "max": 847.2,
+          "n": 2
+        },
+        "pct": -4.2
+      },
+      "calls": {
+        "base": {
+          "median": 21,
+          "min": 21,
+          "max": 21,
+          "n": 3
+        },
+        "cand": {
+          "median": 24.0,
+          "min": 24,
+          "max": 24,
+          "n": 2
+        }
+      },
+      "triangles": {
+        "base": {
+          "median": 420,
+          "min": 420,
+          "max": 420,
+          "n": 3
+        },
+        "cand": {
+          "median": 590.0,
+          "min": 590,
+          "max": 590,
+          "n": 2
+        }
+      },
+      "textures": {
+        "base": {
+          "median": 62,
+          "min": 62,
+          "max": 62,
+          "n": 3
+        },
+        "cand": {
+          "median": 72.0,
+          "min": 72,
+          "max": 72,
+          "n": 2
+        }
+      },
+      "heapMB": {
+        "base": {
+          "median": 36.4,
+          "min": 33.3,
+          "max": 40,
+          "n": 3
+        },
+        "cand": {
+          "median": 41.5,
+          "min": 40.5,
+          "max": 42.6,
+          "n": 2
+        }
+      },
+      "crossMs": {
+        "base": {
+          "median": 7064,
+          "min": 6846,
+          "max": 7228,
+          "n": 3
+        },
+        "cand": {
+          "median": 8425.5,
+          "min": 8154,
+          "max": 8697,
+          "n": 2
+        },
+        "pct": 19.3
+      }
+    },
+    "space.gallery-b": {
+      "still": {
+        "base": {
+          "median": 3871.4,
+          "min": 3848,
+          "max": 3978.1,
+          "n": 3
+        },
+        "cand": {
+          "median": 4225.0,
+          "min": 4129.1,
+          "max": 4320.8,
+          "n": 2
+        },
+        "pct": 9.1
+      },
+      "walking": {
+        "base": {
+          "median": 4624.3,
+          "min": 4481.1,
+          "max": 4701.7,
+          "n": 3
+        },
+        "cand": {
+          "median": 4863.1,
+          "min": 4749.1,
+          "max": 4977.1,
+          "n": 2
+        },
+        "pct": 5.2
+      },
+      "calls": {
+        "base": {
+          "median": 124,
+          "min": 124,
+          "max": 124,
+          "n": 3
+        },
+        "cand": {
+          "median": 124.0,
+          "min": 124,
+          "max": 124,
+          "n": 2
+        }
+      },
+      "triangles": {
+        "base": {
+          "median": 5625,
+          "min": 5625,
+          "max": 5625,
+          "n": 3
+        },
+        "cand": {
+          "median": 6207.0,
+          "min": 6207,
+          "max": 6207,
+          "n": 2
+        }
+      },
+      "textures": {
+        "base": {
+          "median": 115,
+          "min": 115,
+          "max": 115,
+          "n": 3
+        },
+        "cand": {
+          "median": 125.0,
+          "min": 125,
+          "max": 125,
+          "n": 2
+        }
+      },
+      "heapMB": {
+        "base": {
+          "median": 34.1,
+          "min": 33.7,
+          "max": 34.4,
+          "n": 3
+        },
+        "cand": {
+          "median": 36.7,
+          "min": 36.1,
+          "max": 37.3,
+          "n": 2
+        }
+      },
+      "crossMs": {
+        "base": {
+          "median": 20179,
+          "min": 19960,
+          "max": 20836,
+          "n": 3
+        },
+        "cand": {
+          "median": 22596.5,
+          "min": 21898,
+          "max": 23295,
+          "n": 2
+        },
+        "pct": 12.0
+      }
+    },
+    "space.itinerant-wet-paint": {
+      "still": {
+        "base": {
+          "median": 1506.1,
+          "min": 1476.9,
+          "max": 1525.6,
+          "n": 3
+        },
+        "cand": {
+          "median": 1621.5,
+          "min": 1612.9,
+          "max": 1630,
+          "n": 2
+        },
+        "pct": 7.7
+      },
+      "walking": {
+        "base": {
+          "median": 1479.7,
+          "min": 1469.3,
+          "max": 1493.8,
+          "n": 3
+        },
+        "cand": {
+          "median": 1664.9,
+          "min": 1610.8,
+          "max": 1719.1,
+          "n": 2
+        },
+        "pct": 12.5
+      },
+      "calls": {
+        "base": {
+          "median": 105,
+          "min": 105,
+          "max": 105,
+          "n": 3
+        },
+        "cand": {
+          "median": 106.0,
+          "min": 106,
+          "max": 106,
+          "n": 2
+        }
+      },
+      "triangles": {
+        "base": {
+          "median": 3698,
+          "min": 3698,
+          "max": 3698,
+          "n": 3
+        },
+        "cand": {
+          "median": 4230.0,
+          "min": 4230,
+          "max": 4230,
+          "n": 2
+        }
+      },
+      "textures": {
+        "base": {
+          "median": 104,
+          "min": 104,
+          "max": 104,
+          "n": 3
+        },
+        "cand": {
+          "median": 113.0,
+          "min": 113,
+          "max": 113,
+          "n": 2
+        }
+      },
+      "heapMB": {
+        "base": {
+          "median": 34.7,
+          "min": 33.6,
+          "max": 35.3,
+          "n": 3
+        },
+        "cand": {
+          "median": 35.8,
+          "min": 33.7,
+          "max": 37.8,
+          "n": 2
+        }
+      },
+      "crossMs": {
+        "base": {
+          "median": 7,
+          "min": 6,
+          "max": 9,
+          "n": 3
+        },
+        "cand": {
+          "median": 9.5,
+          "min": 6,
+          "max": 13,
+          "n": 2
+        },
+        "pct": 35.7
+      }
+    }
+  }
+}

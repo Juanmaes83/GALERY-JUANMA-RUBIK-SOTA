@@ -33,30 +33,59 @@ function check(id, claim, pass, detail = '') {
 // animation frames barely arrive and Playwright can stall «scrolling into
 // view» (seen in CI); then the element is hit-tested (nothing may cover its
 // centre) and activated through the DOM. Fallbacks are counted and printed.
+//
+// Nothing is pressed twice. Playwright also times out while the page is still
+// busy handling input it already sent; its call log then ends after
+// «performing <action> action». That press arrives late, and replaying it
+// would be a second one: the checkbox in SHOP-STUDIO flipped back, and the
+// phone guide's «Empezar la visita», already hidden, hit-tested as covered.
+// A sent press is never replayed: the page gets two frames to catch up and the
+// test's own checks see the outcome. Calls on a toggle pass { toggle: true }:
+// if the log is not conclusive, the element's state (checked, aria-pressed/
+// -expanded, label) tells whether a click landed. Only a press that never left
+// Playwright is replayed.
 const fallbacks = [];
-async function press(locator, how = 'click') {
+const stateOf = (locator) => locator.evaluate((n) => JSON.stringify([
+  n.isConnected, n.checked ?? null, n.getAttribute('aria-pressed'), n.getAttribute('aria-expanded'),
+  n.disabled ?? null, n.textContent.trim().slice(0, 60)
+]), null, { timeout: 8000 }).catch(() => 'sin estado');
+async function press(locator, how = 'click', { toggle = false } = {}) {
+  const before = toggle ? await stateOf(locator) : null;
   try {
     await locator[how]({ timeout: 8000 });
     return true;
   } catch (error) {
     if (!/Timeout/.test(String(error))) throw error;
-    const reachable = await locator.evaluate((node) => {
+    const name = () => locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.guide || n.dataset.node || n.dataset.bind || n.tagName).catch(() => '¿?');
+    const sent = /performing (click|tap) action/.test(String(error.message));
+    if (sent || toggle) {
+      await locator.page().evaluate(() => new Promise((resolve) => {
+        const cap = setTimeout(resolve, 3000);
+        requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(cap); resolve(); }));
+      }));
+      await locator.page().waitForTimeout(250);
+    }
+    if (sent || (toggle && (await stateOf(locator)) !== before)) {
+      fallbacks.push(`${await name()} (clic tardío, sin repetir)`);
+      return true;
+    }
+    const cover = await locator.evaluate((node) => {
       node.scrollIntoView({ block: 'center' });
       const r = node.getBoundingClientRect();
       const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
       const ok = top === node || node.contains(top) || Boolean(node.closest('label')?.contains(top));
       if (ok) node.click();
-      return ok;
+      return ok ? null : `${top?.tagName.toLowerCase() || 'nada'}${top?.className ? `.${String(top.className).trim().split(/\s+/).join('.')}` : ''}`;
     });
-    fallbacks.push(`${await locator.evaluate((n) => n.dataset.el || n.dataset.act || n.dataset.node || n.dataset.bind || n.tagName)}${reachable ? '' : ' (TAPADO)'}`);
-    if (!reachable) throw new Error(`elemento tapado: ${fallbacks.at(-1)}`);
+    fallbacks.push(`${await name()}${cover ? ` (TAPADO por ${cover})` : ''}`);
+    if (cover) throw new Error(`elemento tapado: ${fallbacks.at(-1)}`);
     return true;
   }
 }
 
 const requests = [];
 const server = await startServer(PORT, { log: (entry) => requests.push(entry) });
-const browser = await chromium.launch({
+let browser = await chromium.launch({
   headless: true,
   args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu-sandbox']
 });
@@ -86,16 +115,19 @@ async function openMuseum(query = '') {
 const pageLife = new WeakMap();
 
 async function travel(page, portalId) {
-  return page.evaluate(async (id) => {
+  return page.evaluate((id) => {
     const runtime = window.__IW.runtime;
-    await runtime.traversePortal(id, { source: 'QA' });
-    const deadline = performance.now() + 30000;
     const target = runtime.store.require(id).toSpaceId;
-    while (runtime.state.activeSpaceId !== target && performance.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    return runtime.state.activeSpaceId;
-  }, portalId).catch((error) => {
+    window.__qaTravelError = null;
+    Promise.resolve(runtime.traversePortal(id, { source: 'QA' }))
+      .catch((error) => { window.__qaTravelError = String(error); });
+    return target;
+  }, portalId).then(async (target) => {
+    await page.waitForFunction((id) => window.__qaTravelError || window.__IW?.runtime?.state.activeSpaceId === id, target, { timeout: 30000 });
+    const result = await page.evaluate(() => ({ active: window.__IW.runtime.state.activeSpaceId, error: window.__qaTravelError }));
+    if (result.error) throw new Error(result.error);
+    return result.active;
+  }).catch((error) => {
     const life = pageLife.get(page) || [];
     throw new Error(`${portalId}: ${String(error).split('\n')[0]}${life.length ? ` · ${life.join(' · ')}` : ' · sin navegación ni caída registradas'}`);
   });
@@ -159,6 +191,13 @@ try {
     // product is chosen with E from where a visitor can stand.
     const fit = await page.evaluate(async () => {
       const rt = window.__IW.runtime; const e = rt.explore; const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      // The catalogue focused above hands the camera back to Explore over a
+      // 0.7 s blend, and Explore moves no one until it ends. With frames this
+      // slow the blend outlasted the first 1.8 s walk («1.6»: never moved), so
+      // the walks start once the camera is Explore's.
+      const settleStart = performance.now();
+      while ((rt.camera.isTransitioning || rt.camera.owner !== 'EXPLORE') && performance.now() - settleStart < 30000) await wait(100);
+      const settledMs = Math.round(performance.now() - settleStart);
       const space = rt.store.require('space.shop');
       const fixtures = space.metadata.shop?.fixtures || [];
       const groups = [];
@@ -200,13 +239,13 @@ try {
       }
       const info = window.__IW.renderHost.renderer.info.render;
       return { vitrines: count('VITRINE'), counter: count('COUNTER'), assistant: count('ASSISTANT'), frames: count('WALL_FRAME'), products: products.length,
-        displays: products.filter((p) => p.representation?.profile === 'shop-display').length, misplaced, collide, counterStop, notPicked: picked.filter(Boolean), calls: info.calls, triangles: info.triangles };
+        displays: products.filter((p) => p.representation?.profile === 'shop-display').length, misplaced, collide, counterStop, settledMs, notPicked: picked.filter(Boolean), calls: info.calls, triangles: info.triangles };
     });
     check('SHOP-FIXTURES', 'Como en la referencia: 6 vitrinas, mostrador, dependienta, 3 cuadros; cada producto plano en su vitrina y 3 productos en 3D',
       fit.vitrines === 6 && fit.counter === 1 && fit.assistant === 1 && fit.frames === 3 && fit.products === 11 && fit.displays === 3 && fit.misplaced.length === 0,
       JSON.stringify({ vitrinas: fit.vitrines, mostrador: fit.counter, dependienta: fit.assistant, cuadros: fit.frames, productos: fit.products, en3d: fit.displays, fuera: fit.misplaced }));
     check('SHOP-COLLIDE', 'Al caminar hacia una vitrina o el mostrador el visitante se detiene en su borde; detrás del mostrador no se pasa',
-      fit.collide.length === 7 && fit.collide.every((d) => d > 0.6 && d < 1.5) && fit.counterStop > -9.3, `${fit.collide.join(', ')} · mostrador: x=${fit.counterStop}`);
+      fit.collide.length === 7 && fit.collide.every((d) => d > 0.6 && d < 1.5) && fit.counterStop > -9.3, `${fit.collide.join(', ')} · mostrador: x=${fit.counterStop} · cámara libre tras ${fit.settledMs} ms`);
     check('SHOP-SELECT', 'Cada producto se elige con E desde donde puede estar el visitante (la réplica, desde el mostrador)', fit.notPicked.length === 0, fit.notPicked.join(', ') || `${fit.products} de ${fit.products}`);
     check('SHOP-COST', 'La tienda amueblada sigue siendo ligera (llamadas de dibujo y triángulos)', fit.calls < 220 && fit.triangles < 120000, `${fit.calls} llamadas · ${fit.triangles} triángulos`);
 
@@ -236,6 +275,16 @@ try {
     }));
     const noticeKind = await page.evaluate(() => document.querySelector('[data-breeze-unavailable]')?.dataset.breezeUnavailable || null);
     check('BREEZE-NOTICE', 'Sin WebGPU, la Sala Breeze explica qué necesita en vez de un escenario vacío', breeze.notice && !breeze.iframe && noticeKind === 'no-webgpu', noticeKind);
+    // A browser with the API but no graphics adapter (this runner, or a Chrome
+    // whose GPU is off) is told to restart, not that it lacks WebGPU.
+    const reason = await page.evaluate(() => {
+      const notice = document.querySelector('[data-breeze-unavailable]');
+      return { api: Boolean(navigator.gpu), reason: notice?.dataset.breezeReason || null, text: notice?.textContent.replace(/\s+/g, ' ').trim() || '' };
+    });
+    const honest = reason.api
+      ? reason.reason === 'no-adapter' && /Reinicia el navegador/.test(reason.text) && !/este navegador no lo ofrece/.test(reason.text)
+      : reason.reason === 'no-api' && /este navegador no lo ofrece/.test(reason.text);
+    check('BREEZE-NOTICE-REASON', 'El aviso distingue un navegador sin WebGPU de una tarjeta gráfica no disponible', honest, `${reason.api ? 'con' : 'sin'} navigator.gpu · ${reason.reason}`);
 
     // Keyboard exit: the room's own return hotspot (E) crosses back to Gallery B.
     await page.waitForTimeout(1200);
@@ -586,7 +635,7 @@ try {
     await page.locator('#st [data-bind="entities.entity.shop.lamina-marea.product.price"]').fill('42');
     await page.locator('#st [data-bind="entities.entity.shop.lamina-marea.product.order"]').fill('0');
     await press(page.locator('#st .st-nodebtn[data-node="entity.shop.postales"]').first());
-    await press(page.locator('#st [data-bind="entities.entity.shop.postales.product.visible"]'));
+    await press(page.locator('#st [data-bind="entities.entity.shop.postales.product.visible"]'), 'click', { toggle: true });
 
     // Replacing a file: while the new one loads, the slot must already describe
     // it, never the previous record (whose asset has just been released).
@@ -728,7 +777,7 @@ try {
       page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
       page.on('pageerror', (error) => consoleErrors.push(String(error)));
       const studioReady = () => page.waitForFunction(() => window.__IW?.ready === true && window.__IW_STUDIO, null, { timeout: 120000 });
-      await page.goto(`${BASE}/index.html?authoring=1`);
+      await page.goto(`${BASE}/index.html?authoring=1`, { timeout: 90000 });
       await studioReady();
       const work = 'work:entity.artwork.horizonte-interrumpido';
       const room = 'room:space.gallery-a';
@@ -780,7 +829,7 @@ try {
       const listen = await page.evaluate(() => document.querySelector('[data-el="detailGuide"]')?.textContent.trim());
       await press(page.locator('[data-el="detailGuide"]'));
       const before = await guide(page);
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       const playing = await page.waitForFunction(() => (window.__IW_AUDIOGUIDE.report().currentTime || 0) > 0.5, null, { timeout: 20000 }).then(() => true).catch(() => false);
       const g1 = await guide(page);
       check('AUDIOGUIDE-PLAY', 'La cápsula se abre desde la ficha, suena al pulsar Reproducir y baja el ambiente',
@@ -796,7 +845,7 @@ try {
           && await page.evaluate(() => document.activeElement?.dataset?.guide === 'toggle'), JSON.stringify({ playing: g2.playing, toggle: g2.toggle }));
 
       // Seek, volume, stop.
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       await page.waitForTimeout(500);
       const t0 = (await guide(page)).currentTime;
       await press(page.locator('#iw-guide [data-guide="fwd"]'));
@@ -809,7 +858,7 @@ try {
         t1 - t0 > 8 && volume === 0.5 && g3.playing === false && g3.currentTime === 0 && g3.toggle === 'Reproducir', JSON.stringify({ t0, t1, volume, stop: g3.currentTime }));
 
       // Closing the sheet pauses that work's capsule, with a notice.
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       await page.waitForTimeout(500);
       await page.evaluate(() => window.__IW.runtime.releaseFocus());
       await page.waitForTimeout(500);
@@ -817,10 +866,10 @@ try {
       check('AUDIOGUIDE-SHEET-CLOSE', 'Cerrar la ficha pausa la cápsula de esa obra y lo dice', g4.playing === false && /cerrar la ficha/.test(g4.notice), g4.notice);
 
       // One narration at a time: the room introduction stops the capsule.
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       await page.waitForTimeout(500);
       await press(page.locator(`#iw-guide [data-guide="select"][data-ref="${room}"]`));
-      await press(page.locator('#iw-guide [data-guide="toggle"]'));
+      await press(page.locator('#iw-guide [data-guide="toggle"]'), 'click', { toggle: true });
       await page.waitForTimeout(800);
       const g5 = await guide(page);
       const players = await page.evaluate(() => [...document.querySelectorAll('audio')].filter((a) => !a.paused).length);
@@ -832,7 +881,7 @@ try {
       check('AUDIOGUIDE-ROOM-CHANGE', 'Cambiar de sala pausa la pista, con aviso', g6.playing === false && /cambiar de sala/.test(g6.notice) && !g6.ducked, g6.notice);
 
       // Reload: the text survives; the file was this session's and is reported gone.
-      await page.goto(`${BASE}/index.html?authoring=1`);
+      await page.goto(`${BASE}/index.html?authoring=1`, { timeout: 90000 });
       await studioReady();
       await press(page.locator('#st .st-nodebtn[data-node="entity.artwork.horizonte-interrumpido"]').first());
       const reloaded = await editor();
@@ -858,6 +907,8 @@ try {
       await page.waitForFunction(() => window.__IW?.ready === true && window.__IW_AUDIOGUIDE, null, { timeout: 180000 });
       await page.evaluate(() => window.__IW.hud.el.enter.click());
       await page.waitForTimeout(800);
+      await page.locator('[data-el="helpClose"]').tap();
+      await page.locator('[data-el="moreBtn"]').tap();
       await page.locator('[data-el="guideBtn"]').tap();
       await page.waitForTimeout(300);
       const fit = await page.evaluate(() => {
@@ -873,6 +924,13 @@ try {
   }
 
   /* 4. Avatar in every room ------------------------------------------------ */
+  // The preceding Studio/audio checks compile many shader variants in software.
+  // A fresh browser keeps the avatar section from inheriting that GPU process.
+  await browser.close();
+  browser = await chromium.launch({
+    headless: true,
+    args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu-sandbox']
+  });
   {
     const { page, consoleErrors } = await openMuseum('?character=1&mobility=1&continuity=1&gatea=1');
     const gate = await page.evaluate(() => ({ disabled: window.__IW.hud.el.enter.disabled, label: window.__IW.hud.el.enter.textContent.trim() }));
@@ -1034,6 +1092,22 @@ try {
     {
       const { context, page, errors, walk } = await openPhone('');
       await press(page.locator('[data-el="enter"]'), 'tap');
+      // The veil fades out over the guide and a timer hides it 0.7 s later; a
+      // busy phone runs that timer seconds late. Whatever the timer does, the
+      // fading veil must already let taps through: its computed style decides,
+      // read while it is shown.
+      const veil = await page.evaluate(() => {
+        const node = window.__IW.hud.el.veil;
+        const hidden = node.hidden;
+        node.hidden = false;
+        const pointerEvents = getComputedStyle(node).pointerEvents;
+        node.hidden = hidden;
+        return { gone: node.classList.contains('is-gone'), pointerEvents };
+      });
+      check('MOBILE-ENTRY-VEIL', 'Al entrar, el velo que se desvanece deja pasar los toques a la guía', veil.gone && veil.pointerEvents === 'none', JSON.stringify(veil));
+      await press(page.locator('[data-el="helpClose"]'), 'tap');
+      const guideClosed = await page.waitForFunction(() => window.__IW.hud.el.help.hidden).then(() => true).catch(() => false);
+      check('MOBILE-GUIDE-CLOSE', '«Empezar la visita» cierra la guía con un solo toque', guideClosed);
       await page.waitForTimeout(1000);
       const layout = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -1044,16 +1118,34 @@ try {
       let prompt = null;
       for (let i = 0; i < 6 && !prompt; i += 1) {
         await walk(1400);
-        prompt = await page.evaluate(() => { const el = window.__IW.hud.el.prompt; return el.hidden ? null : { tag: el.tagName, text: el.textContent.trim() }; });
+        prompt = await page.evaluate(() => { const el = window.__IW.hud.el.prompt; const hotspot = window.__IW.runtime.proximity.nearestHotspot; return el.hidden || hotspot?.action?.type !== 'ACTIVATE_PORTAL' ? null : { tag: el.tagName, text: el.textContent.trim(), portal: hotspot.action.target }; });
       }
       let crossed = false;
       if (prompt) {
-        await press(page.locator('[data-el="prompt"]'), 'tap');
+        let traversals = 0;
+        const original = await page.evaluate(() => {
+          const rt = window.__IW.runtime;
+          const method = rt.traversePortal.bind(rt);
+          rt.traversePortal = (...args) => { window.__mobilePortalCount = (window.__mobilePortalCount || 0) + 1; return method(...args); };
+          return rt.state.activeSpaceId;
+        });
+        try { await page.locator('[data-el="prompt"]').tap({ timeout: 8000 }); }
+        catch (error) {
+          if (!/Timeout/.test(String(error))) throw error;
+          const safe = await page.evaluate(({ origin, text }) => {
+            const rt = window.__IW.runtime;
+            const el = window.__IW.hud.el.prompt;
+            return rt.state.activeSpaceId === origin && !rt.crossing?.isCrossing && !el.hidden && !el.disabled && el.textContent.trim() === text && !window.__mobilePortalCount;
+          }, { origin: original, text: prompt.text });
+          if (safe) await page.evaluate(() => window.__IW.hud.el.prompt.click());
+        }
         crossed = await page.waitForFunction(() => window.__IW.runtime.state.activeSpaceId === 'space.gallery-a', null, { timeout: 30000 }).then(() => true).catch(() => false);
+        traversals = await page.evaluate(() => window.__mobilePortalCount || 0);
+        crossed = crossed && traversals === 1;
       }
-      check('MOBILE-DOOR-TAP', 'Se camina con el pulgar y se cruza la puerta tocando el aviso', prompt?.tag === 'BUTTON' && crossed, JSON.stringify(prompt));
+      check('MOBILE-DOOR-TAP', 'Se camina con el pulgar y se cruza la puerta tocando el aviso una vez', prompt?.tag === 'BUTTON' && prompt.portal === 'portal.lobby-gallery-a' && crossed, JSON.stringify(prompt));
 
-      await press(page.locator('[data-el="mapBtn"]'), 'tap');
+      await press(page.locator('[data-el="mapBtn"]'), 'tap', { toggle: true });
       await page.waitForTimeout(800);
       const clashes = await page.evaluate(() => {
         const texts = [...document.querySelectorAll('[data-el="mapSvg"] text')].map((t) => ({ label: t.textContent, b: t.getBBox() }));
@@ -1111,7 +1203,21 @@ try {
       const mounted = await page.waitForFunction(() => window.__IW_CHARACTER_PHASE4B?.ready && !window.__IW.hud.el.enter.disabled, null, { timeout: 240000, polling: 1000 })
         .then(() => true).catch(() => false);
       if (mounted) {
-        await press(page.locator('[data-el="enter"]'), 'tap');
+        // Setup. The POV visit above taps «Entrar» and the phone guide for real.
+        // Here the avatar has just mounted and software WebGL keeps the page
+        // busy longer than a tap can wait, and the replay's scroll can move the
+        // guide under its own hit test. This visit checks the thumb and the
+        // framing, so both are clicked in the page once nothing covers them.
+        const setupClick = (selector) => page.locator(selector).evaluate((node) => {
+          const r = node.getBoundingClientRect();
+          const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          if (!(top === node || node.contains(top))) throw new Error(`${node.dataset.el} tapado por ${top?.className || top?.tagName}`);
+          node.click();
+        });
+        await setupClick('[data-el="enter"]');
+        await page.waitForFunction(() => !window.__IW.hud.el.help.hidden);
+        await setupClick('[data-el="helpClose"]');
+        await page.waitForFunction(() => window.__IW.hud.el.help.hidden);
         await page.waitForTimeout(1200);
         const where = () => page.evaluate(() => window.__IW_CHARACTER_PHASE4B.root.position.toArray());
         const before = await where();

@@ -21,7 +21,7 @@ import { SceneKit } from '../../engine/scenekit/scene-kit.js';
 import { ENTITY_KIND, HOTSPOT_STATE, REPRESENTATION_HINT } from '../../engine/schema/types.js';
 import { framePose, overviewPose, vec3 } from '../../engine/camera/framing.js';
 import { PortalSurface } from './portal-surface.js';
-import { profileFor } from './profiles.js';
+import { profileForSpace } from './profiles.js';
 import {
   artworkTexture, createGeneratedVideoTexture, floorTexture, labelTexture, plasterTexture,
   projectionMask, projectionFloorMask, projectionTextTexture, signPlateTexture
@@ -36,8 +36,13 @@ import {
   placeFixture, fixtureFootprint, worldToFixture, VITRINE, LEVELS, SLOT_BOX
 } from './shop-fixtures.js';
 import { buildExitDoor, buildExitSign, buildNearHalo, firstStepTowards, placeExitSign } from './wayfinding.js';
+import { buildDoorCue } from './door-cues.js';
 import { GUIDE_DESIGNS, buildGuideFigure, buildVisitorFigure, guideMaterials } from './guide.js';
 import { MARBLE_BUST_PROFILE, MuseumModelAssets } from './model-assets.js';
+import { floorFinishFor, requestFloorSurface } from './surfaces.js';
+import {
+  buildCeilingBeams, buildContactShadow, buildJunctionOcclusion, buildServiceGrid, buildStoneDado, buildWainscot
+} from './architecture.js';
 
 /**
  * Metres per second. An unhurried gallery pace — a guide walking a visitor to
@@ -46,7 +51,16 @@ import { MARBLE_BUST_PROFILE, MuseumModelAssets } from './model-assets.js';
 const GUIDE_WALK_SPEED = 1.05;
 
 /** Plinth height used for sculpture staging and framing. One number, one meaning. */
+
 const PLINTH_HEIGHT = 1.02;
+
+/** 1×1 white sRGB texture: a colour map that leaves the colour unchanged. */
+function whiteMap() {
+  const t = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.needsUpdate = true;
+  return t;
+}
 
 /** A subject that stands on the floor rather than hanging on a wall. */
 function isFloorAnchor(anchor) {
@@ -88,6 +102,8 @@ export class MuseumSceneKit extends SceneKit {
     this._entityIndex = new Map();
     /** @type {{update:(t:number)=>void, dispose:()=>void}[]} */
     this._animated = [];
+    /** Door cues by the hotspot that crosses them (door-cues.js). */
+    this._doorCues = new Map();
 
     this._environment = null;
     this._focusedEntityId = null;
@@ -120,7 +136,7 @@ export class MuseumSceneKit extends SceneKit {
   async buildSpace(space, ctx) {
     this._ensureEnvironment(ctx.quality);
 
-    const profile = profileFor(space.sceneProfile);
+    const profile = profileForSpace(space); // Misión Visual: per-room light hierarchy
     const rng = ctx.rng.fork(space.id);
     const [w, h, d] = space.bounds.size;
     const origin = space.bounds.origin;
@@ -148,21 +164,50 @@ export class MuseumSceneKit extends SceneKit {
     const textureScale = ctx.quality.textureScale;
     const plaster = plasterTexture(rng, { size: Math.round(256 * textureScale) || 128, contrast: 9 });
     plaster.repeat.set(w / 2.2, h / 2.2);
-    const ground = floorTexture(rng, {
+    // Misión Visual: a nested room (Sala Breeze) is drawn by its own renderer;
+    // its shell here is never seen, so it keeps the original treatment and the
+    // cost of the new finishes is not paid for it.
+    const nested = Boolean(space.metadata?.nestedRuntime);
+    const ground = nested ? floorTexture(rng, {
       size: Math.round(512 * textureScale) || 256,
       planks: space.sceneProfile === 'heritage' ? 9 : 0
-    });
-    ground.repeat.set(w / 3, d / 3);
+    }) : null;
+    if (ground) ground.repeat.set(w / 3, d / 3);
+    // Every other room is laid with a named floor: colour, roughness and normal
+    // maps generated together (surfaces.js), at physical scale.
+    let surface = null;
+    let floorAnisotropy = 1;
+    if (!nested) {
+      // ≈213 px/m at full quality (512 px over a 2.4 m tile), the same texel
+      // density per tile for every finish. Measured against the original floor
+      // (one 512 px map), larger floor maps and anisotropic filtering each cost
+      // a repeatable share of the frame; at visiting distance they did not add
+      // anything a visitor reads (docs/MISION-VISUAL.md).
+      surface = requestFloorSurface(rng.fork('floor-finish'), floorFinishFor(space), {
+        texelsPerMetre: (512 / 2.4) * textureScale
+      });
+      floorAnisotropy = 1;
+    }
 
     const materials = {
       wall: new THREE.MeshStandardMaterial({
         color: profile.wall.color, roughness: profile.wall.roughness, metalness: 0,
-        roughnessMap: plaster, bumpMap: plaster, bumpScale: 0.012
+        roughnessMap: plaster, bumpMap: plaster, bumpScale: 0.012,
+        // A white 1×1 colour map changes nothing on screen but gives the wall
+        // the same shader features as the floor (colour + relief), so the two
+        // share one program instead of compiling two. On the phone tier there
+        // is no warmup, and every program is compiled on the frame that first
+        // needs it — the first frame of a crossing (MOBILE-DOOR-TAP).
+        ...(surface ? { map: whiteMap() } : {})
       }),
-      floor: new THREE.MeshStandardMaterial({
-        color: profile.floor.color, roughness: profile.floor.roughness,
-        metalness: profile.floor.metalness, roughnessMap: ground, bumpMap: ground, bumpScale: 0.008
-      }),
+      floor: surface
+        ? new THREE.MeshStandardMaterial({
+          color: 0xffffff, roughness: surface.roughness, metalness: 0, bumpScale: surface.bumpScale
+        })
+        : new THREE.MeshStandardMaterial({
+          color: profile.floor.color, roughness: profile.floor.roughness,
+          metalness: profile.floor.metalness, roughnessMap: ground, bumpMap: ground, bumpScale: 0.008
+        }),
       ceiling: new THREE.MeshStandardMaterial({ color: profile.ceiling.color, roughness: profile.ceiling.roughness }),
       skirting: new THREE.MeshStandardMaterial({ color: profile.skirting.color, roughness: profile.skirting.roughness }),
       frame: new THREE.MeshStandardMaterial({ color: space.sceneProfile === 'dark-exhibition' ? 0x2c2823 : 0x6a5942, roughness: 0.55, metalness: 0.12 }),
@@ -191,6 +236,13 @@ export class MuseumSceneKit extends SceneKit {
       threshold: new THREE.MeshStandardMaterial({ color: 0x8d8375, roughness: 0.4, metalness: 0.15 })
     };
 
+    if (surface) {
+      surface.bind(materials.floor, (t) => {
+        t.repeat.set(w / surface.tile, d / surface.tile);
+        t.anisotropy = floorAnisotropy;
+      });
+    }
+
     const group = new THREE.Group();
     group.name = `space:${space.id}`;
     group.visible = false;
@@ -200,8 +252,15 @@ export class MuseumSceneKit extends SceneKit {
     if (space.metadata?.roof) roof.profile = space.metadata.roof;
     const pitched = roof.profile === 'pitched-skylight';
 
+    // Misión Visual: a dado (archive panelling, lobby stone) replaces the lower
+    // wall it covers. Computed before the shell, which leaves that wall out.
+    const dado = nested ? null
+      : space.sceneProfile === 'heritage' ? { kind: 'wainscot', top: 1.0 }
+        : floorFinishFor(space) === 'limestone' ? { kind: 'stone', top: 0.9 } : null;
+    if (dado) dado.keepClear = this._wallKeepClear(space, ctx.store, dado.top);
+
     group.add(buildRoomShell({
-      size: space.bounds.size, origin, openings, materials, capCeiling: !pitched
+      size: space.bounds.size, origin, openings, materials, capCeiling: !pitched, dado
     }));
 
     if (pitched) {
@@ -213,6 +272,32 @@ export class MuseumSceneKit extends SceneKit {
       group.add(buildCornice({ size: space.bounds.size, origin, material: materials.cornice }));
     } else {
       group.add(buildCove(space.bounds.size, origin, profile));
+    }
+
+    // Misión Visual: where surfaces meet (architecture.js). Baked junction
+    // occlusion in every room; panelling and beams in the archive; a service
+    // grid under the dark room's ceiling. Openings and hung work stay clear.
+    if (!nested) {
+      const isDark = space.sceneProfile === 'dark-exhibition';
+      const isHeritage = space.sceneProfile === 'heritage';
+      group.add(buildJunctionOcclusion({
+        size: space.bounds.size, origin, openings,
+        strength: isDark ? 0.55 : isHeritage ? 0.45 : 0.32,
+        dadoTop: dado?.top || 0,
+        // Under a pitched roof the wall head meets a cornice in light: the
+        // ceiling band was barely visible and still blended every frame.
+        ceiling: !pitched
+      }));
+      if (dado?.kind === 'wainscot') {
+        group.add(buildWainscot({ size: space.bounds.size, origin, openings, keepClear: dado.keepClear, color: 0x323a2a, top: dado.top }));
+      }
+      // The entrance hall: a honed limestone dado, cut from the same stone as
+      // its floor, gives the institution's first room a base and a scale.
+      if (dado?.kind === 'stone') {
+        group.add(buildStoneDado({ size: space.bounds.size, origin, openings, keepClear: dado.keepClear, surface, top: dado.top }));
+      }
+      if (isHeritage) group.add(buildCeilingBeams({ size: space.bounds.size, origin, color: 0x5a4632 }));
+      if (isDark) group.add(buildServiceGrid({ size: space.bounds.size, origin }));
     }
 
     // Ambient fill. Two soft sources, not a uniform wash — Constitution §24
@@ -302,6 +387,36 @@ export class MuseumSceneKit extends SceneKit {
         else { sign.position.set(ox2 + w / 2 - off, y, opening.worldPosition[2]); sign.rotation.y = -Math.PI / 2; }
         group.add(sign);
       }
+
+      // Every doorway gets the same cues (door-cues.js): a casing, a warm spill
+      // that answers the visitor's approach and, where the next room cannot be
+      // seen through the opening, a glow beyond it. Breeze is drawn by its own
+      // renderer and the Archive is a teleport, so both openings were black.
+      const portal = ctx.store.require(opening.portalId);
+      const cue = buildDoorCue({
+        opening,
+        floorY: origin[1],
+        wallThickness: WALL_THICKNESS,
+        sceneProfile: space.sceneProfile,
+        destinationVisible: portal.transitionBehaviour !== 'TELEPORT'
+          && !ctx.store.require(opening.toSpaceId).metadata?.nestedRuntime
+      });
+      if (opening.portalId === 'portal.gallery-b-breeze') {
+        // The arrival camera frames the east wall, but on a narrow phone the
+        // doorway sits partly outside the left edge. This small wall plaque is
+        // inside that view and points to the real opening without moving camera.
+        const direction = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.08, 0.28),
+          new THREE.MeshBasicMaterial({ map: signPlateTexture('← BREEZE', 1.08 / 0.28), side: THREE.DoubleSide, toneMapped: false })
+        );
+        direction.name = 'breeze-direction-sign';
+        direction.position.set(opening.width / 2 + 0.84, 1.62, 0.06);
+        cue.group.add(direction);
+      }
+      group.add(cue.group);
+      const crossing = ctx.store.hotspotsOf(space.id)
+        .find((hotspot) => hotspot.action?.type === 'ACTIVATE_PORTAL' && hotspot.action.target === opening.portalId);
+      if (crossing) this._doorCues.set(crossing.id, { ...cue, spaceId: space.id, portalId: opening.portalId, near: 0, nearTarget: 0 });
     }
 
     const spots = [];
@@ -330,6 +445,16 @@ export class MuseumSceneKit extends SceneKit {
       if (!built) continue;
       group.add(built.object);
       entities.set(entity.id, built.object);
+      // Misión Visual: anything standing on the floor leaves a contact shadow.
+      if (!nested && built.blocker && entity.representation?.profile !== 'shop-display'
+        && (entity.kind === ENTITY_KIND.SCULPTURE || entity.kind === ENTITY_KIND.OBJECT_3D)) {
+        const pose = this._anchorPoses.get(entity.anchorId);
+        if (pose) {
+          const contact = buildContactShadow({ width: entity.size[0] + 0.4, depth: entity.size[2] + 0.4, strength: 0.5 });
+          contact.position.set(pose.position[0], origin[1] + 0.003, pose.position[2]);
+          group.add(contact);
+        }
+      }
       this._entityIndex.set(entity.id, {
         size: entity.size,
         object: built.object,
@@ -376,6 +501,12 @@ export class MuseumSceneKit extends SceneKit {
       if (space.metadata.benchFacing === 'EAST' || space.metadata.benchFacing === 'WEST') bench.rotation.y = Math.PI / 2;
       group.add(bench);
       blockers.push(boxAround([bench.position.x, bench.position.z], 1.0, 0.35));
+      if (!nested) {
+        const contact = buildContactShadow({ width: 1.9, depth: 0.42, strength: 0.42, spread: 0.14 });
+        contact.position.set(bench.position.x, origin[1] + 0.003, bench.position.z);
+        contact.rotation.y = bench.rotation.y;
+        group.add(contact);
+      }
     }
 
     // Shop furniture: counter, back cabinet and stocked wall units (set dressing;
@@ -410,6 +541,15 @@ export class MuseumSceneKit extends SceneKit {
     // studio. The dark room read as a pale grey box, and no amount of roughness
     // or exposure fixed it, because neither was the cause.
     applyEnvironmentResponse(group, profile.envIntensity, this._environment);
+    // Misión Visual: where a room's surfaces take less environment fill, the
+    // exhibits (plates, cartelas, panels) keep the full response, so the works
+    // stay the brightest thing in the room.
+    if (typeof profile.exhibitEnvIntensity === 'number') {
+      group.traverse((object) => {
+        const material = object.material;
+        if (material?.userData?.exhibit && 'envMapIntensity' in material) material.envMapIntensity = profile.exhibitEnvIntensity;
+      });
+    }
 
     this.scene.add(group);
     return {
@@ -431,13 +571,21 @@ export class MuseumSceneKit extends SceneKit {
     // © Tomasz Szmajda) — see vendor/REUSE_REGISTER.md.
     if (ctx?.quality?.warmupSpaces === false) return;
 
+    // The traversal happens synchronously when the warmup starts (three's
+    // compileAsync runs compile() before it begins polling), so the group is
+    // hidden again before the first await. Restoring it only after the await
+    // left a room that is not yet present drawn — with its spots casting
+    // shadows — in every frame of a compile that takes seconds on a software
+    // rasteriser. Measured during the Misión Visual (docs/MISION-VISUAL.md).
     const wasVisible = handle.group.visible;
     handle.group.visible = true;
+    let compiling;
     try {
-      await this.renderHost.warm(this.scene);
+      compiling = this.renderHost.warm(this.scene);
     } finally {
       handle.group.visible = wasVisible;
     }
+    await compiling;
   }
 
   activateSpace(handle) {
@@ -472,6 +620,13 @@ export class MuseumSceneKit extends SceneKit {
    * @param {'ACTIVE'|'ADJACENT'|'HIDDEN'} presence
    */
   setSpacePresence(handle, presence) {
+    // A nested Space is presented by its guest only while active. Its Museum
+    // shell overlaps the Gallery B doorway by one metre and previously covered
+    // that opening whenever Breeze was preloaded as an adjacent room.
+    if (handle.space.metadata?.nestedRuntime && presence !== 'ACTIVE') {
+      handle.group.visible = false;
+      return;
+    }
     if (presence === 'HIDDEN') {
       handle.group.visible = false;
       return;
@@ -510,6 +665,7 @@ export class MuseumSceneKit extends SceneKit {
       if (this._nearestEntityId === entityId) this._nearestEntityId = null;
     }
     this._wayfinding?.delete(handle.spaceId);
+    for (const [hotspotId, cue] of this._doorCues) if (cue.spaceId === handle.spaceId) this._doorCues.delete(hotspotId);
     this._spaces.delete(handle.spaceId);
     this._animated = this._animated.filter((item) => {
       if (item.spaceId !== handle.spaceId) return true;
@@ -604,6 +760,18 @@ export class MuseumSceneKit extends SceneKit {
       built.group.userData.shopFixture = f.type;
       built.group.userData.fixtureId = f.id || null;
       group.add(built.group);
+      // Misión Visual: furniture stands on the floor, with a contact shadow.
+      const contactBox = f.type === 'ASSISTANT'
+        ? { min: [f.position[0] - 0.22, 0, f.position[1] - 0.18], max: [f.position[0] + 0.22, 0, f.position[1] + 0.18] }
+        : footprint ? fixtureFootprint(f.position, f.normal, footprint[0], footprint[1]) : null;
+      if (contactBox && !f.y) {
+        const contact = buildContactShadow({
+          width: contactBox.max[0] - contactBox.min[0], depth: contactBox.max[2] - contactBox.min[2],
+          strength: 0.48, spread: 0.16
+        });
+        contact.position.set((contactBox.min[0] + contactBox.max[0]) / 2, (space.bounds.origin[1] || 0) + 0.003, (contactBox.min[2] + contactBox.max[2]) / 2);
+        group.add(contact);
+      }
       if (f.type === 'ASSISTANT') {
         blockers.push({ min: [f.position[0] - 0.28, 0, f.position[1] - 0.28], max: [f.position[0] + 0.28, 3, f.position[1] + 0.28] });
       } else if (footprint) {
@@ -614,6 +782,42 @@ export class MuseumSceneKit extends SceneKit {
       }
     });
     return blockers;
+  }
+
+  /**
+   * Misión Visual: wall spans that a dado must leave open. Every wall anchor
+   * counts: a work or panel hung low enough that the dado would run behind it,
+   * and any anchor at floor level (an exit door, a doorway), always.
+   * Same offset convention as `_openingsFor` (along the wall, from the room centre).
+   */
+  _wallKeepClear(space, store, dadoTop) {
+    const [w, , d] = space.bounds.size;
+    const [ox, oy, oz] = space.bounds.origin;
+    const hung = new Map(store.entitiesOf(space.id).map((e) => [e.anchorId, e]));
+    const spans = [];
+    for (const anchor of store.anchorsOf(space.id)) {
+      if (anchor.kind !== 'WALL') continue;
+      const [x, y, z] = anchor.position;
+      const entity = hung.get(anchor.id);
+      let width;
+      if (entity) {
+        const [ew = 1, eh = 1] = entity.size || [];
+        if (y - eh / 2 - oy > dadoTop + 0.08) continue;
+        width = ew + 0.5;
+      } else if (y - oy < 0.5) {
+        width = 1.8; // a door at floor level
+      } else {
+        width = (anchor.extent?.[0] ?? 1) + 0.3;
+        if (y - (anchor.extent?.[1] ?? 1) / 2 - oy > dadoTop + 0.08) continue;
+      }
+      const distances = {
+        NORTH: Math.abs(z - (oz - d / 2)), SOUTH: Math.abs(z - (oz + d / 2)),
+        WEST: Math.abs(x - (ox - w / 2)), EAST: Math.abs(x - (ox + w / 2))
+      };
+      const wall = Object.entries(distances).sort((a, b) => a[1] - b[1])[0][0];
+      spans.push({ wall, offset: wall === 'NORTH' || wall === 'SOUTH' ? x - ox : z - oz, width });
+    }
+    return spans;
   }
 
   /* == barriers ============================================================= */
@@ -947,7 +1151,8 @@ export class MuseumSceneKit extends SceneKit {
               // that declares one — nothing kind-specific was needed here.
               { dark, width: 768, mark: media?.get(entity.id)?.texture?.image || null }
             ),
-            roughness: 0.94
+            roughness: 0.94,
+            userData: { exhibit: true }
           })
         );
         board.position.z = 0.012;
@@ -1091,6 +1296,30 @@ export class MuseumSceneKit extends SceneKit {
     }
     record.halo.visible = true;
     this._glowFrame(record, true);
+  }
+
+  /**
+   * The doorway the prompt offers to cross. Its spill brightens while the
+   * visitor stands where E or a tap would take them through, and settles back
+   * when they move away. Driven by the nearest hotspot, not by hotspot state:
+   * a crossed door's hotspot stays ACTIVE, and the cue must answer every visit.
+   */
+  setNearestDoor(hotspotId) {
+    for (const [id, cue] of this._doorCues) cue.nearTarget = id === hotspotId ? 1 : 0;
+  }
+
+  /** QA evidence: the cues each loaded doorway carries and how bright they are. */
+  doorCueReport() {
+    const rows = {};
+    for (const [hotspotId, cue] of this._doorCues) {
+      if (!this._spaces.has(cue.spaceId)) continue;
+      (rows[cue.spaceId] ||= []).push({
+        hotspotId, portalId: cue.portalId,
+        casing: Boolean(cue.group.getObjectByName('door-casing')),
+        beyond: cue.beyond, spill: +cue.spill.opacity.toFixed(3), near: +cue.near.toFixed(3)
+      });
+    }
+    return rows;
   }
 
   /**
@@ -2253,6 +2482,16 @@ export class MuseumSceneKit extends SceneKit {
     this._updateGuide(dt);
     this._updateVisitor(dt);
     this._updatePremiumInstallations(dt);
+    this._updateDoorCues(dt);
+  }
+
+  _updateDoorCues(dt) {
+    const k = 1 - Math.exp(-6 * (dt || 0.016));
+    for (const cue of this._doorCues.values()) {
+      if (Math.abs(cue.nearTarget - cue.near) < 0.002) cue.near = cue.nearTarget;
+      else cue.near += (cue.nearTarget - cue.near) * k;
+      cue.spill.opacity = cue.levels.spill + (cue.levels.near - cue.levels.spill) * cue.near;
+    }
   }
 
   _updatePremiumInstallations(dt) {

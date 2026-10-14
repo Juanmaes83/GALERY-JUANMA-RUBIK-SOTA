@@ -137,6 +137,32 @@ Es la fase con más impacto de negocio. Hoy lo que se personaliza **solo vive en
 | 5.2 | Compartir y enlazar a una obra o parada concreta | Bloque 9 |
 | 5.3 | Exportar como paquete de experiencia | Bloque 9 |
 
+## Misión visual — seis salas · *rama `mision-visual-limpia`, PR #3 abierta*
+
+Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION-VISUAL.md). Los datos V.1–V.12 describen la misión visual original de octubre de 2026. La rama ya contiene mejoras móviles (`af30d50`) y la PR #3 está abierta. La revisión visual humana y la prueba en teléfono físico siguen pendientes.
+
+| # | Tarea | Estado |
+|---|---|---|
+| V.1 | Suelos con acabado propio por sala (canvas 2D: color + relieve) | Hecho · visible en capturas SwiftShader |
+| V.2 | Jerarquía de luz en Galería A y Wet Paint (sin luces nuevas) | Hecho · visible en capturas |
+| V.3 | Oclusión en juntas y sombras de contacto (decal), marcos perfilados, cartelas con grosor | Hecho |
+| V.4 | Zócalos (Vestíbulo, Archivo), vigas (Archivo), retícula (Galería B) | Hecho; Archivo ya a la par de la base (antes +42 %) |
+| V.5 | Rendimiento: 5 iteraciones. Serie oficial 5+5 HIGH: arranque **−28,5 %**, cruces iguales o más rápidos; **Galería A, Galería B y Wet Paint +5…+9 % repetible** | **No validado** (fluidez); causa sin identificar |
+| V.6 | Serie móvil sobre la versión actual | **Pendiente** |
+| V.7 | GPU real y móvil real | **Pendiente** |
+| V.8 | Preview de la rama y revisión de Juanma | Rama publicada y PR #3 abierta; la revisión humana de los cambios Breeze sigue pendiente |
+| V.9 | `SHOP-STUDIO`: falla en la suite completa en base y candidata con el mismo detalle; aislado pasa 4/4 en ambas | Causa (2026-10-13): `press()` repetía por el DOM un clic que Playwright ya había enviado; la casilla «Visible en la tienda» volvía a marcarse. Ahora se inspecciona el estado antes de repetir (§14) |
+| V.10 | Incidencias intermitentes en capturas (§8 del informe) | **Pendiente** |
+| V.11 | `MOBILE-DOOR-TAP`: causa (5 programas de shader más en el primer fotograma del cruce, tier LOW sin precompilación) corregida en `176f7f7`; la suite completa ya solo falla en `SHOP-COLLIDE` y `SHOP-STUDIO`, como la base. Aislada, la prueba falla también en la base en este entorno (base 0/4, misión 1/4) | Corregido; prueba dependiente de SwiftShader |
+| V.12 | Móvil LOW, serie 5+5 (`176f7f7`): arranque **+9,5 %**, Galería A +5,5 %, Galería B +9 %, Archivo +12 % parado (SwiftShader) | Dato histórico; rendimiento físico aún pendiente, sin autorización de fusión |
+| V.13 | Breeze visible en la primera llegada a Galería B | Corregida la oclusión causada por la carcasa anidada adyacente; la segunda llegada encuentra las mismas salas que la primera. Rayos libres hasta el hueco en ambas (§14) |
+| V.14 | Acceso legible en Galería B oscura y en el resto de puertas | Señales comunes en todas las puertas (`door-cues.js`): marco de bronce, luz cálida en el suelo que responde al aviso y resplandor al fondo donde la sala de destino no se ve (Breeze, Archivo). Sin luces ni cambios de colisión (§14) |
+| V.15 | Panel Breeze separado entre Studio y visita | Oculto y sin reapertura en POV/Avatar; disponible y editable en Studio, incluso al alternar con vista de visitante. Un marco ilegible se trata como visita; el visitante restaura la personalización guardada (§14) |
+| V.16 | Ciclo de vida de las salas | Corregido (§14): la sala recién dejada ya no se reconstruye (dejaba copias en la escena) y una sala liberada a medio preparar ya no queda `READY` vacía (entrar en Breeze lanzaba `TypeError`). Prueba unitaria `tests/space-lifecycle.test.mjs` |
+| V.17 | Velo de entrada sobre la guía del teléfono | Corregido (§14): al pulsar «Entrar», el velo que se desvanece ya no intercepta los toques; «Empezar la visita» responde aunque el teléfono siga compilando la primera sala. Comprobación `MOBILE-ENTRY-VEIL` |
+| V.19 | Aviso de Breeze sin tarjeta gráfica | Corregido (§14): con WebGPU presente pero sin adaptador (aceleración desactivada o GPU apagada por Chrome), el aviso pide reiniciar el navegador en vez de decir que no ofrece WebGPU. Comprobación `BREEZE-NOTICE-REASON` |
+| V.18 | Recuperación tras un reinicio del proceso GPU | **Pendiente** (previo). Una pérdida de contexto WebGL corriente se recupera entera. Tras un reinicio del proceso GPU (fallo del controlador, falta de memoria), en cambio, los lienzos de textura vuelven vacíos y la sala se ve oscurecida hasta reconstruirse. `5b40747` lo disimulaba en B→A→B al reconstruir la sala, por la fuga que corrige §14. Propuesta: regenerar las texturas de lienzo al restaurarse el contexto (16 puntos en 7 archivos del Scene Kit) y comprobarlo con `Browser.crashGpuProcess` |
+
 ## Transversal — deuda técnica y calidad
 
 | # | Tarea |

@@ -1,0 +1,49 @@
+{
+  "root": "/home/claude/museo-objetivo",
+  "tier": "HIGH",
+  "mobile": false,
+  "bootMs": 45661,
+  "shots": [
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "general",
+      "position": [
+        7.1,
+        1.62,
+        -3.9000000000000004
+      ],
+      "yaw": 0.9778702478263349,
+      "pitch": 0.05,
+      "file": "itinerant-wet-paint--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 104,
+        "triangles": 4206
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "exposicion",
+      "entity": "entity.itinerant.original",
+      "position": [
+        8.6,
+        1.62,
+        0.5
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": 0.0076921559756487545,
+      "file": "itinerant-wet-paint--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 112,
+        "triangles": 3004
+      }
+    }
+  ],
+  "errors": [],
+  "totalMs": 229607
+}

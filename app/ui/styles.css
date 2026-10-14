@@ -95,7 +95,11 @@ kbd {
   z-index: 40;
   transition: opacity 0.7s ease;
 }
-.iw-veil.is-gone { opacity: 0; pointer-events: none; }
+/* `#iw-ui > *` turns pointer events back on for every panel and outranks a
+   class rule, so the fading veil kept catching taps — over the phone guide's
+   «Empezar la visita» — until the timer that hides it ran, seconds late on a
+   phone still compiling the first room. */
+#iw-ui > .iw-veil.is-gone, .iw-veil.is-gone { opacity: 0; pointer-events: none; }
 .iw-veil__inner { width: min(30rem, 88vw); text-align: left; }
 .iw-veil__mark {
   margin: 0 0 2.4rem;
@@ -141,6 +145,20 @@ kbd {
   color: var(--iw-ink-dim);
 }
 .iw-topbar__tools { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+.iw-topbar__extra { display: contents; }
+.iw-topbar__tools [data-el="moreBtn"] { display: none; }
+
+.iw-help {
+  position: absolute; inset: 0; z-index: 35; display: grid; place-items: center;
+  padding: 1rem; background: rgba(8, 7, 6, .92);
+}
+.iw-help__panel { width: min(30rem, 100%); max-height: 90dvh; overflow: auto; padding: 1.5rem; border: 1px solid var(--iw-line-strong); background: #100f0e; }
+.iw-help__eyebrow { color: var(--iw-ink-dim); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
+.iw-help h2 { margin: .5rem 0 1rem; font: 400 1.6rem/1.2 var(--iw-serif); }
+.iw-help p, .iw-help li { font-size: .88rem; line-height: 1.5; }
+.iw-help ol { padding-left: 1.3rem; margin: 1.2rem 0 1.5rem; }
+.iw-help li { margin-bottom: .7rem; }
+.iw-touch-zones { display: none; }
 
 /* -- proximity prompt ----------------------------------------------------- */
 
@@ -166,6 +184,7 @@ kbd {
   cursor: pointer;
 }
 .iw-prompt:focus-visible { outline: 2px solid #d9c9a5; outline-offset: 2px; }
+.iw-prompt:disabled { opacity: 1; cursor: progress; border-color: var(--iw-line-strong); }
 @media (hover: none) and (pointer: coarse) {
   .iw-prompt { min-height: 2.75rem; padding: 0.7rem 1.1rem; }
   .iw-prompt kbd { display: none; }
@@ -372,6 +391,11 @@ body[data-focused="true"] .iw-topbar__mark { opacity: 0.32; }
 .iw-map__node.is-active circle { fill: var(--iw-ink); stroke: var(--iw-ink); }
 .iw-map__node.is-active text { fill: var(--iw-ink); }
 .iw-map__note { margin: 1.4rem 0 0; font-size: 0.74rem; color: var(--iw-ink-dim); line-height: 1.6; }
+.iw-map__route { margin: .9rem 0; padding: .8rem; border-left: 2px solid var(--iw-ink); background: rgba(240,236,228,.06); font-size: .82rem; line-height: 1.5; }
+.iw-map__destinations { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.iw-map__destination { min-height: 2.75rem; padding: .45rem .65rem; border: 1px solid var(--iw-line-strong); background: transparent; color: var(--iw-ink); font: 500 .72rem/1.25 var(--iw-sans); cursor: pointer; }
+.iw-map__destination[aria-pressed="true"] { background: var(--iw-ink); color: #100f0e; }
+.iw-map__destination:focus-visible { outline: 2px solid #d9c9a5; outline-offset: 2px; }
 
 .iw-a11y section { margin-bottom: 2rem; }
 .iw-a11y h3 { margin: 0 0 0.8rem; font: 400 1rem/1.3 var(--iw-serif); }
@@ -396,16 +420,19 @@ body[data-focused="true"] .iw-topbar__mark { opacity: 0.32; }
 /* -- responsive ----------------------------------------------------------- */
 
 @media (max-width: 900px) {
-  .iw-topbar { padding: 1rem 1rem 1.6rem; flex-direction: column; align-items: stretch; gap: 0.6rem; }
-  /* Phone: one scrollable row of tools instead of three wrapped rows that took
-     a quarter of the screen; keyboard hints mean nothing without a keyboard. */
+  .iw-topbar { padding: 1rem 1rem 1.3rem; flex-direction: column; align-items: stretch; gap: 0.6rem; }
   .iw-topbar__tools {
-    justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto;
-    margin: 0 -1rem; padding: 0 1rem; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    justify-content: space-between; flex-wrap: nowrap; position: relative;
   }
-  .iw-topbar__tools::-webkit-scrollbar { display: none; }
-  .iw-topbar__tools .iw-btn { flex: none; white-space: nowrap; padding: 0.5rem 0.7rem; font-size: 0.64rem; }
+  .iw-topbar__tools .iw-btn { flex: none; white-space: nowrap; padding: 0.65rem 0.55rem; font-size: 0.64rem; min-height: 2.75rem; }
   .iw-topbar__tools kbd { display: none; }
+  .iw-topbar__tools [data-el="moreBtn"] { display: inline-flex; }
+  .iw-topbar__extra { display: none; position: absolute; right: 0; top: calc(100% + .4rem); z-index: 5; width: min(16rem, 90vw); padding: .5rem; border: 1px solid var(--iw-line-strong); background: #100f0e; box-shadow: 0 1rem 2rem rgba(0,0,0,.4); }
+  .iw-topbar__extra.is-open { display: grid; gap: .35rem; }
+  .iw-topbar__extra .iw-btn { width: 100%; justify-content: flex-start; }
+  .iw-touch-zones { position: absolute; left: 1rem; right: 1rem; bottom: 5.8rem; display: flex; justify-content: space-between; pointer-events: none; }
+  .iw-touch-zones__zone { width: 4.5rem; height: 4.5rem; border: 1px solid rgba(240,236,228,.65); border-radius: 50%; background: rgba(16,15,14,.62); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem; font-size: .68rem; color: #fff; text-shadow: 0 1px 3px #000; }
+  .iw-touch-zones__glyph { font-size: 1.45rem; line-height: 1; }
   /* Phone: the work owns the upper frame, the label sits under it as a sheet.
      A desktop sidebar collapsed to full width would bury the artwork. */
   .iw-label {
@@ -430,6 +457,14 @@ body[data-focused="true"] .iw-topbar__mark { opacity: 0.32; }
   .iw-detail__zoomBar { width: 3rem; }
   .iw-prompt { bottom: 1.2rem; font-size: 0.76rem; }
   .iw-transport__caption { font-size: 0.9rem; }
+}
+
+@media (max-width: 900px) and (max-height: 450px) and (orientation: landscape) {
+  .iw-topbar { flex-direction: row; align-items: flex-start; padding: .6rem 1rem 1rem; }
+  .iw-topbar__mark { flex: 0 1 15rem; }
+  .iw-topbar__tools { flex: 0 0 auto; gap: .3rem; }
+  .iw-topbar__tools .iw-btn { min-height: 2.75rem; padding: .55rem .5rem; }
+  .iw-touch-zones { bottom: 4.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -92,3 +92,41 @@ export const PROFILES = {
 export function profileFor(name) {
   return PROFILES[name] || PROFILES['white-cube'];
 }
+
+/**
+ * Misión Visual: lighting hierarchy per room.
+ *
+ * Captures showed that in the white rooms the generated environment (IBL) was
+ * doing most of the lighting: walls, floor and works all took the same flat
+ * image-based fill, so the track spots barely registered and nothing led the
+ * eye. Here the room's own surfaces take less of that fill (`env`), the direct
+ * fill and the skylight drop, and the spots rise — while the exhibits keep the
+ * full environment response (`exhibitEnv`). The works become the brightest
+ * thing in the room and the wall between them falls away, as the
+ * art-direction note at the top of this file asks.
+ *
+ * The lobby and the shop get a lighter touch (they need even light to read a
+ * panel or a shelf); the dark room and the archive were already lit this way.
+ */
+const ROOM_LIGHT = {
+  'space.gallery-a': { env: 0.5, ambient: 0.55, cove: 0.7, spot: 1.9, skylight: 0.7 },
+  'space.itinerant-wet-paint': { env: 0.5, ambient: 0.55, cove: 0.7, spot: 1.9, skylight: 0.7 },
+  'space.lobby': { env: 0.7, ambient: 0.85, cove: 1, spot: 1.4, skylight: 0.9 },
+  'space.shop': { env: 0.8, ambient: 1, cove: 1, spot: 1.15, skylight: 1 }
+};
+
+/** The profile for a space, with that room's lighting hierarchy applied. */
+export function profileForSpace(space) {
+  const base = profileFor(space.sceneProfile);
+  const t = ROOM_LIGHT[space.id];
+  if (!t) return base;
+  return {
+    ...base,
+    envIntensity: base.envIntensity * t.env,
+    exhibitEnvIntensity: base.envIntensity,
+    ambient: { ...base.ambient, intensity: base.ambient.intensity * t.ambient },
+    cove: { ...base.cove, intensity: base.cove.intensity * t.cove },
+    spot: { ...base.spot, intensity: base.spot.intensity * t.spot },
+    skylight: base.skylight ? { ...base.skylight, intensity: base.skylight.intensity * t.skylight, daylight: base.skylight.daylight * t.skylight } : base.skylight
+  };
+}

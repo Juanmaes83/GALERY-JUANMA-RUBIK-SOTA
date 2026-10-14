@@ -1,0 +1,35 @@
+{
+  "what": "Aviso de la Sala Breeze cuando no puede usar WebGPU, en sus dos casos.",
+  "commit": "92b89088c803db7e0c1a2eb9d0827ffe8f84a260",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "browser": "Bundled Chromium 141 (headless), WebGL sobre SwiftShader",
+  "route": [
+    "space.lobby",
+    "space.gallery-a",
+    "space.gallery-b",
+    "space.breeze"
+  ],
+  "tool": "guion de diagnóstico de la revisión (notice-probe.mjs, fuera del repositorio); no es una prueba automática",
+  "records": [
+    {
+      "file": "r2-notice-no-adapter-desktop.png",
+      "case": "navigator.gpu existe y requestAdapter() devuelve null (este Chromium sin --enable-unsafe-webgpu; un Chrome con la GPU apagada)",
+      "data-breeze-unavailable": "no-webgpu",
+      "data-breeze-reason": "no-adapter",
+      "title": "La tarjeta gráfica no está disponible",
+      "pageErrors": 0
+    },
+    {
+      "file": "r2-notice-no-api-desktop.png",
+      "case": "sin navigator.gpu (simulado con un script previo que elimina la propiedad)",
+      "data-breeze-unavailable": "no-webgpu",
+      "data-breeze-reason": "no-api",
+      "title": "Esta sala necesita WebGPU",
+      "pageErrors": 0
+    }
+  ],
+  "control": "Con --enable-unsafe-webgpu el invitado se carga (iframe presente) y no hay aviso."
+}

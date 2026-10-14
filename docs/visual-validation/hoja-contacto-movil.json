@@ -1,0 +1,98 @@
+[
+  {
+    "file": "lobby--general--movil.png",
+    "luma_mean_before": 185.2,
+    "luma_mean_after": 176.5,
+    "luma_std_before": 51.5,
+    "luma_std_after": 50.4,
+    "mean_abs_diff": 10.1
+  },
+  {
+    "file": "lobby--exposicion--movil.png",
+    "luma_mean_before": 200.3,
+    "luma_mean_after": 189.1,
+    "luma_std_before": 47.2,
+    "luma_std_after": 47.6,
+    "mean_abs_diff": 11.5
+  },
+  {
+    "file": "shop--general--movil.png",
+    "luma_mean_before": 168.9,
+    "luma_mean_after": 163.4,
+    "luma_std_before": 55.0,
+    "luma_std_after": 55.4,
+    "mean_abs_diff": 7.7
+  },
+  {
+    "file": "shop--exposicion--movil.png",
+    "luma_mean_before": 161.9,
+    "luma_mean_after": 156.6,
+    "luma_std_before": 56.9,
+    "luma_std_after": 56.1,
+    "mean_abs_diff": 6.6
+  },
+  {
+    "file": "gallery-a--general--movil.png",
+    "luma_mean_before": 179.9,
+    "luma_mean_after": 154.8,
+    "luma_std_before": 53.3,
+    "luma_std_after": 48.0,
+    "mean_abs_diff": 26.4
+  },
+  {
+    "file": "gallery-a--exposicion--movil.png",
+    "luma_mean_before": 136.1,
+    "luma_mean_after": 129.0,
+    "luma_std_before": 61.3,
+    "luma_std_after": 57.0,
+    "mean_abs_diff": 7.8
+  },
+  {
+    "file": "archive--general--movil.png",
+    "luma_mean_before": 80.2,
+    "luma_mean_after": 74.8,
+    "luma_std_before": 49.9,
+    "luma_std_after": 51.6,
+    "mean_abs_diff": 15.3
+  },
+  {
+    "file": "archive--exposicion--movil.png",
+    "luma_mean_before": 82.4,
+    "luma_mean_after": 80.5,
+    "luma_std_before": 73.5,
+    "luma_std_after": 73.4,
+    "mean_abs_diff": 1.8
+  },
+  {
+    "file": "gallery-b--general--movil.png",
+    "luma_mean_before": 20.3,
+    "luma_mean_after": 25.6,
+    "luma_std_before": 22.1,
+    "luma_std_after": 26.6,
+    "mean_abs_diff": 7.7
+  },
+  {
+    "file": "gallery-b--exposicion--movil.png",
+    "luma_mean_before": 45.5,
+    "luma_mean_after": 42.1,
+    "luma_std_before": 46.7,
+    "luma_std_after": 45.4,
+    "mean_abs_diff": 4.9
+  },
+  {
+    "file": "itinerant-wet-paint--general--movil.png",
+    "luma_mean_before": 168.0,
+    "luma_mean_after": 138.0,
+    "luma_std_before": 51.3,
+    "luma_std_after": 45.4,
+    "mean_abs_diff": 30.1
+  },
+  {
+    "file": "itinerant-wet-paint--exposicion--movil.png",
+    "luma_mean_before": 125.9,
+    "luma_mean_after": 117.0,
+    "luma_std_before": 59.3,
+    "luma_std_after": 54.0,
+    "mean_abs_diff": 9.8
+  }
+]

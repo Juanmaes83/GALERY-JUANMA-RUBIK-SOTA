@@ -1,0 +1,244 @@
+{
+  "root": "/home/claude/museo-baseline",
+  "tier": "auto",
+  "mobile": true,
+  "bootMs": 23133,
+  "shots": [
+    {
+      "spaceId": "space.lobby",
+      "view": "general",
+      "position": [
+        4.42,
+        1.62,
+        3.42
+      ],
+      "yaw": -2.330022457091107,
+      "pitch": 0.05,
+      "file": "lobby--general--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 142,
+        "triangles": 22845
+      }
+    },
+    {
+      "spaceId": "space.lobby",
+      "view": "exposicion",
+      "entity": "entity.lobby.bienvenida",
+      "position": [
+        -3.1,
+        1.62,
+        -1.7499999999999996
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": -0.026916574668058062,
+      "file": "lobby--exposicion--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 65,
+        "triangles": 20025
+      }
+    },
+    {
+      "spaceId": "space.shop",
+      "view": "general",
+      "position": [
+        -6.4,
+        1.62,
+        -3.6
+      ],
+      "yaw": -0.7014659595569215,
+      "pitch": 0.05,
+      "file": "shop--general--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 181,
+        "triangles": 23946
+      }
+    },
+    {
+      "spaceId": "space.shop",
+      "view": "exposicion",
+      "entity": "entity.shop.lamina-horizonte",
+      "position": [
+        -7.265000000000001,
+        1.62,
+        3.37
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": 0.07371235739434018,
+      "file": "shop--exposicion--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 62,
+        "triangles": 9087
+      }
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "view": "general",
+      "position": [
+        -6.9,
+        1.62,
+        -5.6
+      ],
+      "yaw": 2.2094111818125506,
+      "pitch": 0.05,
+      "file": "gallery-a--general--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 95,
+        "triangles": 21344
+      }
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "view": "exposicion",
+      "entity": "entity.artwork.horizonte-interrumpido",
+      "position": [
+        -0.9,
+        1.62,
+        -12.9
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": 0.0076921559756487545,
+      "file": "gallery-a--exposicion--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 18,
+        "triangles": 371
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "general",
+      "position": [
+        -8.84,
+        1.62,
+        -12.66
+      ],
+      "yaw": -1.0197860583268872,
+      "pitch": 0.05,
+      "file": "archive--general--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 18,
+        "triangles": 384
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "exposicion",
+      "entity": "entity.text.nota-de-cierre",
+      "position": [
+        -13.25,
+        1.62,
+        -10
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": -0.026916574668058062,
+      "file": "archive--exposicion--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 12,
+        "triangles": 144
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "general",
+      "position": [
+        9.1,
+        1.62,
+        -6.1
+      ],
+      "yaw": 2.278316588202834,
+      "pitch": 0.05,
+      "file": "gallery-b--general--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 64,
+        "triangles": 2232
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "exposicion",
+      "entity": "entity.artwork.noche-de-invierno",
+      "position": [
+        12.4,
+        1.62,
+        -12.25
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": -0.026916574668058062,
+      "file": "gallery-b--exposicion--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 29,
+        "triangles": 571
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "general",
+      "position": [
+        7.1,
+        1.62,
+        -3.9000000000000004
+      ],
+      "yaw": 0.9778702478263349,
+      "pitch": 0.05,
+      "file": "itinerant-wet-paint--general--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 68,
+        "triangles": 2206
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "exposicion",
+      "entity": "entity.itinerant.original",
+      "position": [
+        8.6,
+        1.62,
+        0.5
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": 0.0076921559756487545,
+      "file": "itinerant-wet-paint--exposicion--movil.png",
+      "policy": {
+        "tier": "LOW",
+        "shadows": false,
+        "textureScale": 0.5,
+        "calls": 74,
+        "triangles": 1836
+      }
+    }
+  ],
+  "errors": [],
+  "totalMs": 201691
+}

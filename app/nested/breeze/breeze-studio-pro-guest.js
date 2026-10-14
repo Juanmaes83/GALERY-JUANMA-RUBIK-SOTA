@@ -16,7 +16,8 @@ const STUDIO_INTERACTIVE_SELECTORS = ['.st-rail', '.st-tree', '.st-ed', '.st-val
 const MUSEUM_PASS_THROUGH_SELECTORS = ['.iw-prompt'];
 
 export class BreezeStudioProGuest {
-  constructor() {
+  constructor({ isAuthoring = () => false } = {}) {
+    this.isAuthoring = isAuthoring;
     this.iframe = null;
     this.notice = null;
     this.canvas = null;
@@ -85,7 +86,7 @@ export class BreezeStudioProGuest {
    * that this browser can run it (Breeze simulates its cloth with WebGPU). Either
    * failure becomes an explicit Museum notice with a way out, never a 404 or the
    * product's raw English error inside the room.
-   * @returns {Promise<'ok'|'missing'|'no-webgpu'>}
+   * @returns {Promise<'ok'|'missing'|'no-webgpu'|'no-adapter'>}
    */
   async _availability() {
     try {
@@ -94,20 +95,25 @@ export class BreezeStudioProGuest {
     } catch {
       return 'missing';
     }
+    // Two different cases behind «no WebGPU»: a browser without the API, and a
+    // browser that has it but gets no graphics adapter right now (hardware
+    // acceleration off, or the GPU switched off after its process failed). The
+    // second is solved by restarting the browser, not by changing it.
     try {
       if (!navigator.gpu) return 'no-webgpu';
       const adapter = await navigator.gpu.requestAdapter();
-      return adapter ? 'ok' : 'no-webgpu';
+      return adapter ? 'ok' : 'no-adapter';
     } catch {
-      return 'no-webgpu';
+      return 'no-adapter';
     }
   }
 
-  _mountNotice(stage, { kind, title, body, retry = false }) {
+  _mountNotice(stage, { kind, reason = null, title, body, retry = false }) {
     this.notice?.remove();
     const notice = document.createElement('div');
     notice.dataset.nestedRoomStudio = 'room.breeze';
     notice.dataset.breezeUnavailable = kind;
+    if (reason) notice.dataset.breezeReason = reason;
     notice.setAttribute('role', 'status');
     Object.assign(notice.style, {
       position: 'absolute', inset: '0', zIndex: '13', display: 'grid', placeItems: 'center',
@@ -170,6 +176,18 @@ export class BreezeStudioProGuest {
     attach();
   }
 
+  setAuthoringMode(enabled) {
+    if (!this.iframe) return;
+    this.iframe.dataset.museumMode = enabled ? 'authoring' : 'visitor';
+    try {
+      const guest = this.iframe.contentWindow;
+      if (guest?.__BREEZE_MUSEUM_PANEL?.sync) guest.__BREEZE_MUSEUM_PANEL.sync();
+      // No hook yet: the guest reads data-museum-mode when its script starts,
+      // and the class is what hides the panel until then.
+      else guest?.document?.body?.classList.toggle('bs-museum-visitor', !enabled);
+    } catch { /* guest not reachable yet: it reads data-museum-mode on start */ }
+  }
+
   async prepare({ canvas }) {
     this.canvas = canvas;
     const stage = canvas?.parentElement;
@@ -186,10 +204,19 @@ export class BreezeStudioProGuest {
           title: 'Sala no disponible en esta edición',
           body: 'Esta sala se ejecuta con Breeze Studio PRO y no está disponible en este despliegue. El resto del museo sigue abierto: vuelve a Galería B para continuar la visita.'
         });
+      } else if (availability === 'no-adapter') {
+        this.error = 'WebGPU sin tarjeta gráfica disponible';
+        this._mountNotice(stage, {
+          kind: 'no-webgpu',
+          reason: 'no-adapter',
+          title: 'La tarjeta gráfica no está disponible',
+          body: 'Tu navegador tiene WebGPU, pero ahora mismo no puede usar la tarjeta gráfica, donde se simulan la tela y el viento de esta instalación. Suele pasar si la aceleración por hardware está desactivada o si el navegador la ha apagado tras un fallo. Reinicia el navegador y vuelve a entrar; si sigue igual, activa «Usar aceleración gráfica cuando esté disponible» en su configuración. También puedes continuar la visita en Galería B.'
+        });
       } else {
         this.error = 'WebGPU no disponible en este navegador';
         this._mountNotice(stage, {
           kind: 'no-webgpu',
+          reason: 'no-api',
           title: 'Esta sala necesita WebGPU',
           body: 'La tela y el viento de esta instalación se simulan en la tarjeta gráfica con WebGPU, y este navegador no lo ofrece. Ábrela con un navegador compatible (por ejemplo, Chrome o Edge actualizados) o continúa la visita en Galería B.'
         });
@@ -199,6 +226,7 @@ export class BreezeStudioProGuest {
 
     const iframe = document.createElement('iframe');
     iframe.dataset.nestedRoomStudio = 'room.breeze';
+    iframe.dataset.museumMode = this.isAuthoring() ? 'authoring' : 'visitor';
     iframe.title = 'Sala Breeze — Breeze Studio PRO V4.1 original';
     iframe.src = BREEZE_STUDIO_PRO_V41_URL;
     iframe.allow = 'autoplay; fullscreen';
@@ -291,6 +319,7 @@ export class BreezeStudioProGuest {
       hasIframe: Boolean(this.iframe?.isConnected),
       unavailable: Boolean(this.notice?.isConnected),
       notice: this.notice?.isConnected ? this.notice.dataset.breezeUnavailable : null,
+      noticeReason: this.notice?.isConnected ? this.notice.dataset.breezeReason || null : null,
       hasMuseumPose: Boolean(this.lastPose)
     };
   }

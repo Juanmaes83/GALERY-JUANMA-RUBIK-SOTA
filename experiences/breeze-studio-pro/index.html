@@ -64,6 +64,13 @@
       pointer-events: none !important;
       transform: translateX(calc(100% + 24px)) !important;
     }
+    body.bs-museum-visitor #breezeStudioPanel,
+    body.bs-museum-visitor #bsMuseumPanelHide,
+    body.bs-museum-visitor #bsMuseumPanelShow {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
     #bsMuseumPanelHide,
     #bsMuseumPanelShow {
       box-sizing: border-box;
@@ -112,15 +119,39 @@
 <script>
 (() => {
   const KEY = 'iw:breeze:panelCollapsed';
+  // Standalone, Breeze Studio PRO is its own authoring tool. Inside the Museum
+  // the host's iframe says which mode applies; a frame that cannot be read is
+  // a visit, never an authoring session.
+  const isAuthoring = () => {
+    if (window.parent === window) return true;
+    try { return window.frameElement?.dataset.museumMode === 'authoring'; } catch { return false; }
+  };
   const setCollapsed = (collapsed) => {
+    if (!isAuthoring() && !collapsed) return false;
     const panel = document.getElementById('breezeStudioPanel');
     if (!panel) return false;
     panel.classList.toggle('bs-museum-panel-hidden', collapsed);
     document.body.classList.toggle('bs-museum-panel-collapsed', collapsed);
-    sessionStorage.setItem(KEY, collapsed ? '1' : '0');
+    if (isAuthoring()) sessionStorage.setItem(KEY, collapsed ? '1' : '0');
     const hide = document.getElementById('bsMuseumPanelHide');
     if (hide) hide.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
     return true;
+  };
+  const syncMode = () => {
+    const authoring = isAuthoring();
+    document.body.classList.toggle('bs-museum-visitor', !authoring);
+    return setCollapsed(!authoring || sessionStorage.getItem(KEY) === '1');
+  };
+
+  // Hide visitor controls before the imported UI has finished mounting, and
+  // answer the host's mode changes from the start: the panel can take longer
+  // than the install loop below to appear on a slow device.
+  document.body.classList.toggle('bs-museum-visitor', !isAuthoring());
+  window.__BREEZE_MUSEUM_PANEL = {
+    hide: () => setCollapsed(true),
+    show: () => setCollapsed(false),
+    sync: syncMode,
+    get collapsed() { return document.body.classList.contains('bs-museum-panel-collapsed'); }
   };
 
   const activate = (element, handler) => {
@@ -159,12 +190,7 @@
       document.body.appendChild(show);
     }
 
-    setCollapsed(sessionStorage.getItem(KEY) === '1');
-    window.__BREEZE_MUSEUM_PANEL = {
-      hide: () => setCollapsed(true),
-      show: () => setCollapsed(false),
-      get collapsed() { return document.body.classList.contains('bs-museum-panel-collapsed'); }
-    };
+    syncMode();
     return true;
   };
 

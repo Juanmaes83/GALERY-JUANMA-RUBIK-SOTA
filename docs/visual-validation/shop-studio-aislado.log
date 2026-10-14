@@ -1,0 +1,10 @@
+# SHOP-STUDIO aislado (scratchpad shop-studio.mjs), base 4f0c01c y candidata alternas, 2026-10-05
+== base 1
+/home/claude/museo-baseline [{"pass":true,"shop":{"price":42,"anchor":"anchor.shop.vitrina-1","postales":false},"checkbox":{"before":true,"after":false},"clicks":["dom","click","click","click"],"savedHasVisibleFalse":true},{"pass":true,"shop":{"price":42,"anchor":"anchor.shop.vitrina-1","postales":false},"checkbox":{"before":true,"after":false},"clicks":["dom","click","click","click"],"savedHasVisibleFalse":true}]
+== cand 1
+/home/claude/museo-objetivo [{"pass":true,"shop":{"price":42,"anchor":"anchor.shop.vitrina-1","postales":false},"checkbox":{"before":true,"after":false},"clicks":["dom","click","click","click"],"savedHasVisibleFalse":true},{"pass":true,"shop":{"price":42,"anchor":"anchor.shop.vitrina-1","postales":false},"checkbox":{"before":true,"after":false},"clicks":["dom","click","click","click"],"savedHasVisibleFalse":true}]
+== base 2
+/home/claude/museo-baseline [{"pass":true,"shop":{"price":42,"anchor":"anchor.shop.vitrina-1","postales":false},"checkbox":{"before":true,"after":false},"clicks":["dom","click","click","click"],"savedHasVisibleFalse":true},{"pass":true,"shop":{"price":42,"anchor":"anchor.shop.vitrina-1","postales":false},"checkbox":{"before":true,"after":false},"clicks":["dom","click","click","click"],"savedHasVisibleFalse":true}]
+== cand 2
+/home/claude/museo-objetivo [{"pass":true,"shop":{"price":42,"anchor":"anchor.shop.vitrina-1","postales":false},"checkbox":{"before":true,"after":false},"clicks":["dom","click","click","click"],"savedHasVisibleFalse":true},{"pass":true,"shop":{"price":42,"anchor":"anchor.shop.vitrina-1","postales":false},"checkbox":{"before":true,"after":false},"clicks":["dom","click","click","click"],"savedHasVisibleFalse":true}]
+DONE

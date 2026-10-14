@@ -149,7 +149,19 @@ export async function boot() {
       if (hud.endVisitOpen) return;
       if (runtime.state.mode === EXPERIENCE_MODE.GUIDED) return;
       if (runtime.state.focusedEntityId) runtime.releaseFocus();
-      else runtime.activateNearest();
+      else {
+        if (hud.portalBusy) return;
+        const portal = runtime.proximity.nearestHotspot?.action?.type === 'ACTIVATE_PORTAL';
+        if (portal) { hud.portalBusy = true; hud.update(); }
+        try {
+          Promise.resolve(runtime.activateNearest()).finally(() => {
+            if (portal) { hud.portalBusy = false; hud.update(); }
+          });
+        } catch (error) {
+          if (portal) { hud.portalBusy = false; hud.update(); }
+          throw error;
+        }
+      }
     },
     onEscape: () => {
       if (hud.endVisitOpen) return hud.hideEndVisit();
@@ -182,12 +194,14 @@ export async function boot() {
   hud.onActivate = () => input.callbacks.onActivate?.();
 
   // The work the prompt names is outlined, so «E · Observar de cerca …» is never
-  // ambiguous between two works in range. Nothing is outlined while a work is
-  // open or while the guided route holds the camera.
+  // ambiguous between two works in range; the doorway it names brightens its
+  // threshold. Nothing responds while a work is open or while the guided route
+  // holds the camera.
   const outlineNearest = () => {
     const hotspot = runtime.proximity.nearestHotspot;
     const quiet = runtime.state.focusedEntityId || runtime.state.mode === EXPERIENCE_MODE.GUIDED;
     sceneKit.setNearestEntity?.(quiet ? null : hotspot?.entityId || null);
+    sceneKit.setNearestDoor?.(quiet || hotspot?.action?.type !== 'ACTIVATE_PORTAL' ? null : hotspot.id);
   };
   runtime.bus.on(EVENTS.WORLD_STATE_CHANGED, outlineNearest);
   runtime.bus.on(EVENTS.ENTITY_FOCUSED, outlineNearest);
@@ -304,6 +318,7 @@ const portalVariant = (params.get('portalVariant') || 'D').toUpperCase();
     openBtn.onclick = () => panel.root.classList.toggle('au--hidden');
     window.__IW_PANEL = panel;
   }
+  nested.setAuthoringMode(Boolean(window.__IW_STUDIO?.root?.isConnected || window.__IW_PANEL?.root?.isConnected));
 
   const requestedState = params.get('state');
   installProbe({ runtime, renderHost, sceneKit, hud, audio, input, mediaLoader, tier, seed, reducedMotion });
@@ -405,8 +420,11 @@ async function mountStudio({ world, activeConfig, vault, boot, runtime }) {
     // furniture in it.
     onStart: async (config) => {
       window.__IW_CONFIG = config;
-      studio.destroy();
+      // An unapplied edit rebuilds the preview before START. That rebuild also
+      // creates a new StudioShell, so this closure's `studio` can be stale.
+      (window.__IW_STUDIO || studio).destroy();
       delete document.body.dataset.studio;
+      window.__IW?.nested?.setAuthoringMode(false);
       const url = new URL(location.href);
       url.searchParams.delete('authoring');
       history.replaceState(null, '', url);
