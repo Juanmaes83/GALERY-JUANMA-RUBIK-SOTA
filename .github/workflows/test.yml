@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -21,5 +21,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm test
+      - name: Studio layout and save/apply
+        run: npm run test:studio-layout
       - name: whitespace (árbol completo; ver .gitattributes)
         run: git diff --check $(git hash-object -t tree /dev/null) HEAD

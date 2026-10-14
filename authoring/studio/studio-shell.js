@@ -1053,12 +1053,16 @@ export class StudioShell {
    * not a styling nit. Inherited values are shown as values, marked as inherited,
    * and the mark disappears the moment the author takes ownership of the field.
    */
-  _field(label, path, value, { hint = '', inherited = '', area = false, rows = 4 } = {}) {
+  _field(label, path, value, { hint = '', inherited = '', area = false, rows = 4, singleLine = false } = {}) {
     const owned = value != null && value !== '';
     const shown = owned ? value : inherited;
     const state = owned ? 'own' : inherited ? 'inherited' : 'empty';
+    // `singleLine`: a one-line value (credits, rights) that still wraps on screen
+    // so it is read whole instead of scrolled inside a box. The stored value
+    // never gains a line break: studio-layout-ux.js ignores Enter there and turns
+    // pasted line breaks into spaces before the value is written.
     const control = area
-      ? `<textarea rows="${rows}" data-bind="${path}" data-state="${state}" placeholder="Sin texto">${esc(shown || '')}</textarea>`
+      ? `<textarea rows="${rows}" data-bind="${path}" data-state="${state}"${singleLine ? ' data-single-line="1"' : ''} placeholder="${singleLine ? 'Sin dato' : 'Sin texto'}">${esc(shown || '')}</textarea>`
       : `<input data-bind="${path}" data-state="${state}" value="${esc(shown || '')}" title="${esc(shown || '')}" placeholder="Sin dato">`;
     return `
       <label class="st-f">
@@ -1790,8 +1794,8 @@ export class StudioShell {
     hint: `El texto que se graba. Que complemente la cartela, no que la lea. Orientación: ${lo}–${hi} s.` })}
       ${this._field('Transcripción', path('transcript'), own.transcript, { area: true, rows: 6, inherited: base.transcript || '',
     hint: 'Lo que el visitante lee: siempre visible, haya audio o no.' })}
-      ${this._field('Créditos', path('credits'), own.credits, { inherited: base.credits || '', hint: 'Voz, guion, grabación' })}
-      ${this._field('Derechos', path('rights'), own.rights, { inherited: base.rights || '', hint: 'Licencia o permiso de cada audio y texto' })}
+      ${this._field('Créditos', path('credits'), own.credits, { area: true, rows: 2, singleLine: true, inherited: base.credits || '', hint: 'Voz, guion, grabación' })}
+      ${this._field('Derechos', path('rights'), own.rights, { area: true, rows: 2, singleLine: true, inherited: base.rights || '', hint: 'Licencia o permiso de cada audio y texto' })}
       <label class="st-f"><span class="st-l">Estado editorial</span>
         <select data-bind="${esc(path('editorial'))}">
           ${Object.entries(EDITORIAL).map(([k, label]) => `<option value="${k}" ${resolved.editorial === k ? 'selected' : ''}>${esc(label)}</option>`).join('')}

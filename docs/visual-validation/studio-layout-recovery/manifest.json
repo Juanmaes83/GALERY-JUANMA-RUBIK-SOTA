@@ -1,0 +1,111 @@
+{
+  "capturedOn": "2026-10-14",
+  "sourceBase": "201951c8d972dc8617b54c941615808dba9b59e3",
+  "browser": "Chromium 141.0.7390.37 / Playwright 1.56.1",
+  "renderer": "SwiftShader; móvil emulado",
+  "validatedBlobHashes": {
+    "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
+    "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
+    "authoring/studio/studio-layout-ux.css": "63be77954e10fb248de25fb3dce849af47b56893",
+    "authoring/studio/studio-layout-ux.js": "1ccc271a5102a2fc0481c8f500968b6f27acaac1"
+  },
+  "runs": [
+    {
+      "checks": 28,
+      "result": "PASS",
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 900,
+          "editor": 475.1875,
+          "center": 568.8125
+        },
+        {
+          "width": 1180,
+          "height": 800,
+          "editor": 354,
+          "center": 566
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "editor": 390
+        }
+      ],
+      "note": "Primera serie; CSS posterior solo cambia la cabecera móvil."
+    },
+    {
+      "checks": 7,
+      "result": "PASS",
+      "viewports": [
+        {
+          "width": 390,
+          "height": 844
+        }
+      ],
+      "note": "Serie móvil final tras corregir la superposición de la barra."
+    },
+    {
+      "checks": 4,
+      "result": "PASS",
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 900
+        }
+      ],
+      "note": "Límite real de la vista 3D al ampliar el inspector en Contenido y Experiencia. Los anchos de columnas se leen del grid calculado, no de tokens CSS clamp()."
+    }
+  ],
+  "images": [
+    {
+      "file": "studio-1440.webp",
+      "bytes": 22422,
+      "sha256": "fb12c03cf3c87cb87bc3295b46dc3f22f8c4e634e9cd2f6c4b9a767972f998b1",
+      "captureBlobHashes": {
+        "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
+        "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
+        "authoring/studio/studio-layout-ux.css": "05b8fea212e3e01f89ccaee0ebd8590680c9627d",
+        "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+      }
+    },
+    {
+      "file": "studio-390.webp",
+      "bytes": 15388,
+      "sha256": "98b9a2a12d4c471b0bc728e78056af199b3f763ec99557a47088758088e1076a",
+      "captureBlobHashes": {
+        "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
+        "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
+        "authoring/studio/studio-layout-ux.css": "63be77954e10fb248de25fb3dce849af47b56893",
+        "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+      }
+    },
+    {
+      "file": "studio-texto-completo.webp",
+      "bytes": 36668,
+      "sha256": "5bff4fd9433135860b39f03fd5b81c6d21cf7130ee55096d191e6fa45b53d9d1",
+      "captureBlobHashes": {
+        "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
+        "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
+        "authoring/studio/studio-layout-ux.css": "05b8fea212e3e01f89ccaee0ebd8590680c9627d",
+        "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+      }
+    }
+  ],
+  "limits": [
+    "Sin teléfono ni GPU físicos",
+    "El inspector contiene texto de QA solo en la sesión de prueba"
+  ],
+  "captureNotes": "Las capturas de escritorio preceden a la corrección de la cabecera móvil (solo media max-width 900px). La captura móvil es posterior. La corrección final del separador cambia el cálculo del límite al redimensionar Contenido/Experiencia, no el aspecto de estas capturas de Construir.",
+  "generalSuite": {
+    "command": "npm test",
+    "result": "PASS",
+    "checks": 146,
+    "exitCode": 0,
+    "durationMs": 1613428
+  },
+  "ci": {
+    "result": "NOT_STARTED",
+    "reason": "GitHub account billing lock; job executed zero steps"
+  }
+}
