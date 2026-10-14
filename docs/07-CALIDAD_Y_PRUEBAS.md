@@ -96,3 +96,5 @@ Desde la consola del navegador:
 PR #3 aprobada y fusionada; PR #4 consolidada en main. La suite aprobada pasó 146 comprobaciones en Chromium/SwiftShader y su CI fue correcta en `4ce5856`. La recuperación del inspector añade `npm run test:studio-layout`: anchura/desbordamiento, separador accesible, «Proyecto» plegable, textos completos y guardar → recargar → aplicar a 1440, 1180 y 390 px. La CI de la candidata de Studio ejecuta esa prueba además de la suite general.
 
 Las cifras y límites históricos permanecen en MISION-VISUAL. Siguen pendientes Safari/iOS, Chrome/Android físicos, mediciones de rendimiento y V.18 (reinicio del proceso GPU).
+
+La recuperación del Studio terminó `npm test` con 146 comprobaciones correctas, salida 0 (26,9 min). Las pruebas dirigidas fueron 28 + 7 de móvil final + 4 de límites de áreas, con casos repetidos entre pasadas; no se suman como casos únicos. La CI de PR #5 no ha iniciado pasos por bloqueo de facturación de la cuenta. El workflow de la candidata usa Ubuntu 24.04 / Node 22 para mantener estable el entorno de Playwright.

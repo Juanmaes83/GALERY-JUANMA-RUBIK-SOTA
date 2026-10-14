@@ -69,7 +69,7 @@ Leyenda: ✅ hecho · 🟡 en curso · 👁 hecho, pendiente de puerta humana ·
 | 0.3 | Salida de la Sala Breeze con ratón y teclado; aviso de proximidad correcto | ✅ |
 | 0.4 | Suite propia: `npm run check` y `npm test` | ✅ |
 | 0.5 | Documentación vigente en `docs/` y este roadmap | ✅ actualización 14/10/2026; historial anterior identificado como histórico |
-| 0.6 | CI en GitHub Actions con pruebas en cada PR | ✅ versión aprobada `4ce5856` verde (run 38381967222); la candidata Studio añade comprobación específica |
+| 0.6 | CI en GitHub Actions con pruebas en cada PR | ✅ versión aprobada `4ce5856` verde (run 38381967222); candidata Studio: CLI correcta, CI no iniciada por bloqueo de facturación |
 | 0.7 | Consolidar la versión aprobada en `main` y ponerla como rama por defecto | ✅ integración mediante PR #4; PR #1/#2 integradas. ⏳ cambio de rama por defecto (permiso de administración) |
 | 0.8 | Licencia del código propio | ⏳ Juanma |
 | 0.9 | Preview en Vercel (sin build, salida `.`), abierto sin iniciar sesión | ✅ proyecto solo de preview, sin Git ni producción; recorrido Studio → visita comprobado en el propio preview (Chromium headless, SwiftShader) |
@@ -177,7 +177,7 @@ Detalle, mediciones, pruebas y capturas en [`docs/MISION-VISUAL.md`](docs/MISION
 | Orden | Tarea | Estado / criterio de cierre |
 |---|---|---|
 | C.1 | Una base canónica actual en main | ✅ PR #4; queda cambiar la rama por defecto en ajustes de GitHub |
-| C.2 | Recuperar el inspector ancho del Studio | Candidata `fix/studio-layout-canonical`; portar solo UI de la rama antigua, validar guardar/aplicar, revisión visual nueva |
+| C.2 | Recuperar el inspector ancho del Studio | Candidata en PR #5: inspector ancho, Proyecto plegable y cabecera móvil; comprobaciones dirigidas correctas y suite general 146/146 en entorno emulado. Revisión visual nueva pendiente |
 | C.3 | Calidad física y estabilidad | Safari/iPhone y Chrome/Android, POV/Avatar, puertas y vuelta; V.18 pendiente. No confundir emulación con rendimiento real |
 | C.4 | Optimizar carga | Avatar ≤5 MB como objetivo con comparación visual; Wet Paint bajo demanda; no degradar controles ni aspecto |
 | C.5 | Preparar Studio para publicación | T.1 antes de backend; decisión 2.1; medios durables 2.2, versión publicada 2.3 y autores autenticados 2.5 |

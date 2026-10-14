@@ -61,28 +61,51 @@
     {
       "file": "studio-1440.webp",
       "bytes": 22422,
-      "sha256": "fb12c03cf3c87cb87bc3295b46dc3f22f8c4e634e9cd2f6c4b9a767972f998b1"
+      "sha256": "fb12c03cf3c87cb87bc3295b46dc3f22f8c4e634e9cd2f6c4b9a767972f998b1",
+      "captureBlobHashes": {
+        "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
+        "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
+        "authoring/studio/studio-layout-ux.css": "05b8fea212e3e01f89ccaee0ebd8590680c9627d",
+        "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+      }
     },
     {
       "file": "studio-390.webp",
       "bytes": 15388,
-      "sha256": "98b9a2a12d4c471b0bc728e78056af199b3f763ec99557a47088758088e1076a"
+      "sha256": "98b9a2a12d4c471b0bc728e78056af199b3f763ec99557a47088758088e1076a",
+      "captureBlobHashes": {
+        "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
+        "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
+        "authoring/studio/studio-layout-ux.css": "63be77954e10fb248de25fb3dce849af47b56893",
+        "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+      }
     },
     {
       "file": "studio-texto-completo.webp",
       "bytes": 36668,
-      "sha256": "5bff4fd9433135860b39f03fd5b81c6d21cf7130ee55096d191e6fa45b53d9d1"
+      "sha256": "5bff4fd9433135860b39f03fd5b81c6d21cf7130ee55096d191e6fa45b53d9d1",
+      "captureBlobHashes": {
+        "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
+        "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
+        "authoring/studio/studio-layout-ux.css": "05b8fea212e3e01f89ccaee0ebd8590680c9627d",
+        "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+      }
     }
   ],
   "limits": [
     "Sin teléfono ni GPU físicos",
     "El inspector contiene texto de QA solo en la sesión de prueba"
   ],
-  "captureBlobHashes": {
-    "index.html": "a231717659f8bf7491d1df137cac75a5b3022626",
-    "authoring/studio/studio-shell.js": "d436ba255e2619c13438465e7f2ba08ab4fc78b0",
-    "authoring/studio/studio-layout-ux.css": "63be77954e10fb248de25fb3dce849af47b56893",
-    "authoring/studio/studio-layout-ux.js": "3350e8bf13cd1fb1bf945eac6fd5df7262de0093"
+  "captureNotes": "Las capturas de escritorio preceden a la corrección de la cabecera móvil (solo media max-width 900px). La captura móvil es posterior. La corrección final del separador cambia el cálculo del límite al redimensionar Contenido/Experiencia, no el aspecto de estas capturas de Construir.",
+  "generalSuite": {
+    "command": "npm test",
+    "result": "PASS",
+    "checks": 146,
+    "exitCode": 0,
+    "durationMs": 1613428
   },
-  "captureNotes": "Capturas de Construir; la corrección final del separador solo afecta al cálculo del límite al redimensionar otras áreas, no al aspecto de estas capturas."
+  "ci": {
+    "result": "NOT_STARTED",
+    "reason": "GitHub account billing lock; job executed zero steps"
+  }
 }
