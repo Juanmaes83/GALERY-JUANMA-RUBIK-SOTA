@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="./authoring/studio/museum-phase2.css">
   <link rel="stylesheet" href="./authoring/studio/museum-phase2-hardening.css">
   <link rel="stylesheet" href="./authoring/studio/avatar-phase5.css">
+  <link rel="stylesheet" href="./authoring/studio/studio-layout-ux.css">
   <link rel="stylesheet" href="./app/audioguide/audioguide.css">
   <script type="importmap">
     { "imports": { "three": "./vendor/three/three.module.min.js" } }
@@ -34,6 +35,7 @@
     import { installMuseumAvatarStudioPhase5 } from './authoring/studio/avatar-phase5.js';
     import { installMuseumAvatarVisibilityContinuity } from './authoring/studio/avatar-phase5-visibility-continuity.js';
     import { installMuseumAvatarMotionPhase5 } from './authoring/studio/avatar-phase5-motion.js';
+    import { installStudioLayoutUx } from './authoring/studio/studio-layout-ux.js';
     // Proven Breeze V4.1 persistence seam. The room remains a specialized
     // nested runtime; this only connects its existing panel to Museum Studio.
     import './authoring/studio/breeze-persistence-adapter.js';
@@ -52,6 +54,7 @@
       installMuseumAvatarStudioPhase5();
       await installMuseumAvatarVisibilityContinuity();
       installMuseumAvatarMotionPhase5();
+      installStudioLayoutUx();
 
       // Character / Avatar 2027 — bounded opt-ins.
       // Phase 6 layers only over the already-proven free Character foundation.
