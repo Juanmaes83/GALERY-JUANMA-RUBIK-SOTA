@@ -1,0 +1,33 @@
+{
+  "records": [
+    {
+      "file": "studio-mobile-portrait-breeze-panel-visible.png",
+      "spaceId": "space.breeze",
+      "mode": "Studio",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browser": "Chrome / Chromium",
+      "rendering": {
+        "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5070 Ti (0x00002C05) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "webgpu": true
+      },
+      "route": [
+        "space.lobby",
+        "space.gallery-a",
+        "space.gallery-b",
+        "space.breeze"
+      ],
+      "commit": "d655e2c11ac37bdbefc203c0393b9607bcdca56c",
+      "result": "captured after assertions"
+    }
+  ],
+  "result": "PASS",
+  "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found) {\"url\":\"http://127.0.0.1:4213/favicon.ico\",\"lineNumber\":0,\"columnNumber\":0}"
+  ],
+  "failedRequests": [
+    "HEAD http://127.0.0.1:4213/experiences/breeze-studio-pro/index.html net::ERR_ABORTED"
+  ]
+}

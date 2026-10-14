@@ -1,0 +1,34 @@
+{
+  "assetId": "museum.marble-bust-01-1k",
+  "name": "Marble Bust 01",
+  "author": "Rico Cilliers",
+  "source": "Poly Haven",
+  "sourceUrl": "https://polyhaven.com/a/marble_bust_01",
+  "apiUrl": "https://api.polyhaven.com/files/marble_bust_01",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://polyhaven.com/license",
+  "sourceFormat": "glTF 2.0 with external binary and three 1K JPEG textures",
+  "runtimeFormat": "self-contained GLB 2.0",
+  "conversion": "glTF-Transform 4.5.0 copy; packaging only, no geometry reduction",
+  "geometry": {
+    "triangles": 17456,
+    "vertices": 9746,
+    "materials": 1,
+    "textures": 3,
+    "animations": 0
+  },
+  "runtimeBytes": 897296,
+  "runtimeSha256": "846a99ead6340cffbbe2492328ff030d9a53bd2201385195d6ebd21ab63263a5",
+  "sourceMd5": {
+    "marble_bust_01_1k.gltf": "599d6dd71c2dcdffa064b1c1d85882f4",
+    "marble_bust_01.bin": "1c62c1189a0e8985618c1662e1bd25a3",
+    "marble_bust_01_nor_gl_1k.jpg": "134149a7e8f142fcb605f0bde52b3ff6",
+    "marble_bust_01_diff_1k.jpg": "aede40cc2b092d91a5f72598c911da4f",
+    "marble_bust_01_rough_1k.jpg": "9fdff7b2b17d12fcc478de3021f561dd"
+  },
+  "semanticRole": "invited-sculpture-and-material-light-benchmark",
+  "interactionRole": "existing proximity, focus and inspection action path",
+  "collision": "semantic plinth box",
+  "lod": "single 1K web asset; fallback authored geometry on load failure",
+  "approval": "candidate awaiting human visual validation"
+}

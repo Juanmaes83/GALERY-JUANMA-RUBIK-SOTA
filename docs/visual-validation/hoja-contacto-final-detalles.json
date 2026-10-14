@@ -1,0 +1,114 @@
+[
+  {
+    "file": "lobby--detalle-obra.png",
+    "luma_mean_before": 199.2,
+    "luma_mean_after": 185.4,
+    "luma_std_before": 47.3,
+    "luma_std_after": 48.9,
+    "mean_abs_diff": 14.7
+  },
+  {
+    "file": "lobby--detalle-suelo.png",
+    "luma_mean_before": 189.5,
+    "luma_mean_after": 189.5,
+    "luma_std_before": 45.8,
+    "luma_std_after": 47.6,
+    "mean_abs_diff": 4.6
+  },
+  {
+    "file": "shop--detalle-obra.png",
+    "luma_mean_before": 161.1,
+    "luma_mean_after": 158.1,
+    "luma_std_before": 57.3,
+    "luma_std_after": 55.9,
+    "mean_abs_diff": 5.4
+  },
+  {
+    "file": "shop--detalle-suelo.png",
+    "luma_mean_before": 179.7,
+    "luma_mean_after": 172.0,
+    "luma_std_before": 50.9,
+    "luma_std_after": 54.9,
+    "mean_abs_diff": 17.1
+  },
+  {
+    "file": "gallery-a--detalle-obra.png",
+    "luma_mean_before": 108.8,
+    "luma_mean_after": 103.4,
+    "luma_std_before": 50.1,
+    "luma_std_after": 44.1,
+    "mean_abs_diff": 6.5
+  },
+  {
+    "file": "gallery-a--detalle-suelo.png",
+    "luma_mean_before": 192.7,
+    "luma_mean_after": 151.7,
+    "luma_std_before": 47.5,
+    "luma_std_after": 38.8,
+    "mean_abs_diff": 45.5
+  },
+  {
+    "file": "archive--detalle-obra.png",
+    "luma_mean_before": 94.5,
+    "luma_mean_after": 89.2,
+    "luma_std_before": 78.2,
+    "luma_std_after": 80.7,
+    "mean_abs_diff": 5.5
+  },
+  {
+    "file": "archive--detalle-suelo.png",
+    "luma_mean_before": 81.2,
+    "luma_mean_after": 88.8,
+    "luma_std_before": 33.7,
+    "luma_std_after": 40.2,
+    "mean_abs_diff": 15.5
+  },
+  {
+    "file": "archive--detalle-techo.png",
+    "luma_mean_before": 94.5,
+    "luma_mean_after": 79.6,
+    "luma_std_before": 46.5,
+    "luma_std_after": 47.4,
+    "mean_abs_diff": 14.7
+  },
+  {
+    "file": "gallery-b--detalle-obra.png",
+    "luma_mean_before": 37.8,
+    "luma_mean_after": 35.1,
+    "luma_std_before": 49.3,
+    "luma_std_after": 48.6,
+    "mean_abs_diff": 5.1
+  },
+  {
+    "file": "gallery-b--detalle-suelo.png",
+    "luma_mean_before": 51.4,
+    "luma_mean_after": 43.8,
+    "luma_std_before": 41.4,
+    "luma_std_after": 19.3,
+    "mean_abs_diff": 19.8
+  },
+  {
+    "file": "gallery-b--detalle-techo.png",
+    "luma_mean_before": 9.8,
+    "luma_mean_after": 9.1,
+    "luma_std_before": 25.0,
+    "luma_std_after": 24.7,
+    "mean_abs_diff": 1.2
+  },
+  {
+    "file": "itinerant-wet-paint--detalle-obra.png",
+    "luma_mean_before": 93.7,
+    "luma_mean_after": 86.2,
+    "luma_std_before": 50.6,
+    "luma_std_after": 43.1,
+    "mean_abs_diff": 8.3
+  },
+  {
+    "file": "itinerant-wet-paint--detalle-suelo.png",
+    "luma_mean_before": 181.3,
+    "luma_mean_after": 136.6,
+    "luma_std_before": 42.2,
+    "luma_std_after": 31.8,
+    "mean_abs_diff": 44.3
+  }
+]

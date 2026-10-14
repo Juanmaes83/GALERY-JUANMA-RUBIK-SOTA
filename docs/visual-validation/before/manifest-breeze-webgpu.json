@@ -1,0 +1,62 @@
+{
+  "root": "/home/claude/museo-baseline",
+  "tier": "HIGH",
+  "mobile": false,
+  "bootMs": 69266,
+  "shots": [
+    {
+      "spaceId": "space.breeze",
+      "view": "sala",
+      "file": "breeze--sala.png",
+      "state": {
+        "iframe": true,
+        "notice": "stalled"
+      }
+    }
+  ],
+  "errors": [
+    "THREE.WebGPURenderer: WebGPU Device Lost:\n\nMessage: A valid external Instance reference no longer exists.\nReason: unknown",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')"
+  ],
+  "totalMs": 287252
+}

@@ -1,0 +1,410 @@
+{
+ "root": "/home/claude/museo-objetivo",
+ "mobile": false,
+ "viewport": "1280x800",
+ "policy": {
+  "tier": "HIGH",
+  "shadows": true,
+  "textureScale": 1
+ },
+ "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+ "camera": null,
+ "errors": [],
+ "frames": [
+  {
+   "file": "frame-0001.png",
+   "label": "caminar (siguiente puerta: portal.lobby-shop)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0002.png",
+   "label": "caminar (siguiente puerta: portal.lobby-shop)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0003.png",
+   "label": "caminar (siguiente puerta: portal.lobby-shop)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0004.png",
+   "label": "caminar (siguiente puerta: portal.lobby-shop)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0005.png",
+   "label": "caminar (siguiente puerta: portal.lobby-shop)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0006.png",
+   "label": "caminar (siguiente puerta: portal.lobby-shop)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0007.png",
+   "label": "cruzar portal.lobby-shop",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0008.png",
+   "label": "llegada space.shop",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0009.png",
+   "label": "llegada space.shop",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0010.png",
+   "label": "llegada space.shop",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0011.png",
+   "label": "llegada space.shop",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0012.png",
+   "label": "caminar (siguiente puerta: portal.shop-lobby)",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0013.png",
+   "label": "caminar (siguiente puerta: portal.shop-lobby)",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0014.png",
+   "label": "caminar (siguiente puerta: portal.shop-lobby)",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0015.png",
+   "label": "caminar (siguiente puerta: portal.shop-lobby)",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0016.png",
+   "label": "caminar (siguiente puerta: portal.shop-lobby)",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0017.png",
+   "label": "caminar (siguiente puerta: portal.shop-lobby)",
+   "room": "space.shop"
+  },
+  {
+   "file": "frame-0018.png",
+   "label": "cruzar portal.shop-lobby",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0019.png",
+   "label": "llegada space.lobby",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0020.png",
+   "label": "llegada space.lobby",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0021.png",
+   "label": "llegada space.lobby",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0022.png",
+   "label": "caminar (siguiente puerta: portal.lobby-gallery-a)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0023.png",
+   "label": "caminar (siguiente puerta: portal.lobby-gallery-a)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0024.png",
+   "label": "caminar (siguiente puerta: portal.lobby-gallery-a)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0025.png",
+   "label": "caminar (siguiente puerta: portal.lobby-gallery-a)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0026.png",
+   "label": "caminar (siguiente puerta: portal.lobby-gallery-a)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0027.png",
+   "label": "caminar (siguiente puerta: portal.lobby-gallery-a)",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0028.png",
+   "label": "cruzar portal.lobby-gallery-a",
+   "room": "space.lobby"
+  },
+  {
+   "file": "frame-0029.png",
+   "label": "cruzar portal.lobby-gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0030.png",
+   "label": "llegada space.gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0031.png",
+   "label": "llegada space.gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0032.png",
+   "label": "llegada space.gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0033.png",
+   "label": "llegada space.gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0034.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-archive)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0035.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-archive)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0036.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-archive)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0037.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-archive)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0038.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-archive)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0039.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-archive)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0040.png",
+   "label": "cruzar portal.gallery-a-archive",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0041.png",
+   "label": "llegada space.archive",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0042.png",
+   "label": "llegada space.archive",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0043.png",
+   "label": "llegada space.archive",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0044.png",
+   "label": "llegada space.archive",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0045.png",
+   "label": "caminar (siguiente puerta: portal.archive-gallery-a)",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0046.png",
+   "label": "caminar (siguiente puerta: portal.archive-gallery-a)",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0047.png",
+   "label": "caminar (siguiente puerta: portal.archive-gallery-a)",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0048.png",
+   "label": "caminar (siguiente puerta: portal.archive-gallery-a)",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0049.png",
+   "label": "caminar (siguiente puerta: portal.archive-gallery-a)",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0050.png",
+   "label": "caminar (siguiente puerta: portal.archive-gallery-a)",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0051.png",
+   "label": "cruzar portal.archive-gallery-a",
+   "room": "space.archive"
+  },
+  {
+   "file": "frame-0052.png",
+   "label": "cruzar portal.archive-gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0053.png",
+   "label": "llegada space.gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0054.png",
+   "label": "llegada space.gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0055.png",
+   "label": "llegada space.gallery-a",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0056.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-gallery-b)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0057.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-gallery-b)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0058.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-gallery-b)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0059.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-gallery-b)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0060.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-gallery-b)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0061.png",
+   "label": "caminar (siguiente puerta: portal.gallery-a-gallery-b)",
+   "room": "space.gallery-a"
+  },
+  {
+   "file": "frame-0062.png",
+   "label": "cruzar portal.gallery-a-gallery-b",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0063.png",
+   "label": "llegada space.gallery-b",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0064.png",
+   "label": "llegada space.gallery-b",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0065.png",
+   "label": "llegada space.gallery-b",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0066.png",
+   "label": "llegada space.gallery-b",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0067.png",
+   "label": "caminar (siguiente puerta: portal.gallery-b-itinerant)",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0068.png",
+   "label": "caminar (siguiente puerta: portal.gallery-b-itinerant)",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0069.png",
+   "label": "caminar (siguiente puerta: portal.gallery-b-itinerant)",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0070.png",
+   "label": "caminar (siguiente puerta: portal.gallery-b-itinerant)",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0071.png",
+   "label": "caminar (siguiente puerta: portal.gallery-b-itinerant)",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0072.png",
+   "label": "caminar (siguiente puerta: portal.gallery-b-itinerant)",
+   "room": "space.gallery-b"
+  },
+  {
+   "file": "frame-0073.png",
+   "label": "cruzar portal.gallery-b-itinerant",
+   "room": "space.itinerant-wet-paint"
+  },
+  {
+   "file": "frame-0074.png",
+   "label": "llegada space.itinerant-wet-paint",
+   "room": "space.itinerant-wet-paint"
+  },
+  {
+   "file": "frame-0075.png",
+   "label": "llegada space.itinerant-wet-paint",
+   "room": "space.itinerant-wet-paint"
+  },
+  {
+   "file": "frame-0076.png",
+   "label": "llegada space.itinerant-wet-paint",
+   "room": "space.itinerant-wet-paint"
+  },
+  {
+   "file": "frame-0077.png",
+   "label": "llegada space.itinerant-wet-paint",
+   "room": "space.itinerant-wet-paint"
+  },
+  {
+   "file": "frame-0078.png",
+   "label": "llegada space.itinerant-wet-paint",
+   "room": "space.itinerant-wet-paint"
+  },
+  {
+   "file": "frame-0079.png",
+   "label": "llegada space.itinerant-wet-paint",
+   "room": "space.itinerant-wet-paint"
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Target page, context or browser has been closed
+    at /home/claude/museo-objetivo/tools/perf-probe.mjs:53:12
+
+Node.js v22.22.0

@@ -1,0 +1,299 @@
+{
+  "root": "/home/claude/museo-objetivo",
+  "tier": "HIGH",
+  "mobile": false,
+  "bootMs": 68573,
+  "shots": [
+    {
+      "spaceId": "space.lobby",
+      "view": "general",
+      "position": [
+        4.42,
+        1.62,
+        3.42
+      ],
+      "yaw": -2.330022457091107,
+      "pitch": 0.05,
+      "file": "lobby--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 431,
+        "triangles": 79274
+      }
+    },
+    {
+      "spaceId": "space.lobby",
+      "view": "exposicion",
+      "entity": "entity.lobby.bienvenida",
+      "position": [
+        -3.1,
+        1.62,
+        -1.7499999999999996
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": -0.026916574668058062,
+      "file": "lobby--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 143,
+        "triangles": 41730
+      }
+    },
+    {
+      "spaceId": "space.shop",
+      "view": "general",
+      "position": [
+        -6.4,
+        1.62,
+        -3.6
+      ],
+      "yaw": -0.7014659595569215,
+      "pitch": 0.05,
+      "file": "shop--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 263,
+        "triangles": 45052
+      }
+    },
+    {
+      "spaceId": "space.shop",
+      "view": "exposicion",
+      "entity": "entity.shop.lamina-horizonte",
+      "position": [
+        -7.265000000000001,
+        1.62,
+        3.37
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": 0.07371235739434018,
+      "file": "shop--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 110,
+        "triangles": 14705
+      }
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "view": "general",
+      "position": [
+        -6.9,
+        1.62,
+        -5.6
+      ],
+      "yaw": 2.2094111818125506,
+      "pitch": 0.05,
+      "file": "gallery-a--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 181,
+        "triangles": 31260
+      }
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "view": "exposicion",
+      "entity": "entity.artwork.horizonte-interrumpido",
+      "position": [
+        -0.9,
+        1.62,
+        -12.9
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": 0.0076921559756487545,
+      "file": "gallery-a--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 48,
+        "triangles": 2117
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "general",
+      "position": [
+        -8.84,
+        1.62,
+        -12.66
+      ],
+      "yaw": -1.0197860583268872,
+      "pitch": 0.05,
+      "file": "archive--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 29,
+        "triangles": 1536
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "exposicion",
+      "entity": "entity.text.nota-de-cierre",
+      "position": [
+        -13.25,
+        1.62,
+        -10
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": -0.026916574668058062,
+      "file": "archive--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 20,
+        "triangles": 1270
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "general",
+      "position": [
+        9.1,
+        1.62,
+        -6.1
+      ],
+      "yaw": 2.278316588202834,
+      "pitch": 0.05,
+      "file": "gallery-b--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 126,
+        "triangles": 6231
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "exposicion",
+      "entity": "entity.artwork.noche-de-invierno",
+      "position": [
+        12.4,
+        1.62,
+        -12.25
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": -0.026916574668058062,
+      "file": "gallery-b--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 54,
+        "triangles": 1760
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "general",
+      "position": [
+        7.1,
+        1.62,
+        -3.9000000000000004
+      ],
+      "yaw": 0.9778702478263349,
+      "pitch": 0.05,
+      "file": "itinerant-wet-paint--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 108,
+        "triangles": 4252
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "exposicion",
+      "entity": "entity.itinerant.original",
+      "position": [
+        8.6,
+        1.62,
+        0.5
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": 0.0076921559756487545,
+      "file": "itinerant-wet-paint--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 105,
+        "triangles": 3264
+      }
+    },
+    {
+      "spaceId": "space.breeze",
+      "view": "sala",
+      "file": "breeze--sala.png",
+      "state": {
+        "iframe": true,
+        "notice": "stalled"
+      }
+    }
+  ],
+  "errors": [
+    "THREE.WebGPURenderer: WebGPU Device Lost:\n\nMessage: A valid external Instance reference no longer exists.\nReason: unknown",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')",
+    "TypeError: Cannot read properties of undefined (reading 'size')"
+  ],
+  "totalMs": 608856
+}

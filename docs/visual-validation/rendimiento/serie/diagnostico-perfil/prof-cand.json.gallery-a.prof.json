@@ -1,0 +1,105 @@
+{
+ "totalMs": 21007,
+ "top": [
+  [
+   "(program) :-1",
+   20901
+  ],
+  [
+   "texImage2D :-1",
+   55
+  ],
+  [
+   "i three.module.min.js:5",
+   6
+  ],
+  [
+   "Pa.renderBufferDirect three.module.min.js:5",
+   6
+  ],
+  [
+   "uniformMatrix4fv :-1",
+   5
+  ],
+  [
+   "(anon) three.module.min.js:5",
+   4
+  ],
+  [
+   "n three.module.min.js:5",
+   4
+  ],
+  [
+   "(garbage collector) :-1",
+   4
+  ],
+  [
+   "multiplyMatrices three.core.min.js:5",
+   4
+  ],
+  [
+   "setValue three.module.min.js:5",
+   2
+  ],
+  [
+   "update three.module.min.js:5",
+   2
+  ],
+  [
+   "R three.module.min.js:5",
+   2
+  ],
+  [
+   "uniform1f :-1",
+   1
+  ],
+  [
+   "setUvTransform three.core.min.js:5",
+   1
+  ],
+  [
+   "activeTexture :-1",
+   1
+  ],
+  [
+   "bindTexture :-1",
+   1
+  ],
+  [
+   "disable :-1",
+   1
+  ],
+  [
+   "setScissorTest three.module.min.js:5",
+   1
+  ],
+  [
+   "Di three.module.min.js:5",
+   1
+  ],
+  [
+   "upload three.module.min.js:5",
+   1
+  ],
+  [
+   "L three.module.min.js:5",
+   1
+  ],
+  [
+   "sort three.module.min.js:5",
+   1
+  ],
+  [
+   "bindVertexArray :-1",
+   1
+  ],
+  [
+   "bindFramebuffer :-1",
+   1
+  ],
+  [
+   "updateMatrixWorld three.core.min.js:5",
+   1
+  ]
+ ]
+}

@@ -1,0 +1,518 @@
+{
+  "root": "/home/claude/museo-baseline",
+  "tier": "HIGH",
+  "mobile": false,
+  "bootMs": 66922,
+  "shots": [
+    {
+      "spaceId": "space.lobby",
+      "view": "general",
+      "position": [
+        4.42,
+        1.62,
+        3.42
+      ],
+      "yaw": -2.330022457091107,
+      "pitch": 0.05,
+      "file": "lobby--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 416,
+        "triangles": 77858
+      }
+    },
+    {
+      "spaceId": "space.lobby",
+      "view": "exposicion",
+      "entity": "entity.lobby.bienvenida",
+      "position": [
+        -3.1,
+        1.62,
+        -1.7499999999999996
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": -0.026916574668058062,
+      "file": "lobby--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 132,
+        "triangles": 40696
+      }
+    },
+    {
+      "spaceId": "space.lobby",
+      "view": "detalle-suelo",
+      "position": [
+        4.42,
+        1.62,
+        3.42
+      ],
+      "yaw": -2.330022457091107,
+      "pitch": -0.62,
+      "file": "lobby--detalle-suelo.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 112,
+        "triangles": 20943
+      }
+    },
+    {
+      "spaceId": "space.lobby",
+      "view": "detalle-obra",
+      "entity": "entity.lobby.bienvenida",
+      "position": [
+        -2.420506602390143,
+        1.62,
+        -3.2417181213226423
+      ],
+      "yaw": -2.5915926535897933,
+      "pitch": -0.3,
+      "file": "lobby--detalle-obra.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 81,
+        "triangles": 39140
+      }
+    },
+    {
+      "spaceId": "space.shop",
+      "view": "general",
+      "position": [
+        -6.4,
+        1.62,
+        -3.6
+      ],
+      "yaw": -0.7014659595569215,
+      "pitch": 0.05,
+      "file": "shop--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 257,
+        "triangles": 43744
+      }
+    },
+    {
+      "spaceId": "space.shop",
+      "view": "exposicion",
+      "entity": "entity.shop.lamina-horizonte",
+      "position": [
+        -7.265000000000001,
+        1.62,
+        3.37
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": 0.07371235739434018,
+      "file": "shop--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 109,
+        "triangles": 14211
+      }
+    },
+    {
+      "spaceId": "space.shop",
+      "view": "detalle-suelo",
+      "position": [
+        -6.4,
+        1.62,
+        -3.6
+      ],
+      "yaw": -0.7014659595569215,
+      "pitch": -0.62,
+      "file": "shop--detalle-suelo.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 145,
+        "triangles": 23094
+      }
+    },
+    {
+      "spaceId": "space.shop",
+      "view": "detalle-obra",
+      "entity": "entity.shop.lamina-horizonte",
+      "position": [
+        -8.756718121322642,
+        1.62,
+        2.690506602390143
+      ],
+      "yaw": -1.020796326794897,
+      "pitch": -0.3,
+      "file": "shop--detalle-obra.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 54,
+        "triangles": 2277
+      }
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "view": "general",
+      "position": [
+        -6.9,
+        1.62,
+        -5.6
+      ],
+      "yaw": 2.2094111818125506,
+      "pitch": 0.05,
+      "file": "gallery-a--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 266,
+        "triangles": 33386
+      }
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "view": "exposicion",
+      "entity": "entity.artwork.horizonte-interrumpido",
+      "position": [
+        -0.9,
+        1.62,
+        -12.9
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": 0.0076921559756487545,
+      "file": "gallery-a--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 51,
+        "triangles": 1677
+      }
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "view": "detalle-suelo",
+      "position": [
+        -6.9,
+        1.62,
+        -5.6
+      ],
+      "yaw": 2.2094111818125506,
+      "pitch": -0.62,
+      "file": "gallery-a--detalle-suelo.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 111,
+        "triangles": 20992
+      }
+    },
+    {
+      "spaceId": "space.gallery-a",
+      "view": "detalle-obra",
+      "entity": "entity.artwork.horizonte-interrumpido",
+      "position": [
+        -0.22050660239014297,
+        1.62,
+        -14.391718121322643
+      ],
+      "yaw": -2.591592653589793,
+      "pitch": -0.3,
+      "file": "gallery-a--detalle-obra.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 47,
+        "triangles": 1423
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "general",
+      "position": [
+        -8.84,
+        1.62,
+        -12.66
+      ],
+      "yaw": -1.0197860583268872,
+      "pitch": 0.05,
+      "file": "archive--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 21,
+        "triangles": 420
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "exposicion",
+      "entity": "entity.text.nota-de-cierre",
+      "position": [
+        -13.25,
+        1.62,
+        -10
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": -0.026916574668058062,
+      "file": "archive--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 13,
+        "triangles": 156
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "detalle-suelo",
+      "position": [
+        -8.84,
+        1.62,
+        -12.66
+      ],
+      "yaw": -1.0197860583268872,
+      "pitch": -0.62,
+      "file": "archive--detalle-suelo.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 20,
+        "triangles": 408
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "detalle-techo",
+      "position": [
+        -8.84,
+        1.62,
+        -12.66
+      ],
+      "yaw": -1.0197860583268872,
+      "pitch": 0.55,
+      "file": "archive--detalle-techo.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 15,
+        "triangles": 180
+      }
+    },
+    {
+      "spaceId": "space.archive",
+      "view": "detalle-obra",
+      "entity": "entity.text.nota-de-cierre",
+      "position": [
+        -14.741718121322641,
+        1.62,
+        -10.679493397609857
+      ],
+      "yaw": -1.020796326794897,
+      "pitch": -0.3,
+      "file": "archive--detalle-obra.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 11,
+        "triangles": 132
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "general",
+      "position": [
+        9.1,
+        1.62,
+        -6.1
+      ],
+      "yaw": 2.278316588202834,
+      "pitch": 0.05,
+      "file": "gallery-b--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 124,
+        "triangles": 5625
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "exposicion",
+      "entity": "entity.artwork.noche-de-invierno",
+      "position": [
+        12.4,
+        1.62,
+        -12.25
+      ],
+      "yaw": -3.141592653589793,
+      "pitch": -0.026916574668058062,
+      "file": "gallery-b--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 56,
+        "triangles": 1356
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "detalle-suelo",
+      "position": [
+        9.1,
+        1.62,
+        -6.1
+      ],
+      "yaw": 2.278316588202834,
+      "pitch": -0.62,
+      "file": "gallery-b--detalle-suelo.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 88,
+        "triangles": 2267
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "detalle-techo",
+      "position": [
+        9.1,
+        1.62,
+        -6.1
+      ],
+      "yaw": 2.278316588202834,
+      "pitch": 0.55,
+      "file": "gallery-b--detalle-techo.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 91,
+        "triangles": 2797
+      }
+    },
+    {
+      "spaceId": "space.gallery-b",
+      "view": "detalle-obra",
+      "entity": "entity.artwork.noche-de-invierno",
+      "position": [
+        13.079493397609857,
+        1.62,
+        -13.741718121322641
+      ],
+      "yaw": -2.5915926535897937,
+      "pitch": -0.3,
+      "file": "gallery-b--detalle-obra.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 58,
+        "triangles": 1183
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "general",
+      "position": [
+        7.1,
+        1.62,
+        -3.9000000000000004
+      ],
+      "yaw": 0.9778702478263349,
+      "pitch": 0.05,
+      "file": "itinerant-wet-paint--general.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 105,
+        "triangles": 3698
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "exposicion",
+      "entity": "entity.itinerant.original",
+      "position": [
+        8.6,
+        1.62,
+        0.5
+      ],
+      "yaw": -1.5707963267948966,
+      "pitch": 0.0076921559756487545,
+      "file": "itinerant-wet-paint--exposicion.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 96,
+        "triangles": 2530
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "detalle-suelo",
+      "position": [
+        7.1,
+        1.62,
+        -3.9000000000000004
+      ],
+      "yaw": 0.9778702478263349,
+      "pitch": -0.62,
+      "file": "itinerant-wet-paint--detalle-suelo.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 50,
+        "triangles": 1454
+      }
+    },
+    {
+      "spaceId": "space.itinerant-wet-paint",
+      "view": "detalle-obra",
+      "entity": "entity.itinerant.original",
+      "position": [
+        7.108281878677357,
+        1.62,
+        -0.17949339760985672
+      ],
+      "yaw": -1.0207963267948967,
+      "pitch": -0.3,
+      "file": "itinerant-wet-paint--detalle-obra.png",
+      "policy": {
+        "tier": "HIGH",
+        "shadows": true,
+        "textureScale": 1,
+        "calls": 49,
+        "triangles": 964
+      }
+    }
+  ],
+  "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 939194
+}

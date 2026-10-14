@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Immersive Worlds — Fundación Arenas (prototipo aislado IW-1)</title>
+  <meta name="theme-color" content="#0c0b0a">
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Prototipo aislado del módulo Immersive Worlds de Escaparates Pro. Mundo, obras e institución ficticios.">
+  <link rel="stylesheet" href="./app/ui/styles.css">
+  <link rel="stylesheet" href="./authoring/studio/visitor-phase1.css">
+  <link rel="stylesheet" href="./authoring/studio/museum-phase2.css">
+  <link rel="stylesheet" href="./authoring/studio/museum-phase2-hardening.css">
+  <link rel="stylesheet" href="./authoring/studio/avatar-phase5.css">
+  <link rel="stylesheet" href="./app/audioguide/audioguide.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <main id="iw-stage">
+    <canvas id="iw-canvas" tabindex="0" aria-label="Vista tridimensional de la sala. El contenido completo está disponible en texto desde el botón «Contenido en texto»."></canvas>
+  </main>
+  <div id="iw-ui"></div>
+
+  <noscript><p style="padding:2rem;font-family:Georgia,serif">Este prototipo necesita JavaScript y WebGL. El contenido está descrito en <code>worlds/museum-v1.world.json</code>.</p></noscript>
+
+  <script type="module">
+    import { boot, registerBootInstaller } from './app/experience-app.js';
+    import { installVisitorPhase1 } from './authoring/studio/visitor-phase1.js';
+    import { installMuseumPhase2 } from './authoring/studio/museum-phase2.js';
+    import { installMuseumPhase2LayoutFix } from './authoring/studio/museum-phase2-layout-fix.js';
+    import { installMuseumPhase2Hardening } from './authoring/studio/museum-phase2-hardening.js';
+    import { installMuseumAvatarStudioPhase5 } from './authoring/studio/avatar-phase5.js';
+    import { installMuseumAvatarVisibilityContinuity } from './authoring/studio/avatar-phase5-visibility-continuity.js';
+    import { installMuseumAvatarMotionPhase5 } from './authoring/studio/avatar-phase5-motion.js';
+    // Proven Breeze V4.1 persistence seam. The room remains a specialized
+    // nested runtime; this only connects its existing panel to Museum Studio.
+    import './authoring/studio/breeze-persistence-adapter.js';
+
+    document.addEventListener('change', (event) => {
+      if (!event.target?.matches?.('[data-p1-dim], [data-p1-entity-a11y]')) return;
+      requestAnimationFrame(() => window.__IW_STUDIO?.render?.());
+    });
+
+    registerBootInstaller(async (runtime) => {
+      let wetPaintInstallation = null;
+      installVisitorPhase1();
+      installMuseumPhase2();
+      installMuseumPhase2LayoutFix();
+      installMuseumPhase2Hardening();
+      installMuseumAvatarStudioPhase5();
+      await installMuseumAvatarVisibilityContinuity();
+      installMuseumAvatarMotionPhase5();
+
+      // Character / Avatar 2027 — bounded opt-ins.
+      // Phase 6 layers only over the already-proven free Character foundation.
+      // No branch here creates another renderer, WorldStore, navigation authority,
+      // camera authority, route authority or Character root.
+      const characterParams = new URLSearchParams(location.search);
+      if (characterParams.get('character') === '1') {
+        try {
+          if (characterParams.get('mobility') === '1' && characterParams.get('continuity') === '1') {
+            const { mountMuseumCharacterPhase4B } = await import('./character/museum-character-phase4b.js');
+            await mountMuseumCharacterPhase4B({ runtime, sceneKit: runtime.sceneKit, input: window.__IW?.input });
+          } else if (characterParams.get('mobility') === '1') {
+            const { mountMuseumCharacterPhase4A } = await import('./character/museum-character-phase4a.js');
+            await mountMuseumCharacterPhase4A({ runtime, sceneKit: runtime.sceneKit, input: window.__IW?.input });
+          } else {
+            const { mountMuseumCharacterPhase3 } = await import('./character/museum-character-phase3.js');
+            await mountMuseumCharacterPhase3({ runtime, sceneKit: runtime.sceneKit });
+          }
+
+          if (characterParams.get('gatea') === '1') {
+            if (characterParams.get('mobility') !== '1') throw new Error('Phase 6 Gate A requires ?character=1&mobility=1');
+            const { installMuseumCharacterPhase6GateA } = await import('./character/museum-character-phase6-gatea.js');
+            installMuseumCharacterPhase6GateA(runtime);
+          }
+
+          // Roadmap order: Capability Batches → Semantic Authoring/Bridge → Tour Bridge.
+          if (characterParams.get('tour') === '1') {
+            if (characterParams.get('mobility') !== '1' || characterParams.get('continuity') !== '1' || characterParams.get('gatea') !== '1') {
+              throw new Error('Phase 6 Tour Bridge requires ?character=1&mobility=1&continuity=1&gatea=1');
+            }
+            const { installMuseumCharacterTourBridge } = await import('./character/museum-character-tour-bridge.js');
+            await installMuseumCharacterTourBridge(runtime);
+          }
+
+          // Next roadmap stone: COMPLETE Character Cinematic Camera. This is a
+          // runtime behaviour layer only; it adds no Studio/product controls.
+          if (characterParams.get('cinematic') === '1') {
+            if (characterParams.get('mobility') !== '1' || characterParams.get('continuity') !== '1' || characterParams.get('gatea') !== '1') {
+              throw new Error('Phase 6 Cinematic Camera requires ?character=1&mobility=1&continuity=1&gatea=1');
+            }
+            const { installMuseumCharacterCinematicCamera } = await import('./character/museum-character-cinematic-camera.js');
+            installMuseumCharacterCinematicCamera(runtime);
+          }
+        } catch (characterError) {
+          console.error('[Character 2027] Gate failed:', characterError);
+          document.documentElement.dataset.characterGate = 'error';
+          document.documentElement.dataset.characterGateError = String(characterError?.message || characterError);
+          const warning = document.createElement('div');
+          warning.id = 'character-gate-error';
+          warning.style.cssText = 'position:fixed;left:14px;top:14px;z-index:20000;padding:10px 12px;max-width:min(560px,calc(100vw - 28px));background:rgba(55,10,10,.92);border:1px solid rgba(255,255,255,.25);color:#fff;font:600 11px/1.45 system-ui,sans-serif';
+          warning.textContent = `CHARACTER GATE ERROR · ${String(characterError?.message || characterError)}`;
+          document.body.appendChild(warning);
+        }
+      }
+
+      // Audioguide: welcome, room introductions and work capsules (one player,
+      // nothing plays until the visitor asks).
+      let disposeAudioguide = null;
+      try {
+        const { installAudioguide } = await import('./app/audioguide/audioguide-ui.js');
+        disposeAudioguide = installAudioguide(runtime);
+      } catch (guideError) {
+        console.error('[Audioguía] Instalación fallida:', guideError);
+      }
+
+      try {
+        const { installWetPaint } = await import('./experiences/wet-paint-adapter.js');
+        const { installWetPaintStudioControls } = await import('./authoring/studio/wet-paint-studio-controls.js');
+        const activeRuntime = window.__IW?.runtime;
+        if (activeRuntime) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          const result = installWetPaint(activeRuntime);
+          wetPaintInstallation = result;
+          installWetPaintStudioControls();
+          if (result) console.log('[Wet Paint] Motor + controles nativos de Studio instalados (Sala 4)');
+          else console.warn('[Wet Paint] Motor diferido — runtime no listo');
+        }
+      } catch (bridgeError) {
+        console.error('[Wet Paint] Instalación fallida (no crítica):', bridgeError);
+      }
+
+      return async () => {
+        window.__IW_CHARACTER_CINEMATIC_CAMERA?.dispose?.();
+        window.__IW_CHARACTER_TOUR?.dispose?.();
+        window.__IW_CHARACTER_GATE_A?.dispose?.();
+        window.__IW_CHARACTER_PHASE4B?.dispose?.();
+        window.__IW_CHARACTER_PHASE4A?.dispose?.();
+        window.__IW_CHARACTER_PHASE3?.dispose?.();
+        wetPaintInstallation?.dispose?.();
+        disposeAudioguide?.();
+      };
+    });
+
+    boot().catch((error) => {
+      console.error('[IW] boot failed', error);
+      document.documentElement.dataset.iwError = String(error?.message || error);
+      const ui = document.getElementById('iw-ui');
+      ui.innerHTML = `<div style="position:absolute;inset:0;display:grid;place-items:center;padding:2rem;background:#0a0908"><div style="max-width:34rem"><p style="font:400 .7rem/1 'Helvetica Neue',sans-serif;letter-spacing:.4em;text-transform:uppercase;color:#a49d92">Fundación Arenas</p><h1 style="font:400 1.4rem/1.3 Georgia,serif;margin:1.4rem 0">No se pudo iniciar la sala</h1><p style="font:400 .86rem/1.7 'Helvetica Neue',sans-serif;color:#cfc9be">Este prototipo requiere WebGL2. Todo el contenido está disponible como texto en <code>worlds/museum-v1.world.json</code>.</p><pre style="margin-top:1.4rem;padding:1rem;border:1px solid rgba(240,236,228,.16);font-size:.74rem;color:#a49d92;white-space:pre-wrap">${String(error?.message || error)}</pre></div></div>`;
+    });
+  </script>
+</body>
+</html>
