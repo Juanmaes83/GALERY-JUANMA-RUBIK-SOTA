@@ -32,7 +32,7 @@ Sin navegador: inventario de la audioguía (24 pistas, sin productos), textos ba
 |---|---|
 | Arranque | WebGL2, World válido, inicio en el Vestíbulo y botón «Entrar» |
 | Invariantes | `window.__IW.assertInvariants()` en verde |
-| Recorrido | Las 6 salas a través de los 10 portales canónicos |
+| Recorrido | Las 7 salas y sus portales canónicos |
 | Sala Breeze | Aviso, aviso de proximidad «Volver a la Galería B», salida con `E`, botón-puente alcanzable por el puntero y salida con clic real |
 | Accesos y obstáculos | En todas las salas: ninguna obra en el hueco de una puerta, ninguna cuerda cruza una puerta ni atrapa una llegada, cada puerta se cruza con E. Con teclas reales: E entra y sale de Breeze, *Marea baja* abre su ficha, desde la puerta de Wet Paint se camina hacia dentro y cada obra de Wet Paint se resalta y abre su ficha; en móvil, cada una queda encima de su cartela |
 | Avatar determinista | Con el bucle parado y `runtime.step(dt)` a mano: la misma distancia a 60, 30, 10 FPS y con fotogramas irregulares; la cámara acompaña sin quedarse quieta ni saltar; arranque y parada suaves; lo cercano se mide desde el avatar; E entra y sale de Breeze con avatar |
@@ -90,3 +90,9 @@ Desde la consola del navegador:
 | Breeze: píxeles WebGPU en navegador gráfico | Recuperación del 2026-09-01 |
 | Avatar: recuperación tras reconstruir Studio y elección POV o avatar | PR #83 del origen |
 | Correcciones de este repositorio: salida de Breeze y Studio reactivado | PR #1 de este repositorio |
+
+## Actualización del 14/10/2026
+
+PR #3 aprobada y fusionada; PR #4 consolidada en main. La suite aprobada pasó 146 comprobaciones en Chromium/SwiftShader y su CI fue correcta en `4ce5856`. La recuperación del inspector añade `npm run test:studio-layout`: anchura/desbordamiento, separador accesible, «Proyecto» plegable, textos completos y guardar → recargar → aplicar a 1440, 1180 y 390 px. La CI de la candidata de Studio ejecuta esa prueba además de la suite general.
+
+Las cifras y límites históricos permanecen en MISION-VISUAL. Siguen pendientes Safari/iOS, Chrome/Android físicos, mediciones de rendimiento y V.18 (reinicio del proceso GPU).

@@ -1,5 +1,7 @@
 # Misión visual: presentación de las siete salas
 
+> **Estado vigente 14/10/2026:** PR #3 aprobada por Juanma y fusionada; versión consolidada en main por PR #4. Las declaraciones de bloqueo y de PR abierta en las secciones anteriores son el historial de cada candidata. Persisten las limitaciones de hardware físico y V.18. Ver [CURRENT-STATE](CURRENT-STATE.md).
+
 **Rama:** `mision-visual-presentacion` · **Base:** `4f0c01c` (Misión 5, tienda del museo) · **Estado:** candidata local, sin fusionar ni desplegar a producción · **Actualizado:** 2026-10-04 · **Declaración:** **bloqueada** (ver §11).
 
 **Alcance:** seis salas (Vestíbulo, Galería A, Galería B, Archivo, Wet Paint y Tienda). **La Sala Breeze queda excluida** de esta misión: no se ha modificado su bundle ni su comportamiento.

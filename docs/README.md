@@ -31,3 +31,9 @@ CÓDIGO + DOCUMENTACIÓN + QA AUTOMÁTICO + AUDITORÍA HUMANA NAVEGABLE
 ```
 
 Las puertas humanas pendientes aparecen como tales en todos los documentos. Ninguna se da por aprobada.
+
+## Estado vigente (2026-10-14)
+
+- [CURRENT-STATE](CURRENT-STATE.md): versión aprobada, consolidación en main y límites reales.
+- [STUDIO-LAYOUT-RECOVERY](STUDIO-LAYOUT-RECOVERY.md): recuperación del inspector, pruebas y evidencias.
+- [ROADMAP](../ROADMAP.md): orden vigente de cierre del MVP. Las prioridades antiguas quedan sustituidas por la sección «Cierre del MVP».

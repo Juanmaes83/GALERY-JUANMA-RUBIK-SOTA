@@ -110,7 +110,7 @@ SELECCIONADO → (subiendo) → LISTO en la sesión (authored:<id>, object URL)
 
 Esa es la **brecha principal del producto**:
 
-1. **Los archivos subidos no persisten.** El destino diseñado en el origen es Project Cloud de escaparates-pro (`project_assets` en R2). Sus referencias son `asset:<uuid>`, y el estado `READY` no equivale a `SAVED`. El adaptador `authoring/project-cloud/asset-client.js` está «solo preparado» y no está conectado. Al ser este repositorio el canónico, hay que decidir el backend (ver [ROADMAP](../ROADMAP.md), fase 3).
+1. **Los archivos subidos no persisten.** El destino diseñado en el origen es Project Cloud de escaparates-pro (`project_assets` en R2). Sus referencias son `asset:<uuid>`, y el estado `READY` no equivale a `SAVED`. El adaptador `authoring/project-cloud/asset-client.js` está «solo preparado» y no está conectado. Al ser este repositorio el canónico, hay que decidir el backend (ver [ROADMAP](../ROADMAP.md), fase 2).
 2. **No hay publicación.** El visitante lee `ConfigStore.load()` (el `localStorage` de **su** navegador) o la base del World. Lo que un autor guarda solo lo ve él. «Exportar proyecto» copia el JSON, pero no existe todavía ni importación ni un archivo de configuración publicada que lean los visitantes.
 3. **No hay autenticación.** Cualquiera puede abrir `?authoring=1`. Hoy no es un riesgo porque solo edita su propio navegador, pero lo será en cuanto el Studio publique.
 
@@ -128,4 +128,12 @@ Esa es la **brecha principal del producto**:
 - que la audioguía acepta un audio, mide su duración, lo asocia a un idioma, lo reproduce como visitante y, tras recargar, conserva el texto y declara el audio caducado (`AUDIOGUIDE-*`; ver [11-AUDIOGUIA](11-AUDIOGUIA.md));
 - que no hay errores de consola.
 
-La auditoría visual humana de la fase 2 sigue **pendiente**, como en el origen.
+La revisión completa de las capacidades de autoría sigue pendiente de registro específico. La PR #3 fue aprobada el 14/10/2026 para las mejoras visuales/móviles y Breeze; la interfaz recuperada del inspector tiene su propia preview de revisión.
+
+## Interfaz recuperada del inspector (2026-10-14)
+
+La candidata `fix/studio-layout-canonical` recupera la mejora que estaba separada en `fix/studio-layout-breeze-visibility`: inspector más ancho, «Proyecto» plegable y separador de ancho ajustable con puntero/teclado. En móvil permanece la interfaz apilada. Los campos largos se leen completos con etiqueta encima; créditos y derechos se muestran en varias líneas pero conservan una sola línea de datos.
+
+El separador mantiene al menos 360 px para la vista 3D en escritorio. El ancho y el estado del cajón se recuerdan en sessionStorage; no alteran la configuración del museo. No se incorpora la antigua solución de Breeze: se conserva la separación Studio/visitante de la PR #3.
+
+Prueba específica: `npm run test:studio-layout`. Evidencia y límites: [STUDIO-LAYOUT-RECOVERY](STUDIO-LAYOUT-RECOVERY.md).

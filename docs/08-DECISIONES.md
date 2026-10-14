@@ -30,7 +30,7 @@ Cada decisión indica fecha, contexto, decisión y consecuencias. Las decisiones
 **Fecha:** 2026-10-01
 
 - **Decisión:** el invitado comprueba con `HEAD` si Breeze Studio PRO está servido. Si no lo está, muestra un aviso con salida. Con el producto presente, el camino original no cambia.
-- **Estado de la migración:** autorizada por Juanma. **Bloqueada por la política de permisos del entorno de ejecución** («Out-of-Place Publication»). Requiere autorización explícita en la configuración. Tareas previas de licencias en [06](06-SALAS_ESPECIALES.md).
+- **Estado de la migración:** autorizada por Juanma. **Integrada en la versión canónica.** El bloqueo de permisos de importación era histórico. Acceso, ciclo de vida y panel Studio/visitante corregidos en PR #3, integrada en main mediante PR #4. Licencias pendientes en [06](06-SALAS_ESPECIALES.md).
 
 ### GJR-005 · Correcciones de salida de salas anidadas
 **Fecha:** 2026-10-01
@@ -55,7 +55,7 @@ Cada decisión indica fecha, contexto, decisión y consecuencias. Las decisiones
 **Fecha:** 2026-10-01 · **Decide:** Juanma
 
 - **Decisión:** `Avatar_1.glb` es de Juanma, con licencia libre.
-- **Pendiente:** el nombre exacto de la licencia y si el binario se aloja en este repositorio o en un origen controlado.
+- **Pendiente:** el nombre exacto de la licencia. El binario ya se aloja en `assets/models/character/Avatar_1.glb`.
 
 ### GJR-008 · Pruebas propias en lugar de la suite del origen
 **Fecha:** 2026-10-01
@@ -82,3 +82,13 @@ Cada decisión indica fecha, contexto, decisión y consecuencias. Las decisiones
   - la visita tiene una salida (`END_VISIT`) en el Vestíbulo y el botón «Salir»;
   - las señales verdes se calculan desde el World Graph: el camino más corto a la sala de la salida. Así nunca apuntan a una ruta inexistente.
 - **Límite:** es orientación de una experiencia virtual, no señalización de evacuación.
+
+### GJR-011 · Consolidación de la versión aprobada en main
+**Fecha:** 2026-10-14 · **Decide:** Juanma
+
+La PR #3 fue aprobada y fusionada (`7ee2cbdc`). Juanma autorizó consolidar el museo y actualizar documentación. La PR #4 incorpora a main esa misma versión sin sustituirla por ramas antiguas; las PR #1/#2 han quedado integradas. Main es la base técnica de los nuevos cambios. Queda cambiar la rama por defecto con permisos administrativos.
+
+### GJR-012 · Recuperar la interfaz del Studio sin retroceder Breeze
+**Fecha:** 2026-10-14
+
+Portar desde la rama antigua solo la presentación del Studio y sus campos de texto; conservar el modo visitante y el ciclo de vida actual de Breeze. La nueva candidata se publica como preview para revisión humana. Persistencia/backend y contenido de audioguía siguen fuera de esta recuperación.

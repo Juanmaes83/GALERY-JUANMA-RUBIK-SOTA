@@ -2,13 +2,15 @@
 
 Un museo web en 3D de varias salas que se recorre en primera persona o con avatar. Incluye un **Studio** para personalizarlo sin código. Este es el **repositorio canónico** del museo ([GJR-001](docs/08-DECISIONES.md)). Procede de `escaparates-pro/labs/immersive-worlds` @ `382e566`.
 
-> **Estado real:** prototipo avanzado, no terminado. Ver [ROADMAP.md](ROADMAP.md).
-> - Cinco salas operativas y Studio funcionando, cubiertos por pruebas.
-> - **Avatar**: alojado en el repositorio y navegable en las seis salas según las pruebas automáticas. **Pendiente de validación visual humana.**
-> - **Marble Bust 01** pendiente del veredicto visual humano KEEP o ADJUST.
-> - **Sala Breeze** integrada (Breeze Studio PRO V4.1, requiere WebGPU). **No validada**: falta la prueba en una GPU real. Licencias de la Venus, Poly Haven y Fabric Lace **pendientes**.
-> - **Tienda del museo** (sala nueva, simulada: sin compra), administrable desde el Studio; **salida** de la visita y **señales verdes** hacia ella en todas las salas.
-> - Lo que se personaliza en el Studio **solo se guarda en el navegador del autor**; todavía no hay publicación.
+> **Estado actual (2026-10-14):** museo de **siete salas**, con Studio, visita POV/Avatar, tienda simulada y sistema de audioguía. La versión aprobada se ha consolidado en `main` mediante la PR #4, después de integrar la PR #3 en `7ee2cbdc`.
+> - Guía táctil, zonas «Mover/Mirar», mapa de orientación y puertas corregidas; CI de la versión aprobada en verde.
+> - Breeze: acceso desde la primera visita y panel separado entre Studio y visita; depende de WebGPU. Su aspecto y fluidez en teléfonos físicos siguen pendientes de comprobación.
+> - El Studio guarda la configuración en el navegador del autor; los archivos subidos solo duran la sesión. **Todavía no publica para otros visitantes.**
+> - Audioguía: 24 pistas editables, con texto; **sin grabaciones de contenido**.
+> - Recuperación del inspector ancho del Studio: candidata de revisión en `fix/studio-layout-canonical`, documentada en [STUDIO-LAYOUT-RECOVERY](docs/STUDIO-LAYOUT-RECOVERY.md).
+> - Licencias pendientes y mediciones de rendimiento físico: ver [ROADMAP](ROADMAP.md).
+>
+> [Estado canónico, versión aprobada y próximos pasos](docs/CURRENT-STATE.md).
 
 Todo el contenido de la Fundación Arenas es ficticio.
 
@@ -108,7 +110,7 @@ Es un sitio estático: se publica la raíz tal cual. En Vercel corresponde al fr
 
 Para revisión existe un proyecto Vercel **solo de preview** (`galery-juanma-rubik-sota-preview`):
 
-- No está enlazado a Git, así que ningún push despliega nada. Cada preview se crea a mano desde un commit concreto, con entorno `staging`.
+- No está enlazado a Git. Las previews se crean explícitamente desde un commit concreto; no se promueven a producción al hacer merge.
 - La producción está bloqueada: el «Ignored Build Step» cancela cualquier despliegue de producción, y el proyecto no tiene ninguno.
 - Sin protección de acceso: la URL del preview se abre sin iniciar sesión.
 - Studio: `<url>/index.html?authoring=1`. Visita: `<url>/index.html`.
