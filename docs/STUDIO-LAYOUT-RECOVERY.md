@@ -23,9 +23,11 @@ Se portan solo los dos archivos de presentación `studio-layout-ux.css/js`, su i
 Playwright 1.56.1 / Chromium 141 / SwiftShader, Ubuntu 26.04 con build Chromium de Ubuntu 24.04:
 - Primera serie: 28 comprobaciones correctas a 1440 × 900, 1180 × 800 y 390 × 844.
 - Tras corregir la barra móvil: 7 comprobaciones correctas a 390 × 844, incluido el límite de la barra dentro de la cabecera.
+- Separador en Contenido y Experiencia: 4 comprobaciones correctas en escritorio. Se corrige la lectura de tokens CSS `clamp()`; el límite usa los anchos resueltos del grid.
 - Guardar → recargar → aplicar comprobado en los tres tamaños; ajuste por teclado, límite de vista 3D, cajón y lectura de texto largo en escritorio.
 - Sin errores de página ni desbordamiento horizontal en esas comprobaciones.
-- La prueba `npm run test:studio-layout` se incorpora a la CI de la candidata. El resultado de la suite general y la CI se indica en los checks y en el resumen de la PR; no se declara verde mientras está en curso.
+- `npm test`: 146 comprobaciones correctas, ninguna fallida; salida 0, duración 26,9 min en el entorno de pruebas.
+- La CI de la candidata incorpora `npm run test:studio-layout` y fija Ubuntu 24.04 / Node 22. GitHub no ha ejecutado sus pasos: cuenta bloqueada por un problema de facturación. No se presenta como CI verde.
 
 No es una medición de fluidez en teléfono físico ni una validación de Safari/Firefox. El test móvil usa contexto touch y viewport móvil en Chromium; no sustituye una prueba manual en iOS/Android.
 
@@ -39,4 +41,4 @@ No es una medición de fluidez en teléfono físico ni una validación de Safari
 
 Las capturas se han abierto e inspeccionado. Los textos «QA» y el guion repetido pertenecen a la sesión de prueba; no se han añadido al contenido base del museo. El manifiesto conserva dimensiones, límites, procedencia y hashes del código validado.
 
-La interfaz queda como candidata para revisión humana, en su propia PR contra main. Preview público, sin producción.
+La interfaz queda como candidata para revisión humana en [PR #5](https://github.com/Juanmaes83/GALERY-JUANMA-RUBIK-SOTA/pull/5), contra main. La preview vigente y su SHA se enlazan en esa PR; el sitio se comprueba sin credenciales y con hashes de código idénticos al commit. Sin producción.

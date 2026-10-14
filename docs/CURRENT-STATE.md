@@ -23,7 +23,9 @@ La aprobación de la PR #3 cierra esa revisión humana. Sigue pendiente registra
 
 La rama antigua `fix/studio-layout-breeze-visibility` divergía de la versión actual: un commit propio y 17 commits por detrás en la comparación. Se portan solo `studio-layout-ux.css`, `studio-layout-ux.js`, los campos de texto correspondientes y su instalación desde index.html. Se mantienen las correcciones actuales del modo visitante de Breeze.
 
-Candidata nueva: `fix/studio-layout-canonical`. Su preview y resultados finales se enlazan desde la PR de recuperación. Esta nueva interfaz necesita su propia revisión visual.
+Candidata nueva: `fix/studio-layout-canonical`, [PR #5](https://github.com/Juanmaes83/GALERY-JUANMA-RUBIK-SOTA/pull/5). Inspector ancho, textos completos, Proyecto plegable, cabecera móvil sin superposición y separador con mínimo de vista 3D en todas las áreas. Su preview y SHA se enlazan desde la PR. Esta nueva interfaz necesita su propia revisión visual.
+
+Validación en el entorno de pruebas: 28 comprobaciones iniciales, 7 sobre la barra móvil final, 4 sobre los límites de Contenido/Experiencia; `npm test` termina con 146 comprobaciones correctas y salida 0. Todo emulado con Chromium/SwiftShader. La CI nueva de GitHub no ejecuta pasos por bloqueo de facturación de la cuenta; no es una validación fallida del código.
 
 ## Pendientes ordenados
 
